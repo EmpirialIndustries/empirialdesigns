@@ -81,12 +81,12 @@ const About = () => {
           {/* Enhanced Content */}
           <div className="animate-fade-in">
             <h3 className="text-3xl font-black text-black mb-8 md:text-3xl text-center">Crafting Digital Excellence With Every Design </h3>
-            <p className="text-xl text-gray-600 mb-8 leading-relaxed text-center">
+            <p className="text-xl text-gray-600 mb-8 leading-relaxed text-left">
               At Empirial Designs, we believe that great design is more than just aesthetics—it's about 
               creating meaningful connections between brands and their audiences. Our passion for innovation 
               and attention to detail drives us to deliver exceptional digital experiences.
             </p>
-            <p className="text-xl text-gray-600 mb-10 leading-relaxed text-center">
+            <p className="text-xl text-gray-600 mb-10 leading-relaxed text-left">
               From stunning landing pages to comprehensive e-commerce solutions and eye-catching poster designs, 
               we combine creativity with strategy to help your business stand out in today's competitive market.
             </p>
