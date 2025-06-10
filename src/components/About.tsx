@@ -86,7 +86,7 @@ const About = () => {
               creating meaningful connections between brands and their audiences. Our passion for innovation 
               and attention to detail drives us to deliver exceptional digital experiences.
             </p>
-            <p className="text-xl text-gray-600 mb-10 leading-relaxed">
+            <p className="text-xl text-gray-600 mb-10 leading-relaxed text-center">
               From stunning landing pages to comprehensive e-commerce solutions and eye-catching poster designs, 
               we combine creativity with strategy to help your business stand out in today's competitive market.
             </p>
