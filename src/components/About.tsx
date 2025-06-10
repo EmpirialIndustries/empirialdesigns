@@ -3,10 +3,10 @@ import { Award, Users, Clock, CheckCircle, Target, Zap } from 'lucide-react';
 
 const About = () => {
   const stats = [
-    { icon: Users, label: 'Happy Clients', value: '150+', color: 'text-blue-500' },
-    { icon: Award, label: 'Projects Completed', value: '300+', color: 'text-green-500' },
-    { icon: Clock, label: 'Years Experience', value: '5+', color: 'text-purple-500' },
-    { icon: CheckCircle, label: 'Success Rate', value: '98%', color: 'text-orange-500' }
+    { icon: Users, label: 'Happy Clients', value: '150+', color: 'text-black' },
+    { icon: Award, label: 'Projects Completed', value: '300+', color: 'text-black' },
+    { icon: Clock, label: 'Years Experience', value: '5+', color: 'text-black' },
+    { icon: CheckCircle, label: 'Success Rate', value: '98%', color: 'text-black' }
   ];
 
   const values = [
@@ -25,10 +25,10 @@ const About = () => {
   return (
     <section id="about" className="py-24 gradient-bg relative overflow-hidden">
       {/* Enhanced background decorative elements */}
-      <div className="absolute inset-0 opacity-20">
-        <div className="absolute top-20 right-10 w-[500px] h-[500px] bg-primary rounded-full blur-3xl animate-float"></div>
-        <div className="absolute bottom-20 left-10 w-[600px] h-[600px] bg-blue-500 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-purple-500 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }}></div>
+      <div className="absolute inset-0 opacity-5">
+        <div className="absolute top-20 right-10 w-[500px] h-[500px] bg-black rounded-full blur-3xl animate-float"></div>
+        <div className="absolute bottom-20 left-10 w-[600px] h-[600px] bg-gray-800 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gray-600 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }}></div>
       </div>
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -39,11 +39,11 @@ const About = () => {
             <span className="text-gradient">EMPIRIAL DESIGNS</span>
           </h2>
           <div className="flex items-center justify-center mb-8">
-            <div className="h-px bg-gradient-primary flex-1 max-w-32"></div>
-            <p className="text-xl text-primary font-black mx-8 tracking-[0.3em]">
+            <div className="h-px bg-black flex-1 max-w-32"></div>
+            <p className="text-xl text-black font-black mx-8 tracking-[0.3em]">
               GRAPHIC DESIGNER
             </p>
-            <div className="h-px bg-gradient-primary flex-1 max-w-32"></div>
+            <div className="h-px bg-black flex-1 max-w-32"></div>
           </div>
         </div>
 
@@ -72,7 +72,7 @@ const About = () => {
                 'Ongoing support and maintenance'
               ].map((point, index) => (
                 <div key={index} className="flex items-start group">
-                  <CheckCircle className="w-6 h-6 text-primary mt-1 mr-4 flex-shrink-0 group-hover:scale-110 transition-transform" />
+                  <CheckCircle className="w-6 h-6 text-black mt-1 mr-4 flex-shrink-0 group-hover:scale-110 transition-transform" />
                   <span className="text-muted-foreground text-lg font-medium">{point}</span>
                 </div>
               ))}
@@ -84,11 +84,11 @@ const About = () => {
             {stats.map((stat, index) => (
               <div 
                 key={stat.label} 
-                className="bg-card/40 backdrop-blur-lg border border-border/50 rounded-3xl p-8 text-center hover:border-primary/50 transition-all duration-500 group hover:scale-105"
+                className="bg-white/60 backdrop-blur-lg elegant-border rounded-3xl p-8 text-center hover:border-black/30 transition-all duration-500 group hover:scale-105 elegant-shadow"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
-                <div className={`w-16 h-16 gradient-primary rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-xl`}>
-                  <stat.icon className="w-8 h-8 text-primary-foreground" />
+                <div className="w-16 h-16 gradient-primary rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 elegant-shadow">
+                  <stat.icon className="w-8 h-8 text-white" />
                 </div>
                 <div className="text-4xl font-black text-foreground mb-3">{stat.value}</div>
                 <div className="text-muted-foreground font-semibold text-lg">{stat.label}</div>
@@ -102,10 +102,10 @@ const About = () => {
           {values.map((value, index) => (
             <div 
               key={value.title}
-              className="bg-card/40 backdrop-blur-lg border border-border/50 rounded-3xl p-10 hover:border-primary/50 transition-all duration-500 group"
+              className="bg-white/60 backdrop-blur-lg elegant-border rounded-3xl p-10 hover:border-black/30 transition-all duration-500 group elegant-shadow"
             >
               <div className="w-16 h-16 gradient-primary rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                <value.icon className="w-8 h-8 text-primary-foreground" />
+                <value.icon className="w-8 h-8 text-white" />
               </div>
               <h4 className="text-2xl font-black text-foreground mb-4">{value.title}</h4>
               <p className="text-muted-foreground text-lg leading-relaxed">{value.description}</p>

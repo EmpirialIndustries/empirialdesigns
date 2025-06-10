@@ -38,12 +38,12 @@ const Services = () => {
   ];
 
   return (
-    <section id="services" className="py-24 bg-background relative overflow-hidden">
+    <section id="services" className="py-24 bg-white relative overflow-hidden">
       {/* Enhanced background decorative elements */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-40 left-0 w-[600px] h-[600px] bg-primary rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-blue-500 rounded-full blur-3xl"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-purple-500 rounded-full blur-3xl"></div>
+      <div className="absolute inset-0 opacity-3">
+        <div className="absolute top-40 left-0 w-[600px] h-[600px] bg-black rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-gray-800 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gray-600 rounded-full blur-3xl"></div>
       </div>
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -63,21 +63,21 @@ const Services = () => {
           {services.map((service, index) => (
             <Card 
               key={service.title} 
-              className={`bg-card/60 backdrop-blur-lg border-border hover:border-primary/50 transition-all duration-500 group animate-fade-in overflow-hidden relative ${
-                service.popular ? 'ring-2 ring-primary/50 scale-105' : ''
+              className={`bg-white/80 backdrop-blur-lg elegant-border hover:border-black/30 transition-all duration-500 group animate-fade-in overflow-hidden relative elegant-shadow ${
+                service.popular ? 'ring-2 ring-black/20 scale-105' : ''
               }`}
               style={{ animationDelay: `${index * 0.15}s` }}
             >
               {service.popular && (
-                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-primary text-primary-foreground px-6 py-2 rounded-full text-sm font-bold tracking-wider">
+                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 gradient-primary text-white px-6 py-2 rounded-full text-sm font-bold tracking-wider">
                   MOST POPULAR
                 </div>
               )}
               
               <CardContent className="p-10">
                 {/* Enhanced Service Icon */}
-                <div className="w-20 h-20 gradient-primary rounded-3xl flex items-center justify-center mb-8 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 shadow-2xl">
-                  <service.icon className="w-10 h-10 text-primary-foreground" />
+                <div className="w-20 h-20 gradient-primary rounded-3xl flex items-center justify-center mb-8 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 elegant-shadow">
+                  <service.icon className="w-10 h-10 text-white" />
                 </div>
 
                 {/* Service Title */}
@@ -92,7 +92,7 @@ const Services = () => {
                     <span className="text-4xl font-black text-foreground">{service.price}</span>
                     <span className="text-lg text-muted-foreground line-through">{service.originalPrice}</span>
                   </div>
-                  <p className="text-sm text-primary font-semibold mt-1">Save up to 40%</p>
+                  <p className="text-sm text-black font-semibold mt-1">Save up to 40%</p>
                 </div>
 
                 {/* Description */}
@@ -104,7 +104,7 @@ const Services = () => {
                 <ul className="space-y-3 mb-10">
                   {service.features.map((feature) => (
                     <li key={feature} className="flex items-center text-muted-foreground">
-                      <CheckCircle className="w-5 h-5 text-primary mr-3 flex-shrink-0" />
+                      <CheckCircle className="w-5 h-5 text-black mr-3 flex-shrink-0" />
                       <span className="font-medium">{feature}</span>
                     </li>
                   ))}
@@ -112,7 +112,7 @@ const Services = () => {
 
                 {/* Enhanced CTA Button */}
                 <Button 
-                  className="w-full gradient-primary text-primary-foreground font-bold text-lg py-6 group-hover:scale-105 transition-all duration-300 shadow-xl"
+                  className="w-full gradient-primary text-white font-bold text-lg py-6 group-hover:scale-105 transition-all duration-300 elegant-shadow"
                 >
                   Get Started
                   <ArrowRight className="ml-3 h-5 w-5 group-hover:translate-x-1 transition-transform" />
