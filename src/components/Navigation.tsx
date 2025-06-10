@@ -14,15 +14,15 @@ const Navigation = () => {
   ];
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md elegant-border border-b border-black/10">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-20">
+    <nav className="fixed top-6 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-6xl px-4">
+      <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-full px-8 py-4 elegant-shadow">
+        <div className="flex justify-between items-center">
           {/* Logo */}
           <div className="flex items-center space-x-3">
             <img 
               src="/lovable-uploads/0c9f4011-c9e0-44db-bc92-15905a48b3c4.png" 
               alt="Empirial Designs Logo" 
-              className="h-12 w-auto" 
+              className="h-10 w-auto" 
             />
           </div>
 
@@ -32,13 +32,12 @@ const Navigation = () => {
               <a
                 key={item.name}
                 href={item.href}
-                className="text-foreground hover:text-black transition-colors duration-300 font-semibold text-lg relative group"
+                className="text-black hover:text-gray-600 transition-colors duration-300 font-semibold text-lg relative group px-4 py-2 rounded-full hover:bg-white/20"
               >
                 {item.name}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-black transition-all duration-300 group-hover:w-full"></span>
               </a>
             ))}
-            <Button className="gradient-primary text-white font-bold px-6 py-3 text-lg hover:scale-105 transition-transform elegant-shadow">
+            <Button className="bg-black text-white font-bold px-8 py-3 text-lg hover:bg-gray-800 transition-all duration-300 rounded-full elegant-shadow border border-black/20">
               Get Started
             </Button>
           </div>
@@ -49,29 +48,29 @@ const Navigation = () => {
               variant="ghost"
               size="icon"
               onClick={() => setIsOpen(!isOpen)}
-              className="h-12 w-12"
+              className="h-12 w-12 rounded-full hover:bg-white/20"
             >
-              {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              {isOpen ? <X className="h-6 w-6 text-black" /> : <Menu className="h-6 w-6 text-black" />}
             </Button>
           </div>
         </div>
 
         {/* Mobile Navigation */}
         {isOpen && (
-          <div className="md:hidden py-6 border-t border-black/10 animate-fade-in bg-white/95 backdrop-blur-md">
-            <div className="flex flex-col space-y-6">
+          <div className="md:hidden mt-6 pt-6 border-t border-white/20 animate-fade-in">
+            <div className="flex flex-col space-y-4">
               {navItems.map((item) => (
                 <a
                   key={item.name}
                   href={item.href}
-                  className="text-foreground hover:text-black transition-colors duration-300 font-semibold text-lg px-4 py-2"
+                  className="text-black hover:text-gray-600 transition-colors duration-300 font-semibold text-lg px-4 py-3 rounded-full hover:bg-white/20"
                   onClick={() => setIsOpen(false)}
                 >
                   {item.name}
                 </a>
               ))}
-              <div className="px-4">
-                <Button className="w-full gradient-primary text-white font-bold text-lg py-3 elegant-shadow">
+              <div className="pt-4">
+                <Button className="w-full bg-black text-white font-bold text-lg py-3 rounded-full elegant-shadow">
                   Get Started
                 </Button>
               </div>
