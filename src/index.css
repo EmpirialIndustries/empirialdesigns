@@ -77,6 +77,13 @@
     background-clip: text;
   }
   
+  .text-gradient-white {
+    background: linear-gradient(135deg, #ffffff 0%, #cccccc 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
   .elegant-shadow {
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
   }
