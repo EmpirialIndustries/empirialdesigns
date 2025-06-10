@@ -1,14 +1,13 @@
-
 import { Heart, ArrowUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-
 const Footer = () => {
   const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
   };
-
-  return (
-    <footer className="bg-background/95 backdrop-blur-lg border-t border-border/50 py-16 relative overflow-hidden">
+  return <footer className="bg-background/95 backdrop-blur-lg border-t border-border/50 py-16 relative overflow-hidden">
       {/* Background decoration */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute top-0 left-0 w-96 h-96 bg-primary rounded-full blur-3xl"></div>
@@ -20,21 +19,14 @@ const Footer = () => {
           {/* Enhanced Brand */}
           <div className="md:col-span-2">
             <div className="flex items-center space-x-4 mb-6">
-              <img 
-                src="/lovable-uploads/0c9f4011-c9e0-44db-bc92-15905a48b3c4.png" 
-                alt="Empirial Designs Logo" 
-                className="h-12 w-auto"
-              />
-              <span className="text-2xl font-black tracking-tight">EMPIRIAL DESIGNS</span>
+              <img src="/lovable-uploads/0c9f4011-c9e0-44db-bc92-15905a48b3c4.png" alt="Empirial Designs Logo" className="h-12 w-auto" />
+              
             </div>
             <p className="text-muted-foreground text-lg leading-relaxed mb-6">
               Professional graphic design services that elevate your brand and captivate your audience. 
               Creating digital experiences that make lasting impressions.
             </p>
-            <Button 
-              onClick={scrollToTop}
-              className="gradient-primary text-primary-foreground font-bold hover:scale-105 transition-transform"
-            >
+            <Button onClick={scrollToTop} className="gradient-primary text-primary-foreground font-bold hover:scale-105 transition-transform">
               Back to Top
               <ArrowUp className="ml-2 h-4 w-4" />
             </Button>
@@ -68,8 +60,6 @@ const Footer = () => {
           </p>
         </div>
       </div>
-    </footer>
-  );
+    </footer>;
 };
-
 export default Footer;
