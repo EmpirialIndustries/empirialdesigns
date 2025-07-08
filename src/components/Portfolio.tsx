@@ -5,77 +5,79 @@ import { Card, CardContent } from '@/components/ui/card';
 
 const Portfolio = () => {
   const portfolioItems = [
+    // Landing Pages
     {
       id: 1,
       type: 'landing',
       icon: Globe,
-      title: 'Cape Wine Estate',
-      company: 'Stellenbosch Vineyards',
-      location: 'Stellenbosch, Western Cape',
-      description: 'Premium wine estate landing page featuring virtual wine tastings, online wine sales, and estate tour bookings. Built with responsive design and integrated payment system.',
-      features: ['Virtual Wine Tastings', 'Online Booking System', 'Wine Sales Integration', 'Estate Gallery'],
-      image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop',
-      url: '#'
+      title: 'Empirial Attorney',
+      company: 'Legal Services',
+      location: 'Professional Law Firm',
+      description: 'Professional law firm website with "Justice. Integrity. Excellence." theme. Features practice areas, attorney profiles, and consultation booking system.',
+      features: ['Professional Design', 'Consultation Booking', 'Practice Areas', 'Attorney Profiles'],
+      image: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=800&h=600&fit=crop',
+      url: 'https://empirialattorney.netlify.app'
     },
     {
       id: 2,
-      type: 'ecommerce',
-      icon: ShoppingCart,
-      title: 'Braai Masters Store',
-      company: 'African Flame Trading',
-      location: 'Johannesburg, Gauteng',
-      description: 'Complete e-commerce platform for braai equipment and accessories. Features include inventory management, multiple payment options, and nationwide delivery tracking.',
-      features: ['Product Catalog', 'Payment Gateway', 'Delivery Tracking', 'Customer Reviews'],
-      image: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=800&h=600&fit=crop',
-      url: '#'
+      type: 'landing',
+      icon: Globe,
+      title: 'SKCC Cycling Club',
+      company: 'Community Organization',
+      location: 'Cycling Community',
+      description: 'Community cycling organization website featuring tour countdown, events calendar, and member registration system.',
+      features: ['Event Calendar', 'Tour Countdown', 'Member Registration', 'Community Features'],
+      image: 'https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=800&h=600&fit=crop',
+      url: 'https://skcc.netlify.app'
     },
     {
       id: 3,
       type: 'landing',
       icon: Globe,
-      title: 'Safari Adventures',
-      company: 'Wild Coast Expeditions',
-      location: 'Kruger National Park, Mpumalanga',
-      description: 'Adventure tourism landing page showcasing safari packages, wildlife photography tours, and luxury lodge accommodations with online booking capabilities.',
-      features: ['Tour Packages', 'Photo Galleries', 'Booking Calendar', 'Guest Reviews'],
-      image: 'https://images.unsplash.com/photo-1516426122078-c23e76319801?w=800&h=600&fit=crop',
-      url: '#'
+      title: 'Empirial Spa & Wellness',
+      company: 'Wellness Center',
+      location: 'Spa & Wellness',
+      description: 'Luxury spa and wellness sanctuary website with booking system, service catalog, and tranquil design aesthetic.',
+      features: ['Online Booking', 'Service Catalog', 'Wellness Programs', 'Luxury Design'],
+      image: 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=800&h=600&fit=crop',
+      url: 'https://empirialspa.netlify.app'
     },
+    // E-Commerce Sites
     {
       id: 4,
       type: 'ecommerce',
       icon: ShoppingCart,
-      title: 'Biltong Boutique',
-      company: 'Karoo Delights',
-      location: 'Cape Town, Western Cape',
-      description: 'Artisanal biltong and droëwors online store with subscription boxes, bulk orders, and traditional South African snacks delivery nationwide.',
-      features: ['Subscription Service', 'Bulk Ordering', 'Recipe Blog', 'Loyalty Program'],
-      image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=800&h=600&fit=crop',
-      url: '#'
+      title: 'Empirial iPhones',
+      company: 'Mobile Technology',
+      location: 'Electronics Store',
+      description: 'Premium iPhone and mobile device e-commerce store with detailed product specifications, secure checkout, and customer support.',
+      features: ['Product Catalog', 'Secure Checkout', 'Customer Support', 'Device Specifications'],
+      image: 'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=800&h=600&fit=crop',
+      url: 'https://empirialiphones.netlify.app'
     },
     {
       id: 5,
-      type: 'landing',
-      icon: Globe,
-      title: 'Legal Eagles',
-      company: 'Mandela & Associates',
-      location: 'Sandton, Johannesburg',
-      description: 'Professional law firm website featuring practice areas, attorney profiles, client testimonials, and online consultation booking system.',
-      features: ['Attorney Profiles', 'Case Studies', 'Consultation Booking', 'Legal Resources'],
-      image: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=800&h=600&fit=crop',
-      url: '#'
+      type: 'ecommerce',
+      icon: ShoppingCart,
+      title: 'Elite Sneakers',
+      company: 'Fashion Retail',
+      location: 'Sneaker Store',
+      description: 'Modern sneaker e-commerce platform featuring premium brands, size selection, and authenticated products with fast shipping.',
+      features: ['Brand Filtering', 'Size Selection', 'Authentication', 'Fast Shipping'],
+      image: 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=800&h=600&fit=crop',
+      url: '/elite-sneakers'
     },
     {
       id: 6,
       type: 'ecommerce',
       icon: ShoppingCart,
-      title: 'Rooibos Republic',
-      company: 'Cederberg Tea Company',
-      location: 'Clanwilliam, Western Cape',
-      description: 'Premium rooibos tea e-commerce platform featuring organic blends, tea accessories, and international shipping with detailed brewing guides.',
-      features: ['Tea Blends Catalog', 'Brewing Guides', 'International Shipping', 'Tea Accessories'],
-      image: 'https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=800&h=600&fit=crop',
-      url: '#'
+      title: 'Trading EA Store',
+      company: 'Digital Products',
+      location: 'Trading Solutions',
+      description: 'Digital trading Expert Advisor marketplace with instant downloads, license management, and performance statistics.',
+      features: ['Instant Download', 'License Management', 'Performance Stats', 'Trading Analytics'],
+      image: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&h=600&fit=crop',
+      url: '/trading-ea-store'
     }
   ];
 

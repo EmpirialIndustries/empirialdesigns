@@ -34,6 +34,26 @@ const Services = () => {
       description: 'Eye-catching poster designs for events, promotions, and marketing campaigns. High-quality graphics that make an impact.',
       features: ['High Resolution', 'Print Ready', 'Multiple Formats', 'Unlimited Revisions'],
       popular: false
+    },
+    {
+      icon: Globe,
+      title: 'Logo Design',
+      subtitle: 'BRANDING',
+      price: 'R399.99',
+      originalPrice: 'R599.99',
+      description: 'Professional logo and brand identity design that captures your business essence. Includes multiple concepts and revisions.',
+      features: ['Multiple Concepts', 'Vector Files', 'Brand Guidelines', 'Commercial License'],
+      popular: false
+    },
+    {
+      icon: Globe,
+      title: 'SEO & Marketing',
+      subtitle: 'DIGITAL',
+      price: 'R799.99',
+      originalPrice: 'R1,199.99',
+      description: 'Comprehensive SEO optimization and digital marketing campaigns to boost your online presence and drive traffic.',
+      features: ['SEO Audit', 'Keyword Research', 'Content Strategy', 'Performance Reports'],
+      popular: false
     }
   ];
 
