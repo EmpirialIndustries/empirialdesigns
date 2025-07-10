@@ -13,16 +13,6 @@ const Services = () => {
       originalPrice: 'R2,499.99',
       description: 'Professional landing pages that convert visitors into customers. Responsive design, fast loading, and optimized for all devices.',
       features: ['Responsive Design', 'SEO Optimized', 'Fast Loading', 'Mobile-First Approach'],
-      popular: false
-    },
-    {
-      icon: ShoppingCart,
-      title: 'E-Commerce',
-      subtitle: 'WEBSITE',
-      price: 'R2,499.99',
-      originalPrice: 'R3,999.99',
-      description: 'Complete e-commerce solutions with payment integration, inventory management, and user-friendly shopping experiences.',
-      features: ['Payment Integration', 'Inventory Management', 'User Dashboard', 'Order Tracking'],
       popular: true
     },
     {
@@ -33,26 +23,6 @@ const Services = () => {
       originalPrice: 'R399.99',
       description: 'Eye-catching poster designs for events, promotions, and marketing campaigns. High-quality graphics that make an impact.',
       features: ['High Resolution', 'Print Ready', 'Multiple Formats', 'Unlimited Revisions'],
-      popular: false
-    },
-    {
-      icon: Globe,
-      title: 'Logo Design',
-      subtitle: 'BRANDING',
-      price: 'R399.99',
-      originalPrice: 'R599.99',
-      description: 'Professional logo and brand identity design that captures your business essence. Includes multiple concepts and revisions.',
-      features: ['Multiple Concepts', 'Vector Files', 'Brand Guidelines', 'Commercial License'],
-      popular: false
-    },
-    {
-      icon: Globe,
-      title: 'SEO & Marketing',
-      subtitle: 'DIGITAL',
-      price: 'R799.99',
-      originalPrice: 'R1,199.99',
-      description: 'Comprehensive SEO optimization and digital marketing campaigns to boost your online presence and drive traffic.',
-      features: ['SEO Audit', 'Keyword Research', 'Content Strategy', 'Performance Reports'],
       popular: false
     }
   ];
