@@ -1,4 +1,4 @@
-import { Star, ZoomIn } from 'lucide-react';
+import { Star, ZoomIn, Plus, ExternalLink } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
@@ -6,55 +6,71 @@ const PosterPortfolio = () => {
   const posterItems = [
     {
       id: 1,
-      title: 'Event Poster - Music Festival',
-      category: 'Event Marketing',
-      description: 'Vibrant music festival poster with bold typography and dynamic color scheme.',
-      image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&h=800&fit=crop',
-      tags: ['Music', 'Festival', 'Event']
+      title: 'Frank Freight World - Truck Rental',
+      category: 'Business',
+      description: 'Professional truck rental advertisement featuring bold yellow branding and comprehensive service details.',
+      image: '/lovable-uploads/d07e4413-7fb3-4990-84d0-93630a872628.png',
+      tags: ['Transport', 'Business', 'Advertising']
     },
     {
       id: 2,
-      title: 'Business Conference',
-      category: 'Corporate Event',
-      description: 'Professional conference poster with clean design and corporate branding.',
-      image: 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=600&h=800&fit=crop',
-      tags: ['Business', 'Conference', 'Corporate']
+      title: 'Sneaker Fest 2024',
+      category: 'Event',
+      description: 'Dynamic event poster for annual sneaker festival featuring vibrant graphics and artist lineup.',
+      image: '/lovable-uploads/b3b81645-c461-448a-83e2-237dc3110495.png',
+      tags: ['Event', 'Music', 'Festival']
     },
     {
       id: 3,
-      title: 'Restaurant Promotion',
-      category: 'Food & Beverage',
-      description: 'Appetizing food poster featuring mouth-watering imagery and special offers.',
-      image: 'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=600&h=800&fit=crop',
-      tags: ['Food', 'Restaurant', 'Promotion']
+      title: 'Venom Ultra Sniper 1.4',
+      category: 'Technology',
+      description: 'Trading bot advertisement with futuristic design and detailed feature breakdown.',
+      image: '/lovable-uploads/9c27a6d7-0a94-4176-a3f2-a0dc987cbc54.png',
+      tags: ['Trading', 'Technology', 'Finance']
     },
     {
       id: 4,
-      title: 'Fitness Challenge',
-      category: 'Health & Fitness',
-      description: 'Motivational fitness poster with energetic design and inspiring messaging.',
-      image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&h=800&fit=crop',
-      tags: ['Fitness', 'Health', 'Motivation']
+      title: 'TTFX Traders Package',
+      category: 'Education',
+      description: 'Professional trading course poster featuring clean design and comprehensive package details.',
+      image: '/lovable-uploads/22d9c514-b27e-4c39-839f-cac29355479e.png',
+      tags: ['Education', 'Trading', 'Finance']
     },
     {
       id: 5,
-      title: 'Art Exhibition',
-      category: 'Culture & Arts',
-      description: 'Elegant art exhibition poster showcasing creativity and cultural sophistication.',
-      image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=600&h=800&fit=crop',
-      tags: ['Art', 'Exhibition', 'Culture']
+      title: 'Empirial Designs Logo',
+      category: 'Branding',
+      description: 'Clean and minimalist logo design showcasing professional graphic design identity.',
+      image: '/lovable-uploads/8f876b0e-769b-491f-a69f-66d9c471ffd0.png',
+      tags: ['Logo', 'Branding', 'Minimalist']
     },
     {
       id: 6,
-      title: 'Tech Conference',
-      category: 'Technology',
-      description: 'Modern tech conference poster with futuristic design and digital elements.',
-      image: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&h=800&fit=crop',
-      tags: ['Technology', 'Conference', 'Innovation']
+      title: 'Chess Tournament',
+      category: 'Event',
+      description: 'Elegant chess tournament poster with sophisticated black and white design aesthetic.',
+      image: '/lovable-uploads/feffd106-e239-4344-93f0-ebb963e8fc96.png',
+      tags: ['Chess', 'Tournament', 'Elegant']
+    },
+    {
+      id: 7,
+      title: 'Truck Hire Service',
+      category: 'Business',
+      description: 'Modern truck rental service advertisement with clear pricing and contact information.',
+      image: '/lovable-uploads/3ef58336-c932-47cd-8a1c-0e07ea8c80d4.png',
+      tags: ['Transport', 'Business', 'Service']
+    },
+    {
+      id: 8,
+      title: 'Truck Rental - Tortliner',
+      category: 'Business',
+      description: 'Professional truck rental poster featuring multiple vehicle options and service benefits.',
+      image: '/lovable-uploads/98b58ad9-141b-46b5-9f3e-0f4a40632f60.png',
+      tags: ['Transport', 'Rental', 'Professional']
     }
   ];
 
-  const categories = ['All', 'Event Marketing', 'Corporate Event', 'Food & Beverage', 'Health & Fitness', 'Culture & Arts', 'Technology'];
+  const categories = ['All', 'Business', 'Event', 'Technology', 'Education', 'Branding'];
 
   const PosterCard = ({ item }) => (
     <Card className="bg-white/10 backdrop-blur-lg border border-white/20 hover:border-white/40 transition-all duration-500 group overflow-hidden elegant-shadow">
@@ -107,10 +123,35 @@ const PosterPortfolio = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Section Header */}
         <div className="text-center mb-20">
-          <h2 className="text-5xl md:text-7xl font-black mb-8">
-            <span className="text-gradient">POSTER</span>{' '}
-            <span className="text-foreground">PORTFOLIO</span>
-          </h2>
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex-1"></div>
+            <div className="text-center">
+              <h2 className="text-5xl md:text-7xl font-black mb-8">
+                <span className="text-gradient">POSTER</span>{' '}
+                <span className="text-foreground">PORTFOLIO</span>
+              </h2>
+            </div>
+            <div className="flex-1 flex justify-end gap-4">
+              <Button 
+                variant="outline" 
+                size="lg"
+                className="border-black text-black hover:bg-black hover:text-white"
+                onClick={() => window.open('https://wa.me/message/MMS5VDEZUHSBK1', '_blank')}
+              >
+                <Plus className="w-5 h-5 mr-2" />
+                Add Work
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="lg"
+                className="text-black hover:text-primary"
+                onClick={() => window.open('https://www.tiktok.com/@empirialdesigns?_t=ZM-8xuIhnsCDHK&_r=1', '_blank')}
+              >
+                <ExternalLink className="w-5 h-5 mr-2" />
+                TikTok
+              </Button>
+            </div>
+          </div>
           <div className="flex items-center justify-center mb-8">
             <div className="h-px bg-black flex-1 max-w-32"></div>
             <p className="text-xl text-foreground font-black mx-8 tracking-[0.3em]">

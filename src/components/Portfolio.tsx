@@ -82,7 +82,6 @@ const Portfolio = () => {
   ];
 
   const landingPages = portfolioItems.filter(item => item.type === 'landing');
-  const ecommercePages = portfolioItems.filter(item => item.type === 'ecommerce');
 
   const PortfolioCard = ({ item }) => (
     <Card className="bg-white/10 backdrop-blur-lg border border-white/20 hover:border-white/40 transition-all duration-500 group overflow-hidden elegant-shadow">
@@ -174,19 +173,6 @@ const Portfolio = () => {
           </div>
         </div>
 
-        {/* E-commerce Section */}
-        <div>
-          <h3 className="text-3xl md:text-4xl font-black text-white mb-12 text-center">
-            E-Commerce Websites
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {ecommercePages.map((item, index) => (
-              <div key={item.id} className="animate-fade-in" style={{animationDelay: `${index * 0.2}s`}}>
-                <PortfolioCard item={item} />
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
     </section>
   );
