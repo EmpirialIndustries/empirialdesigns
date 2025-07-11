@@ -1,6 +1,8 @@
+
 import { Star, ZoomIn, Plus, ExternalLink } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 
 const PosterPortfolio = () => {
   const posterItems = [
@@ -73,7 +75,7 @@ const PosterPortfolio = () => {
   const categories = ['All', 'Business', 'Event', 'Technology', 'Education', 'Branding'];
 
   const PosterCard = ({ item }) => (
-    <Card className="bg-white/10 backdrop-blur-lg border border-white/20 hover:border-white/40 transition-all duration-500 group overflow-hidden elegant-shadow">
+    <Card className="bg-white/10 backdrop-blur-lg border border-white/20 hover:border-white/40 transition-all duration-500 group overflow-hidden elegant-shadow min-w-0 flex-shrink-0">
       <div className="aspect-[3/4] overflow-hidden relative">
         <img 
           src={item.image} 
@@ -90,9 +92,9 @@ const PosterPortfolio = () => {
           </Button>
         </div>
       </div>
-      <CardContent className="p-6">
+      <CardContent className="p-4 lg:p-6">
         <div className="mb-3">
-          <h3 className="text-lg font-black text-white mb-1">{item.title}</h3>
+          <h3 className="text-base lg:text-lg font-black text-white mb-1">{item.title}</h3>
           <p className="text-white/60 font-medium text-sm">{item.category}</p>
         </div>
         
@@ -113,32 +115,32 @@ const PosterPortfolio = () => {
   );
 
   return (
-    <section id="poster-portfolio" className="py-24 bg-white relative overflow-hidden">
+    <section id="poster-portfolio" className="py-16 lg:py-24 bg-white relative overflow-hidden">
       {/* Background decorative elements */}
       <div className="absolute inset-0 opacity-3">
         <div className="absolute top-40 left-0 w-[600px] h-[600px] bg-black rounded-full blur-3xl"></div>
         <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-gray-800 rounded-full blur-3xl"></div>
       </div>
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl relative z-10">
         {/* Section Header */}
-        <div className="text-center mb-20">
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex-1"></div>
+        <div className="text-center mb-16 lg:mb-20">
+          <div className="flex flex-col lg:flex-row items-center justify-between mb-6 lg:mb-8 gap-4">
+            <div className="flex-1 hidden lg:block"></div>
             <div className="text-center">
-              <h2 className="text-5xl md:text-7xl font-black mb-8">
+              <h2 className="text-4xl md:text-5xl lg:text-7xl font-black mb-6 lg:mb-8">
                 <span className="text-gradient">POSTER</span>{' '}
                 <span className="text-foreground">PORTFOLIO</span>
               </h2>
             </div>
-            <div className="flex-1 flex justify-end gap-4">
+            <div className="flex-1 flex justify-center lg:justify-end gap-4">
               <Button 
                 variant="outline" 
                 size="lg"
                 className="border-black text-black hover:bg-black hover:text-white"
                 onClick={() => window.open('https://wa.me/message/MMS5VDEZUHSBK1', '_blank')}
               >
-                <Plus className="w-5 h-5 mr-2" />
+                <Plus className="w-4 h-4 lg:w-5 lg:h-5 mr-2" />
                 Add Work
               </Button>
               <Button 
@@ -147,44 +149,52 @@ const PosterPortfolio = () => {
                 className="text-black hover:text-primary"
                 onClick={() => window.open('https://www.tiktok.com/@empirialdesigns?_t=ZM-8xuIhnsCDHK&_r=1', '_blank')}
               >
-                <ExternalLink className="w-5 h-5 mr-2" />
+                <ExternalLink className="w-4 h-4 lg:w-5 lg:h-5 mr-2" />
                 TikTok
               </Button>
             </div>
           </div>
-          <div className="flex items-center justify-center mb-8">
+          <div className="flex items-center justify-center mb-6 lg:mb-8">
             <div className="h-px bg-black flex-1 max-w-32"></div>
-            <p className="text-xl text-foreground font-black mx-8 tracking-[0.3em]">
+            <p className="text-lg lg:text-xl text-foreground font-black mx-6 lg:mx-8 tracking-[0.3em]">
               DESIGN SHOWCASE
             </p>
             <div className="h-px bg-black flex-1 max-w-32"></div>
           </div>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+          <p className="text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
             Explore our creative poster designs for events, marketing campaigns, and promotional materials. 
             Each design crafted to capture attention and communicate your message effectively.
           </p>
         </div>
 
         {/* Category Filter */}
-        <div className="flex flex-wrap justify-center gap-4 mb-16">
+        <div className="flex flex-wrap justify-center gap-3 lg:gap-4 mb-12 lg:mb-16">
           {categories.map((category) => (
             <Button
               key={category}
               variant="outline"
-              className="bg-white/80 backdrop-blur-lg border border-black/20 hover:bg-black hover:text-white transition-all duration-300"
+              className="bg-white/80 backdrop-blur-lg border border-black/20 hover:bg-black hover:text-white transition-all duration-300 text-sm lg:text-base"
             >
               {category}
             </Button>
           ))}
         </div>
 
-        {/* Poster Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {posterItems.map((item, index) => (
-            <div key={item.id} className="animate-fade-in" style={{animationDelay: `${index * 0.15}s`}}>
-              <PosterCard item={item} />
-            </div>
-          ))}
+        {/* Poster Carousel */}
+        <div className="relative">
+          <Carousel className="w-full" opts={{ align: "start", loop: true }}>
+            <CarouselContent className="-ml-2 md:-ml-4">
+              {posterItems.map((item, index) => (
+                <CarouselItem key={item.id} className="pl-2 md:pl-4 basis-full sm:basis-1/2 lg:basis-1/3 xl:basis-1/4">
+                  <div className="animate-fade-in" style={{animationDelay: `${index * 0.15}s`}}>
+                    <PosterCard item={item} />
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious className="hidden md:flex -left-12 bg-black text-white hover:bg-black/90" />
+            <CarouselNext className="hidden md:flex -right-12 bg-black text-white hover:bg-black/90" />
+          </Carousel>
         </div>
       </div>
     </section>
