@@ -1,5 +1,16 @@
 import { ArrowRight, Star, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+
+const scrollToSection = (sectionId: string) => {
+  const element = document.getElementById(sectionId);
+  if (element) {
+    element.scrollIntoView({ behavior: 'smooth' });
+  }
+};
+
+const openWhatsApp = () => {
+  window.open('https://wa.me/message/MMS5VDEZUHSBK1', '_blank');
+};
 const Hero = () => {
   return <section id="home" className="min-h-screen bg-white/95 backdrop-blur-lg flex items-center justify-center relative overflow-hidden">
       {/* Enhanced background decorative elements */}
@@ -65,11 +76,20 @@ const Hero = () => {
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center animate-fade-in" style={{
           animationDelay: '0.6s'
         }}>
-            <Button size="lg" className="bg-black text-white font-bold px-12 py-6 text-xl group hover:scale-105 transition-all duration-300 elegant-shadow rounded-full">
+            <Button 
+              size="lg" 
+              className="bg-black text-white font-bold px-12 py-6 text-xl group hover:scale-105 transition-all duration-300 elegant-shadow rounded-full"
+              onClick={() => scrollToSection('services')}
+            >
               View Our Services
               <ArrowRight className="ml-3 h-6 w-6 group-hover:translate-x-2 transition-transform duration-300" />
             </Button>
-            <Button size="lg" variant="outline" className="border-2 border-black text-black hover:bg-black hover:text-white px-12 py-6 text-xl hover:scale-105 transition-all duration-300 font-bold rounded-full">
+            <Button 
+              size="lg" 
+              variant="outline" 
+              className="border-2 border-black text-black hover:bg-black hover:text-white px-12 py-6 text-xl hover:scale-105 transition-all duration-300 font-bold rounded-full"
+              onClick={openWhatsApp}
+            >
               Get In Touch
             </Button>
           </div>

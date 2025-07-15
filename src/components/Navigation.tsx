@@ -3,6 +3,17 @@ import { useState } from 'react';
 import { Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
+const scrollToSection = (sectionId: string) => {
+  const element = document.getElementById(sectionId.replace('#', ''));
+  if (element) {
+    element.scrollIntoView({ behavior: 'smooth' });
+  }
+};
+
+const openWhatsApp = () => {
+  window.open('https://wa.me/message/MMS5VDEZUHSBK1', '_blank');
+};
+
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -30,15 +41,18 @@ const Navigation = () => {
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-6 xl:space-x-8">
             {navItems.map((item) => (
-              <a
+              <button
                 key={item.name}
-                href={item.href}
+                onClick={() => scrollToSection(item.href)}
                 className="text-black hover:text-gray-600 transition-colors duration-300 font-semibold text-base xl:text-lg relative group px-3 py-2 rounded-full hover:bg-white/20"
               >
                 {item.name}
-              </a>
+              </button>
             ))}
-            <Button className="bg-black text-white font-bold px-6 py-3 text-base xl:text-lg hover:bg-gray-800 transition-all duration-300 rounded-full elegant-shadow border border-black/20">
+            <Button 
+              className="bg-black text-white font-bold px-6 py-3 text-base xl:text-lg hover:bg-gray-800 transition-all duration-300 rounded-full elegant-shadow border border-black/20"
+              onClick={openWhatsApp}
+            >
               Get Started
             </Button>
           </div>
@@ -61,17 +75,22 @@ const Navigation = () => {
           <div className="lg:hidden mt-6 pt-6 border-t border-white/20 animate-fade-in">
             <div className="flex flex-col space-y-4">
               {navItems.map((item) => (
-                <a
+                <button
                   key={item.name}
-                  href={item.href}
-                  className="text-black hover:text-gray-600 transition-colors duration-300 font-semibold text-lg px-4 py-3 rounded-full hover:bg-white/20"
-                  onClick={() => setIsOpen(false)}
+                  onClick={() => {
+                    scrollToSection(item.href);
+                    setIsOpen(false);
+                  }}
+                  className="text-black hover:text-gray-600 transition-colors duration-300 font-semibold text-lg px-4 py-3 rounded-full hover:bg-white/20 text-left w-full"
                 >
                   {item.name}
-                </a>
+                </button>
               ))}
               <div className="pt-4">
-                <Button className="w-full bg-black text-white font-bold text-lg py-3 rounded-full elegant-shadow">
+                <Button 
+                  className="w-full bg-black text-white font-bold text-lg py-3 rounded-full elegant-shadow"
+                  onClick={openWhatsApp}
+                >
                   Get Started
                 </Button>
               </div>

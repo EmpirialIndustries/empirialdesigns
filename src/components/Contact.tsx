@@ -3,13 +3,17 @@ import { MessageSquare, Facebook, Instagram, Linkedin, Phone, Mail, MapPin, Send
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 
+const openWhatsApp = () => {
+  window.open('https://wa.me/message/MMS5VDEZUHSBK1', '_blank');
+};
+
 const Contact = () => {
   const socialLinks = [
     {
       name: 'WhatsApp',
       icon: MessageSquare,
       handle: '(+27)79-862-9246',
-      url: 'https://wa.me/27798629246',
+      url: 'https://wa.me/message/MMS5VDEZUHSBK1',
       color: 'text-green-500',
       bgColor: 'bg-green-500/10'
     },
@@ -110,6 +114,7 @@ const Contact = () => {
                   <Card 
                     key={social.name} 
                     className="bg-card/60 backdrop-blur-lg border-border hover:border-primary/50 transition-all duration-500 group cursor-pointer hover:scale-105"
+                    onClick={() => window.open(social.url, '_blank')}
                   >
                     <CardContent className="p-6">
                       <div className="flex items-center">
@@ -150,6 +155,7 @@ const Contact = () => {
                     <Button 
                       size="lg" 
                       className="w-full gradient-primary text-primary-foreground font-bold text-lg py-6 hover:scale-105 transition-all duration-300 shadow-xl"
+                      onClick={openWhatsApp}
                     >
                       Get Free Quote
                       <MessageSquare className="ml-3 h-5 w-5" />
@@ -159,6 +165,7 @@ const Contact = () => {
                       size="lg" 
                       variant="outline" 
                       className="w-full border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground font-bold text-lg py-6 hover:scale-105 transition-all duration-300"
+                      onClick={openWhatsApp}
                     >
                       Schedule a Call
                       <Phone className="ml-3 h-5 w-5" />

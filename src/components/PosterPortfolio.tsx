@@ -4,6 +4,18 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 
+const openFullSizeImage = (imageSrc: string) => {
+  window.open(imageSrc, '_blank');
+};
+
+const openWhatsApp = () => {
+  window.open('https://wa.me/message/MMS5VDEZUHSBK1', '_blank');
+};
+
+const openTikTok = () => {
+  window.open('https://www.tiktok.com/@empirialdesigns?_t=ZM-8xuIhnsCDHK&_r=1', '_blank');
+};
+
 const PosterPortfolio = () => {
   const posterItems = [
     {
@@ -86,6 +98,7 @@ const PosterPortfolio = () => {
           <Button 
             className="bg-white text-black font-bold hover:bg-white/90 transition-all duration-300"
             size="sm"
+            onClick={() => openFullSizeImage(item.image)}
           >
             <ZoomIn className="w-4 h-4 mr-2" />
             View Full Size
