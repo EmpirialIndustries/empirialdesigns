@@ -9,7 +9,7 @@ const scrollToSection = (sectionId: string) => {
 };
 
 const openWhatsApp = () => {
-  window.open('https://wa.me/message/MMS5VDEZUHSBK1', '_blank');
+  window.open('https://wa.me/message/6ZHJUVYQDOH3O1', '_blank');
 };
 const Hero = () => {
   return <section id="home" className="min-h-screen bg-white/95 backdrop-blur-lg flex items-center justify-center relative overflow-hidden">

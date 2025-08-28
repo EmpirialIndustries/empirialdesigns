@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 
 const openWhatsApp = () => {
-  window.open('https://wa.me/message/MMS5VDEZUHSBK1', '_blank');
+  window.open('https://wa.me/message/6ZHJUVYQDOH3O1', '_blank');
 };
 
 const Contact = () => {
@@ -13,7 +13,7 @@ const Contact = () => {
       name: 'WhatsApp',
       icon: MessageSquare,
       handle: '(+27)79-862-9246',
-      url: 'https://wa.me/message/MMS5VDEZUHSBK1',
+      url: 'https://wa.me/message/6ZHJUVYQDOH3O1',
       color: 'text-green-500',
       bgColor: 'bg-green-500/10'
     },

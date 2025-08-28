@@ -9,7 +9,7 @@ const openFullSizeImage = (imageSrc: string) => {
 };
 
 const openWhatsApp = () => {
-  window.open('https://wa.me/message/MMS5VDEZUHSBK1', '_blank');
+  window.open('https://wa.me/message/6ZHJUVYQDOH3O1', '_blank');
 };
 
 const openTikTok = () => {
@@ -151,7 +151,7 @@ const PosterPortfolio = () => {
                 variant="outline" 
                 size="lg"
                 className="border-black text-black hover:bg-black hover:text-white"
-                onClick={() => window.open('https://wa.me/message/MMS5VDEZUHSBK1', '_blank')}
+                onClick={() => window.open('https://wa.me/message/6ZHJUVYQDOH3O1', '_blank')}
               >
                 <Plus className="w-4 h-4 lg:w-5 lg:h-5 mr-2" />
                 Add Work

@@ -2,26 +2,48 @@
 import { useState } from 'react';
 import { Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-
-const scrollToSection = (sectionId: string) => {
-  const element = document.getElementById(sectionId.replace('#', ''));
-  if (element) {
-    element.scrollIntoView({ behavior: 'smooth' });
-  }
-};
-
-const openWhatsApp = () => {
-  window.open('https://wa.me/message/MMS5VDEZUHSBK1', '_blank');
-};
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId.replace('#', ''));
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const handleNavClick = (href: string) => {
+    if (href.startsWith('/')) {
+      // Route navigation
+      navigate(href);
+    } else if (href.startsWith('#')) {
+      // Section scrolling - only if on homepage
+      if (location.pathname === '/') {
+        scrollToSection(href);
+      } else {
+        // Navigate to homepage first, then scroll
+        navigate('/');
+        setTimeout(() => {
+          scrollToSection(href);
+        }, 100);
+      }
+    }
+  };
+
+  const openWhatsApp = () => {
+    window.open('https://wa.me/message/6ZHJUVYQDOH3O1', '_blank');
+  };
 
   const navItems = [
     { name: 'Home', href: '#home' },
     { name: 'Services', href: '#services' },
     { name: 'About', href: '#about' },
     { name: 'Portfolio', href: '#portfolio' },
+    { name: 'Blog', href: '/blog' },
     { name: 'Contact', href: '#contact' }
   ];
 
@@ -43,7 +65,7 @@ const Navigation = () => {
             {navItems.map((item) => (
               <button
                 key={item.name}
-                onClick={() => scrollToSection(item.href)}
+                onClick={() => handleNavClick(item.href)}
                 className="text-black hover:text-gray-600 transition-colors duration-300 font-semibold text-base xl:text-lg relative group px-3 py-2 rounded-full hover:bg-white/20"
               >
                 {item.name}
@@ -78,7 +100,7 @@ const Navigation = () => {
                 <button
                   key={item.name}
                   onClick={() => {
-                    scrollToSection(item.href);
+                    handleNavClick(item.href);
                     setIsOpen(false);
                   }}
                   className="text-black hover:text-gray-600 transition-colors duration-300 font-semibold text-lg px-4 py-3 rounded-full hover:bg-white/20 text-left w-full"

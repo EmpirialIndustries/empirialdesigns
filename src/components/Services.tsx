@@ -28,7 +28,7 @@ const Services = () => {
   ];
 
   const handleGetStarted = () => {
-    window.open('https://wa.me/message/MMS5VDEZUHSBK1', '_blank');
+    window.open('https://wa.me/message/6ZHJUVYQDOH3O1', '_blank');
   };
 
   return (
