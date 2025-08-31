@@ -1,23 +1,36 @@
 
 import Navigation from '@/components/Navigation';
 import Hero from '@/components/Hero';
-import Services from '@/components/Services';
-import About from '@/components/About';
-import Portfolio from '@/components/Portfolio';
-import PosterPortfolio from '@/components/PosterPortfolio';
-import Contact from '@/components/Contact';
+import TrustBar from '@/components/TrustBar';
+import NewServices from '@/components/NewServices';
+import Workflow from '@/components/Workflow';
+import WhyChooseUs from '@/components/WhyChooseUs';
+import PortfolioGrid from '@/components/PortfolioGrid';
+import Testimonials from '@/components/Testimonials';
+import FAQ from '@/components/FAQ';
+import BlogTeasers from '@/components/BlogTeasers';
+import PrimaryCTA from '@/components/PrimaryCTA';
+import ContactForm from '@/components/ContactForm';
 import Footer from '@/components/Footer';
 
 const Index = () => {
   return (
     <div className="min-h-screen">
+      <a href="#main" className="skip-to-content">Skip to content</a>
       <Navigation />
-      <Hero />
-      <Services />
-      <About />
-      <Portfolio />
-      <PosterPortfolio />
-      <Contact />
+      <main id="main">
+        <Hero />
+        <TrustBar />
+        <NewServices />
+        <Workflow />
+        <WhyChooseUs />
+        <PortfolioGrid />
+        <Testimonials />
+        <FAQ />
+        <BlogTeasers />
+        <PrimaryCTA />
+        <ContactForm />
+      </main>
       <Footer />
     </div>
   );
