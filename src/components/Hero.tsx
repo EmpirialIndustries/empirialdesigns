@@ -33,7 +33,7 @@ const Hero = () => {
             Custom landing pages and marketing designs for South African businesses—fast, original, and conversion-focused.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 animate-fade-in delay-500">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in delay-500">
             <Button 
               size="lg" 
               onClick={openWhatsApp}

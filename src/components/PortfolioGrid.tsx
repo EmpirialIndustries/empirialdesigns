@@ -85,9 +85,49 @@ const PortfolioGrid = () => {
       id: 10,
       title: "Corporate Identity",
       category: "Logos",
-      image: "/lovable-uploads/feffd106-e239-4344-93f0-ebb963e8fc96.png",
+      image: "/lovable-uploads/feffd106e239-4344-93f0-ebb963e8fc96.png",
       url: "#",
       description: "Complete brand identity package with logo variations and guidelines."
+    },
+    {
+      id: 11,
+      title: "Gudani Driving School",
+      category: "Posters",
+      image: "/lovable-uploads/7a15bccf-7c0e-41d6-a4c1-83d733b20b3d.png",
+      url: "#",
+      description: "Driving school promotional poster with special pricing and contact information."
+    },
+    {
+      id: 12,
+      title: "Marindi Funeral Scheme",
+      category: "Posters",
+      image: "/lovable-uploads/eb4fc16d-584e-42fc-9cc2-4b5077963626.png",
+      url: "#",
+      description: "Professional funeral services poster with comprehensive service offerings."
+    },
+    {
+      id: 13,
+      title: "Zama-Zama Barber Shop",
+      category: "Posters",
+      image: "/lovable-uploads/31f43e21-9e65-4313-a4a7-b5b1f3777002.png",
+      url: "#",
+      description: "Barbershop price list poster with services and opening hours."
+    },
+    {
+      id: 14,
+      title: "Gaming Poster",
+      category: "Posters",
+      image: "/lovable-uploads/28e711f6-5929-4ae3-b38b-e665af35fbc0.png",
+      url: "#",
+      description: "Eye-catching gaming promotional poster with aggressive design elements."
+    },
+    {
+      id: 15,
+      title: "SpeciiaLR Restaurant Menu",
+      category: "Posters",
+      image: "/lovable-uploads/e1d9f60f-82f6-4727-9c27-49f3854f2688.png",
+      url: "#",
+      description: "Restaurant menu poster with food specials and pricing information."
     }
   ];
 
