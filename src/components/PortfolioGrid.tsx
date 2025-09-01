@@ -37,7 +37,7 @@ const PortfolioGrid = () => {
       id: 4,
       title: "Empirial Attorney",
       category: "Landing Pages",
-      image: "/lovable-uploads/0c9f4011-c9e0-44db-bc92-15905a48b3c4.png",
+      image: "/lovable-uploads/0738d373-2742-4c8e-8182-17a0cc933634.png",
       url: "https://empirialattorney.netlify.app",
       description: "Modern legal practice website with client-focused design approach."
     },
