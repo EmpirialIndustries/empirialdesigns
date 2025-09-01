@@ -29,7 +29,7 @@ const PortfolioGrid = () => {
       id: 3,
       title: "Ytshika Attorneys",
       category: "Landing Pages",
-      image: "/lovable-uploads/9c27a6d7-0a94-4176-a3f2-a0dc987cbc54.png", 
+      image: "/lovable-uploads/a09ff793-260b-40e3-9294-de5fbc351529.png", 
       url: "https://ytshikaattorneys.co.za",
       description: "Attorney firm website with comprehensive legal services showcase."
     },
