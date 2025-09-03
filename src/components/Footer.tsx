@@ -8,11 +8,11 @@ const Footer = () => {
   };
 
   return (
-    <footer className="bg-white/95 backdrop-blur-lg elegant-border border-t border-black/10 py-16 relative overflow-hidden">
+    <footer className="bg-background border-t border-border py-16 relative overflow-hidden">
       {/* Background decoration */}
-      <div className="absolute inset-0 opacity-3">
-        <div className="absolute top-0 left-0 w-96 h-96 bg-black rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-gray-800 rounded-full blur-3xl"></div>
+      <div className="absolute inset-0 opacity-5">
+        <div className="absolute top-0 left-0 w-96 h-96 bg-primary/20 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl"></div>
       </div>
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -32,7 +32,7 @@ const Footer = () => {
             </p>
             <Button 
               onClick={scrollToTop} 
-              className="gradient-primary text-white font-bold hover:scale-105 transition-transform elegant-shadow"
+              className="gradient-primary text-primary-foreground font-bold hover:scale-105 smooth-transition elegant-shadow"
             >
               Back to Top
               <ArrowUp className="ml-2 h-4 w-4" />
@@ -43,10 +43,10 @@ const Footer = () => {
           <div>
             <h3 className="font-black text-foreground mb-6 text-xl">Services</h3>
             <ul className="space-y-3">
-              <li><a href="#services" className="text-muted-foreground hover:text-black transition-colors duration-300 text-lg font-medium">Landing Pages</a></li>
-              <li><a href="#services" className="text-muted-foreground hover:text-black transition-colors duration-300 text-lg font-medium">E-Commerce Websites</a></li>
-              <li><a href="#services" className="text-muted-foreground hover:text-black transition-colors duration-300 text-lg font-medium">Poster Designs</a></li>
-              <li><a href="#contact" className="text-muted-foreground hover:text-black transition-colors duration-300 text-lg font-medium">Custom Solutions</a></li>
+              <li><a href="#services" className="text-muted-foreground hover:text-foreground smooth-transition text-lg font-medium">Landing Pages</a></li>
+              <li><a href="#services" className="text-muted-foreground hover:text-foreground smooth-transition text-lg font-medium">E-Commerce Websites</a></li>
+              <li><a href="#services" className="text-muted-foreground hover:text-foreground smooth-transition text-lg font-medium">Poster Designs</a></li>
+              <li><a href="#contact" className="text-muted-foreground hover:text-foreground smooth-transition text-lg font-medium">Custom Solutions</a></li>
             </ul>
           </div>
 
@@ -61,7 +61,7 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="border-t border-black/10 mt-16 pt-8 text-center">
+        <div className="border-t border-border mt-16 pt-8 text-center">
           <p className="text-muted-foreground flex items-center justify-center text-lg">
             Made with <Heart className="w-5 h-5 text-red-500 mx-2" /> by Empirial Designs © 2024
           </p>
