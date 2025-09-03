@@ -170,7 +170,11 @@ const PortfolioGrid = () => {
               key={item.id} 
               className="group relative bg-card rounded-lg overflow-hidden elegant-shadow smooth-transition hover:elegant-glow"
             >
-              <div className="aspect-video overflow-hidden">
+              <div className={`overflow-hidden ${
+                item.category === 'Posters' 
+                  ? 'aspect-[3/4]' 
+                  : 'aspect-video'
+              }`}>
                 <img 
                   src={item.image} 
                   alt={item.title}
