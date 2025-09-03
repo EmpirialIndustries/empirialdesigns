@@ -3,58 +3,40 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. */
-
 @layer base {
   :root {
-    /* Dark theme colors */
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
 
     --primary: 263 70% 50%;
-    --primary-foreground: 0 0% 98%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
 
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
 
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
     --ring: 263 70% 50%;
 
     --radius: 0.5rem;
 
-    /* Custom design tokens */
     --gradient-primary: linear-gradient(135deg, hsl(263 70% 50%) 0%, hsl(280 70% 40%) 100%);
-    --gradient-subtle: linear-gradient(180deg, hsl(240 10% 3.9%) 0%, hsl(240 8% 6%) 100%);
     --shadow-elegant: 0 10px 30px -10px hsl(263 70% 50% / 0.3);
     --shadow-glow: 0 0 40px hsl(263 70% 50% / 0.2);
     --transition-smooth: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-
-    --sidebar-background: 240 10% 3.9%;
-    --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 263 70% 50%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 263 70% 50%;
   }
 }
 
@@ -65,15 +47,11 @@
 
   body {
     @apply bg-background text-foreground font-sans;
-    font-family: 'Inter', sans-serif;
+    font-family: system-ui, -apple-system, sans-serif;
   }
 }
 
 @layer utilities {
-  .gradient-bg {
-    background: var(--gradient-subtle);
-  }
-  
   .gradient-primary {
     background: var(--gradient-primary);
   }
@@ -97,18 +75,15 @@
     transition: var(--transition-smooth);
   }
 
-  /* Scroll margin for anchor links */
   .scroll-mt-nav {
     scroll-margin-top: 5rem;
   }
 
-  /* Focus visible styles */
   .focus-visible {
     outline: 2px solid hsl(var(--primary));
     outline-offset: 2px;
   }
 
-  /* Skip to content link */
   .skip-to-content {
     position: absolute;
     top: -40px;
@@ -123,31 +98,5 @@
   
   .skip-to-content:focus {
     top: 6px;
-  }
-
-  /* Enhanced mobile responsiveness */
-  .text-gradient-white {
-    background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .elegant-border {
-    border: 1px solid hsl(var(--border));
-  }
-
-  /* Improved mobile spacing */
-  @media (max-width: 768px) {
-    .container {
-      padding-left: 1rem;
-      padding-right: 1rem;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .smooth-transition {
-      transition: none;
-    }
   }
 }

@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
-import { ExternalLink, Filter, X } from 'lucide-react';
+import { Filter } from 'lucide-react';
+import PortfolioCard from './portfolio/PortfolioCard';
 
 const PortfolioGrid = () => {
   const [activeFilter, setActiveFilter] = useState('All');
@@ -81,54 +80,6 @@ const PortfolioGrid = () => {
       image: "/lovable-uploads/feffd106-e239-4344-93f0-ebb963e8fc96.png",
       url: "#",
       description: "Professional logo design with modern typography and clean aesthetics."
-    },
-    {
-      id: 10,
-      title: "Corporate Identity",
-      category: "Logos",
-      image: "/lovable-uploads/feffd106e239-4344-93f0-ebb963e8fc96.png",
-      url: "#",
-      description: "Complete brand identity package with logo variations and guidelines."
-    },
-    {
-      id: 11,
-      title: "Gudani Driving School",
-      category: "Posters",
-      image: "/lovable-uploads/7a15bccf-7c0e-41d6-a4c1-83d733b20b3d.png",
-      url: "#",
-      description: "Driving school promotional poster with special pricing and contact information."
-    },
-    {
-      id: 12,
-      title: "Marindi Funeral Scheme",
-      category: "Posters",
-      image: "/lovable-uploads/eb4fc16d-584e-42fc-9cc2-4b5077963626.png",
-      url: "#",
-      description: "Professional funeral services poster with comprehensive service offerings."
-    },
-    {
-      id: 13,
-      title: "Zama-Zama Barber Shop",
-      category: "Posters",
-      image: "/lovable-uploads/31f43e21-9e65-4313-a4a7-b5b1f3777002.png",
-      url: "#",
-      description: "Barbershop price list poster with services and opening hours."
-    },
-    {
-      id: 14,
-      title: "Gaming Poster",
-      category: "Posters",
-      image: "/lovable-uploads/28e711f6-5929-4ae3-b38b-e665af35fbc0.png",
-      url: "#",
-      description: "Eye-catching gaming promotional poster with aggressive design elements."
-    },
-    {
-      id: 15,
-      title: "SpeciiaLR Restaurant Menu",
-      category: "Posters",
-      image: "/lovable-uploads/e1d9f60f-82f6-4727-9c27-49f3854f2688.png",
-      url: "#",
-      description: "Restaurant menu poster with food specials and pricing information."
     }
   ];
 
@@ -148,7 +99,6 @@ const PortfolioGrid = () => {
           </p>
         </div>
 
-        {/* Filter Buttons */}
         <div className="flex flex-wrap justify-center gap-2 lg:gap-3 mb-12 px-4">
           {categories.map((category) => (
             <Button
@@ -164,75 +114,9 @@ const PortfolioGrid = () => {
           ))}
         </div>
 
-        {/* Portfolio Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 px-4">
           {filteredItems.map((item) => (
-            <div 
-              key={item.id} 
-              className="group relative bg-card rounded-lg overflow-hidden elegant-shadow smooth-transition hover:elegant-glow w-full"
-            >
-              {item.category === 'Posters' ? (
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <div className="cursor-pointer">
-                      <div className="aspect-[3/4] overflow-hidden">
-                        <img 
-                          src={item.image} 
-                          alt={item.title}
-                          className="w-full h-full object-cover smooth-transition group-hover:scale-105"
-                          loading="lazy"
-                        />
-                      </div>
-                    </div>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-4xl w-full p-0 bg-transparent border-0">
-                    <div className="relative">
-                      <img 
-                        src={item.image} 
-                        alt={item.title}
-                        className="w-full h-auto max-h-[90vh] object-contain rounded-lg"
-                      />
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              ) : (
-                <div className="aspect-video overflow-hidden">
-                  <img 
-                    src={item.image} 
-                    alt={item.title}
-                    className="w-full h-full object-cover smooth-transition group-hover:scale-105"
-                    loading="lazy"
-                  />
-                </div>
-              )}
-              
-              <div className="p-6">
-                <div className="flex items-start justify-between mb-3">
-                  <h3 className="font-semibold text-lg group-hover:text-primary smooth-transition">
-                    {item.title}
-                  </h3>
-                  <Badge variant="secondary" className="text-xs">
-                    {item.category}
-                  </Badge>
-                </div>
-                
-                <p className="text-muted-foreground text-sm mb-4 leading-relaxed">
-                  {item.description}
-                </p>
-                
-                {item.category === "Landing Pages" && (
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="w-full group-hover:bg-primary group-hover:text-primary-foreground smooth-transition"
-                    onClick={() => window.open(item.url, '_blank')}
-                  >
-                    <ExternalLink className="w-4 h-4 mr-2" />
-                    View Project
-                  </Button>
-                )}
-              </div>
-            </div>
+            <PortfolioCard key={item.id} item={item} />
           ))}
         </div>
 
