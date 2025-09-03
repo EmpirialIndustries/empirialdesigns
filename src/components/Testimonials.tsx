@@ -45,15 +45,15 @@ const Testimonials = () => {
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             What Our <span className="text-gradient">Clients Say</span>
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto px-4">
             Don't just take our word for it. See what our satisfied clients have to say about working with us.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 px-4">
           {testimonials.map((testimonial) => (
-            <Card key={testimonial.id} className="elegant-shadow smooth-transition hover:elegant-glow">
-              <CardContent className="p-6">
+            <Card key={testimonial.id} className="elegant-shadow smooth-transition hover:elegant-glow w-full">
+              <CardContent className="p-4 lg:p-6">
                 <div className="flex items-center mb-4">
                   {[...Array(testimonial.rating)].map((_, i) => (
                     <Star key={i} className="w-4 h-4 fill-primary text-primary" />

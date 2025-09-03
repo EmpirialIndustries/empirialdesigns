@@ -39,15 +39,15 @@ const ContactForm = () => {
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             Let's Start Your <span className="text-gradient">Project</span>
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto px-4">
             Ready to take your business to the next level? Fill out the form below or reach out directly via WhatsApp.
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid lg:grid-cols-3 gap-6 lg:gap-8 px-4">
           {/* Contact Info */}
           <div className="lg:col-span-1">
-            <Card className="elegant-shadow h-fit">
+            <Card className="elegant-shadow h-fit w-full">
               <CardHeader>
                 <CardTitle>Get in Touch</CardTitle>
                 <CardDescription>
@@ -99,7 +99,7 @@ const ContactForm = () => {
 
           {/* Contact Form */}
           <div className="lg:col-span-2">
-            <Card className="elegant-shadow">
+            <Card className="elegant-shadow w-full">
               <CardHeader>
                 <CardTitle>Project Brief</CardTitle>
                 <CardDescription>

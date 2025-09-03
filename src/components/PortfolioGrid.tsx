@@ -143,20 +143,20 @@ const PortfolioGrid = () => {
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             Our <span className="text-gradient">Portfolio</span>
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto px-4">
             Real projects that delivered real results for our clients across South Africa.
           </p>
         </div>
 
         {/* Filter Buttons */}
-        <div className="flex flex-wrap justify-center gap-3 mb-12">
+        <div className="flex flex-wrap justify-center gap-2 lg:gap-3 mb-12 px-4">
           {categories.map((category) => (
             <Button
               key={category}
               variant={activeFilter === category ? "default" : "outline"}
-              size="sm"
+              size="sm" 
               onClick={() => setActiveFilter(category)}
-              className="smooth-transition"
+              className="smooth-transition text-xs lg:text-sm"
             >
               <Filter className="w-4 h-4 mr-2" />
               {category}
@@ -165,11 +165,11 @@ const PortfolioGrid = () => {
         </div>
 
         {/* Portfolio Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 px-4">
           {filteredItems.map((item) => (
             <div 
               key={item.id} 
-              className="group relative bg-card rounded-lg overflow-hidden elegant-shadow smooth-transition hover:elegant-glow"
+              className="group relative bg-card rounded-lg overflow-hidden elegant-shadow smooth-transition hover:elegant-glow w-full"
             >
               {item.category === 'Posters' ? (
                 <Dialog>

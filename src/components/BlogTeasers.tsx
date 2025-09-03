@@ -80,14 +80,14 @@ const BlogTeasers = () => {
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             Latest from Our <span className="text-gradient">Blog</span>
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto px-4">
             Practical tips, insights, and strategies to help your business grow online.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 mb-12 px-4">
           {blogPosts.map((post) => (
-            <Card key={post.id} className="elegant-shadow smooth-transition hover:elegant-glow group">
+            <Card key={post.id} className="elegant-shadow smooth-transition hover:elegant-glow group w-full">
               <CardHeader>
                 <div className="flex items-center justify-between mb-3">
                   <Badge variant="secondary">{post.category}</Badge>
@@ -101,7 +101,7 @@ const BlogTeasers = () => {
                 </CardTitle>
                 <CardDescription>{post.excerpt}</CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="px-4 lg:px-6">
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-muted-foreground">{post.readTime}</span>
                   <Link to={post.slug}>
@@ -118,7 +118,7 @@ const BlogTeasers = () => {
 
         <div className="text-center mb-16">
           <Link to="/blog">
-            <Button variant="outline" size="lg">
+            <Button variant="outline" size="lg" className="mx-4">
               View All Articles
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
@@ -130,15 +130,15 @@ const BlogTeasers = () => {
           <h3 className="text-2xl font-bold mb-6">
             Follow Us for More <span className="text-gradient">Design Tips</span>
           </h3>
-          <p className="text-muted-foreground mb-8 max-w-xl mx-auto">
+          <p className="text-muted-foreground mb-8 max-w-xl mx-auto px-4">
             Stay updated with the latest design trends, business tips, and behind-the-scenes content on our social channels.
           </p>
-          <div className="flex justify-center gap-6">
+          <div className="flex flex-col sm:flex-row justify-center gap-4 lg:gap-6 px-4">
             <a
               href="https://facebook.com/empirialdesigns"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-3 bg-card border border-border rounded-lg px-6 py-4 hover:bg-accent smooth-transition group"
+              className="flex items-center gap-3 bg-card border border-border rounded-lg px-4 lg:px-6 py-4 hover:bg-accent smooth-transition group w-full sm:w-auto justify-center"
             >
               <Facebook className="w-6 h-6 text-blue-600 group-hover:scale-110 smooth-transition" />
               <span className="font-medium">Facebook</span>
@@ -147,7 +147,7 @@ const BlogTeasers = () => {
               href="https://instagram.com/empirialdesigns"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-3 bg-card border border-border rounded-lg px-6 py-4 hover:bg-accent smooth-transition group"
+              className="flex items-center gap-3 bg-card border border-border rounded-lg px-4 lg:px-6 py-4 hover:bg-accent smooth-transition group w-full sm:w-auto justify-center"
             >
               <Instagram className="w-6 h-6 text-pink-600 group-hover:scale-110 smooth-transition" />
               <span className="font-medium">Instagram</span>
@@ -156,7 +156,7 @@ const BlogTeasers = () => {
               href="https://tiktok.com/@empirialdesigns"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-3 bg-card border border-border rounded-lg px-6 py-4 hover:bg-accent smooth-transition group"
+              className="flex items-center gap-3 bg-card border border-border rounded-lg px-4 lg:px-6 py-4 hover:bg-accent smooth-transition group w-full sm:w-auto justify-center"
             >
               <TikTokIcon className="w-6 h-6 text-foreground group-hover:scale-110 smooth-transition" />
               <span className="font-medium">TikTok</span>

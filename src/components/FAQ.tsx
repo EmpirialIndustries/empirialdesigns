@@ -48,17 +48,17 @@ const FAQ = () => {
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             Frequently Asked <span className="text-gradient">Questions</span>
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto px-4">
             Got questions? We've got answers. Find everything you need to know about working with us.
           </p>
         </div>
 
-        <Accordion type="single" collapsible className="w-full space-y-4">
+        <Accordion type="single" collapsible className="w-full space-y-4 px-4">
           {faqs.map((faq, index) => (
             <AccordionItem 
               key={index} 
               value={`item-${index}`}
-              className="border border-border rounded-lg px-6 elegant-shadow"
+              className="border border-border rounded-lg px-4 lg:px-6 elegant-shadow"
             >
               <AccordionTrigger className="text-left hover:no-underline hover:text-primary smooth-transition">
                 {faq.question}

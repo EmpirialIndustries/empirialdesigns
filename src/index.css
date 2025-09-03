@@ -125,6 +125,26 @@
     top: 6px;
   }
 
+  /* Enhanced mobile responsiveness */
+  .text-gradient-white {
+    background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .elegant-border {
+    border: 1px solid hsl(var(--border));
+  }
+
+  /* Improved mobile spacing */
+  @media (max-width: 768px) {
+    .container {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .smooth-transition {
       transition: none;

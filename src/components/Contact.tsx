@@ -80,27 +80,27 @@ const Contact = () => {
             <span className="text-foreground">GET IN</span>{' '}
             <span className="text-gradient">TOUCH</span>
           </h2>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+          <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed px-4">
             Ready to bring your vision to life? Let's discuss your project and create something amazing together.
             Your success story starts with a single message.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-20">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 px-4">
           {/* Enhanced Contact Information */}
           <div className="animate-fade-in">
-            <h3 className="text-3xl font-black text-foreground mb-12">Let's Start a Conversation</h3>
+            <h3 className="text-2xl md:text-3xl font-black text-foreground mb-8 lg:mb-12">Let's Start a Conversation</h3>
             
             {/* Enhanced Contact Details */}
-            <div className="space-y-8 mb-16">
+            <div className="space-y-6 lg:space-y-8 mb-12 lg:mb-16">
               {contactInfo.map((item) => (
-                <div key={item.label} className="flex items-center group hover:scale-105 transition-transform duration-300">
-                  <div className="w-16 h-16 gradient-primary rounded-2xl flex items-center justify-center mr-6 group-hover:rotate-6 transition-transform duration-300 shadow-xl">
+                <div key={item.label} className="flex items-center group hover:scale-105 transition-transform duration-300 w-full">
+                  <div className="w-12 h-12 lg:w-16 lg:h-16 gradient-primary rounded-2xl flex items-center justify-center mr-4 lg:mr-6 group-hover:rotate-6 transition-transform duration-300 shadow-xl flex-shrink-0">
                     <item.icon className="w-7 h-7 text-primary-foreground" />
                   </div>
                   <div>
-                    <div className="text-lg text-muted-foreground font-semibold">{item.label}</div>
-                    <div className="text-foreground font-black text-xl">{item.value}</div>
+                    <div className="text-base lg:text-lg text-muted-foreground font-semibold">{item.label}</div>
+                    <div className="text-foreground font-black text-lg lg:text-xl break-all">{item.value}</div>
                   </div>
                 </div>
               ))}
@@ -108,22 +108,22 @@ const Contact = () => {
 
             {/* Enhanced Social Links */}
             <div>
-              <h4 className="text-2xl font-black text-foreground mb-8">Connect With Us</h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <h4 className="text-xl md:text-2xl font-black text-foreground mb-6 lg:mb-8">Connect With Us</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-6">
                 {socialLinks.map((social) => (
                   <Card 
                     key={social.name} 
-                    className="bg-card/60 backdrop-blur-lg border-border hover:border-primary/50 transition-all duration-500 group cursor-pointer hover:scale-105"
+                    className="bg-card/60 backdrop-blur-lg border-border hover:border-primary/50 transition-all duration-500 group cursor-pointer hover:scale-105 w-full"
                     onClick={() => window.open(social.url, '_blank')}
                   >
-                    <CardContent className="p-6">
+                    <CardContent className="p-4 lg:p-6">
                       <div className="flex items-center">
-                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mr-4 ${social.bgColor} group-hover:scale-110 transition-transform duration-300`}>
+                        <div className={`w-12 h-12 lg:w-14 lg:h-14 rounded-2xl flex items-center justify-center mr-3 lg:mr-4 ${social.bgColor} group-hover:scale-110 transition-transform duration-300 flex-shrink-0`}>
                           <social.icon className={`w-7 h-7 ${social.color}`} />
                         </div>
                         <div>
-                          <div className="text-lg font-black text-foreground">{social.name}</div>
-                          <div className="text-muted-foreground font-medium">{social.handle}</div>
+                          <div className="text-base lg:text-lg font-black text-foreground">{social.name}</div>
+                          <div className="text-sm text-muted-foreground font-medium">{social.handle}</div>
                         </div>
                       </div>
                     </CardContent>
@@ -135,26 +135,26 @@ const Contact = () => {
 
           {/* Enhanced CTA Section */}
           <div className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
-            <Card className="bg-card/60 backdrop-blur-lg border-border h-full hover:border-primary/50 transition-all duration-500">
-              <CardContent className="p-12 h-full flex flex-col justify-center">
+            <Card className="bg-card/60 backdrop-blur-lg border-border h-full hover:border-primary/50 transition-all duration-500 w-full">
+              <CardContent className="p-6 lg:p-12 h-full flex flex-col justify-center">
                 <div className="text-center">
-                  <div className="w-24 h-24 gradient-primary rounded-3xl flex items-center justify-center mx-auto mb-8 hover:scale-110 hover:rotate-6 transition-all duration-500 shadow-2xl">
+                  <div className="w-20 h-20 lg:w-24 lg:h-24 gradient-primary rounded-3xl flex items-center justify-center mx-auto mb-6 lg:mb-8 hover:scale-110 hover:rotate-6 transition-all duration-500 shadow-2xl">
                     <Send className="w-12 h-12 text-primary-foreground" />
                   </div>
                   
-                  <h3 className="text-3xl font-black text-foreground mb-6">
+                  <h3 className="text-2xl md:text-3xl font-black text-foreground mb-4 lg:mb-6">
                     Ready to Start Your Project?
                   </h3>
                   
-                  <p className="text-muted-foreground mb-10 leading-relaxed text-lg">
+                  <p className="text-muted-foreground mb-6 lg:mb-10 leading-relaxed text-base lg:text-lg">
                     Get a free consultation and quote for your design project. We'll discuss your requirements 
                     and provide you with a detailed proposal tailored to your needs and budget.
                   </p>
                   
-                  <div className="space-y-6">
+                  <div className="space-y-4 lg:space-y-6">
                     <Button 
                       size="lg" 
-                      className="w-full gradient-primary text-primary-foreground font-bold text-lg py-6 hover:scale-105 transition-all duration-300 shadow-xl"
+                      className="w-full gradient-primary text-primary-foreground font-bold text-base lg:text-lg py-4 lg:py-6 hover:scale-105 transition-all duration-300 shadow-xl"
                       onClick={openWhatsApp}
                     >
                       Get Free Quote
@@ -164,7 +164,7 @@ const Contact = () => {
                     <Button 
                       size="lg" 
                       variant="outline" 
-                      className="w-full border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground font-bold text-lg py-6 hover:scale-105 transition-all duration-300"
+                      className="w-full border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground font-bold text-base lg:text-lg py-4 lg:py-6 hover:scale-105 transition-all duration-300"
                       onClick={openWhatsApp}
                     >
                       Schedule a Call
