@@ -19,12 +19,11 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 lg:gap-12">
           {/* Enhanced Brand */}
           <div className="md:col-span-2">
-            <div className="flex items-center space-x-4 mb-6">
-              <img 
-                src="/lovable-uploads/0c9f4011-c9e0-44db-bc92-15905a48b3c4.png" 
-                alt="Empirial Designs Logo" 
-                className="h-12 w-auto" 
-              />
+            <div className="flex items-center space-x-3 mb-6">
+              <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center">
+                <span className="text-white font-black text-lg">E</span>
+              </div>
+              <span className="text-xl font-black text-foreground">Empirial Designs</span>
             </div>
             <p className="text-muted-foreground text-base lg:text-lg leading-relaxed mb-6">
               Professional graphic design services that elevate your brand and captivate your audience. 

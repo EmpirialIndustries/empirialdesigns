@@ -8,7 +8,7 @@ const Testimonials = () => {
       id: 1,
       name: "Sarah Chen",
       company: "Bloom Boutique",
-      avatar: "/lovable-uploads/0c9f4011-c9e0-44db-bc92-15905a48b3c4.png",
+      avatar: "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop",
       rating: 5,
       text: "Empirial Designs transformed our online presence completely. The landing page they created increased our conversions by 40% in just two months."
     },
@@ -16,7 +16,7 @@ const Testimonials = () => {
       id: 2,
       name: "Michael Botha",
       company: "TechStart SA",
-      avatar: "/lovable-uploads/98b58ad9-141b-46b5-9f3e-0f4a40632f60.png", 
+      avatar: "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop",
       rating: 5,
       text: "Professional, fast, and exactly what we needed. The team understood our vision immediately and delivered beyond expectations."
     },
@@ -24,7 +24,7 @@ const Testimonials = () => {
       id: 3,
       name: "Priya Patel",
       company: "Spice Route Restaurant",
-      avatar: "/lovable-uploads/d07e4413-7fb3-4990-84d0-93630a872628.png",
+      avatar: "https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop",
       rating: 5,
       text: "The poster designs they created for our restaurant are absolutely stunning. We've received so many compliments from customers."
     },
@@ -32,7 +32,7 @@ const Testimonials = () => {
       id: 4,
       name: "James Mthembu",
       company: "Urban Fitness",
-      avatar: "/lovable-uploads/0c9f4011-c9e0-44db-bc92-15905a48b3c4.png",
+      avatar: "https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop",
       rating: 5,
       text: "Quick turnaround, excellent communication, and results that speak for themselves. Highly recommend for any business in SA."
     }

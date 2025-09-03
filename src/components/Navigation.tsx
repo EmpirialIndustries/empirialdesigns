@@ -40,8 +40,7 @@ const Navigation = () => {
 
   const navItems = [
     { name: 'Home', href: '/' },
-    { name: 'SEOAudit', href: '/seo-audit' },
-    { name: 'TextEx', href: '/textex' }
+    { name: 'WebAudit', href: '/seo-audit' }
   ];
 
   return (
@@ -50,11 +49,10 @@ const Navigation = () => {
         <div className="flex justify-between items-center">
           {/* Logo */}
           <div className="flex items-center space-x-3">
-            <img 
-              src="/lovable-uploads/0c9f4011-c9e0-44db-bc92-15905a48b3c4.png" 
-              alt="Empirial Designs Logo" 
-              className="h-12 w-auto sm:h-14 md:h-16 object-contain" 
-            />
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-black rounded-lg flex items-center justify-center">
+              <span className="text-white font-black text-lg sm:text-xl">E</span>
+            </div>
+            <span className="text-xl sm:text-2xl font-black text-black">Empirial</span>
           </div>
 
           {/* Desktop Navigation */}

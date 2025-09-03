@@ -19,27 +19,27 @@ interface ServiceCardProps {
 
 const ServiceCard = ({ service, onGetStarted }: ServiceCardProps) => {
   return (
-    <Card className={`relative elegant-shadow smooth-transition hover:elegant-glow w-full ${service.popular ? 'ring-2 ring-primary' : ''}`}>
+    <Card className={`relative shadow-lg transition-all duration-300 hover:shadow-xl w-full ${service.popular ? 'ring-2 ring-primary' : ''}`}>
       {service.popular && (
-        <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground">
+        <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-black text-white">
           Most Popular
         </Badge>
       )}
       
-      <CardHeader className="text-center pb-4 px-4 lg:px-6">
+      <CardHeader className="text-center pb-4 p-4 md:p-6">
         <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-          <service.icon className="w-8 h-8 text-primary" />
+          <service.icon className="w-8 h-8 text-black" />
         </div>
         <CardTitle className="text-xl">{service.title}</CardTitle>
-        <div className="text-3xl font-bold text-primary">{service.price}</div>
+        <div className="text-2xl md:text-3xl font-bold text-black">{service.price}</div>
         <CardDescription className="mt-2">{service.description}</CardDescription>
       </CardHeader>
       
-      <CardContent className="space-y-4 px-4 lg:px-6">
+      <CardContent className="space-y-4 p-4 md:p-6">
         <div className="space-y-3">
           {service.features.map((feature, index) => (
             <div key={index} className="flex items-start gap-3">
-              <Check className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+              <Check className="w-4 h-4 md:w-5 md:h-5 text-green-600 mt-0.5 flex-shrink-0" />
               <span className="text-sm">{feature}</span>
             </div>
           ))}
@@ -50,7 +50,7 @@ const ServiceCard = ({ service, onGetStarted }: ServiceCardProps) => {
         </div>
       </CardContent>
       
-      <CardFooter className="px-4 lg:px-6">
+      <CardFooter className="p-4 md:p-6">
         <Button 
           onClick={onGetStarted}
           className="w-full"

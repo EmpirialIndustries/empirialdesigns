@@ -20,7 +20,7 @@ const Blog = () => {
       author: 'Empirial Team',
       date: '2024-01-15',
       readTime: '8 min read',
-      image: '/lovable-uploads/d07e4413-7fb3-4990-84d0-93630a872628.png',
+      image: 'https://images.pexels.com/photos/196644/pexels-photo-196644.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop',
       featured: true
     },
     {
@@ -31,7 +31,7 @@ const Blog = () => {
       author: 'Empirial Team',
       date: '2024-01-10',
       readTime: '12 min read',
-      image: '/lovable-uploads/b3b81645-c461-448a-83e2-237dc3110495.png',
+      image: 'https://images.pexels.com/photos/270348/pexels-photo-270348.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop',
       featured: false
     },
     {
@@ -42,7 +42,7 @@ const Blog = () => {
       author: 'Empirial Team',
       date: '2024-01-08',
       readTime: '6 min read',
-      image: '/lovable-uploads/9c27a6d7-0a94-4176-a3f2-a0dc987cbc54.png',
+      image: 'https://images.pexels.com/photos/196644/pexels-photo-196644.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop',
       featured: false
     },
     {
@@ -53,7 +53,7 @@ const Blog = () => {
       author: 'Empirial Team',
       date: '2024-01-05',
       readTime: '10 min read',
-      image: '/lovable-uploads/22d9c514-b27e-4c39-839f-cac29355479e.png',
+      image: 'https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop',
       featured: false
     },
     {
@@ -64,7 +64,7 @@ const Blog = () => {
       author: 'Empirial Team',
       date: '2024-01-03',
       readTime: '15 min read',
-      image: '/lovable-uploads/8f876b0e-769b-491f-a69f-66d9c471ffd0.png',
+      image: 'https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop',
       featured: true
     },
     {
@@ -75,7 +75,7 @@ const Blog = () => {
       author: 'Empirial Team',
       date: '2024-01-01',
       readTime: '9 min read',
-      image: '/lovable-uploads/feffd106-e239-4344-93f0-ebb963e8fc96.png',
+      image: 'https://images.pexels.com/photos/270348/pexels-photo-270348.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop',
       featured: false
     }
   ];

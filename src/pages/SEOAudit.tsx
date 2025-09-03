@@ -166,7 +166,7 @@ const SEOAudit = () => {
           <div className="text-center mb-12">
             <div className="inline-flex items-center gap-2 bg-black text-white px-4 py-2 rounded-full mb-6">
               <Zap className="w-4 h-4" />
-              <span className="text-sm font-semibold">FREE SEO AUDIT TOOL</span>
+              <span className="text-sm font-semibold">PROFESSIONAL SEO AUDIT</span>
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-black mb-6">
               <span className="text-gradient">WEBSITE</span>{' '}
@@ -180,17 +180,17 @@ const SEOAudit = () => {
               <div className="h-px bg-black flex-1 max-w-32"></div>
             </div>
             <p className="text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed mb-8">
-              Get a comprehensive SEO audit of your website in seconds. Identify critical issues, 
-              quick wins, and optimization opportunities to boost your search rankings and drive more traffic.
+              Get a comprehensive SEO audit of your website with professional insights. Identify critical issues, 
+              quick wins, and strategic opportunities to boost your search rankings and drive more organic traffic.
             </p>
           </div>
 
           {/* Trust Indicators */}
-          <div className="flex flex-wrap justify-center items-center gap-6 md:gap-12 mb-12 py-6 border-y border-gray-200">
+          <div className="flex flex-wrap justify-center items-center gap-4 md:gap-8 mb-12 py-6 border-y border-gray-200">
             {trustIndicators.map((item, index) => (
-              <div key={index} className="flex items-center gap-2 text-muted-foreground">
+              <div key={index} className="flex items-center gap-2 text-muted-foreground min-w-0">
                 <item.icon className="w-4 h-4 text-primary" />
-                <span className="text-sm font-medium">{item.text}</span>
+                <span className="text-xs md:text-sm font-medium whitespace-nowrap">{item.text}</span>
               </div>
             ))}
           </div>
@@ -210,17 +210,17 @@ const SEOAudit = () => {
                   <div className="flex-1">
                     <Input
                       type="url"
-                      placeholder="Enter your website URL (e.g., https://yoursite.com)"
+                      placeholder="https://yourwebsite.com"
                       value={url}
                       onChange={(e) => setUrl(e.target.value)}
-                      className="text-lg p-4 h-14 border-2 focus:border-primary"
+                      className="text-base md:text-lg p-3 md:p-4 h-12 md:h-14 border-2 focus:border-primary"
                       disabled={isAnalyzing}
                     />
                   </div>
                   <Button 
                     onClick={handleAudit}
                     disabled={isAnalyzing || !url}
-                    className="bg-black text-white hover:bg-gray-800 px-8 h-14 text-lg font-bold min-w-[140px]"
+                    className="bg-black text-white hover:bg-gray-800 px-6 md:px-8 h-12 md:h-14 text-base md:text-lg font-bold min-w-[120px] md:min-w-[140px]"
                   >
                     {isAnalyzing ? 'Analyzing...' : 'Audit Now'}
                   </Button>

@@ -13,7 +13,7 @@ const PortfolioGrid = () => {
       id: 1,
       title: "Mphela Industries",
       category: "Landing Pages",
-      image: "/lovable-uploads/3ef58336-c932-47cd-8a1c-0e07ea8c80d4.png",
+      image: "https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop",
       url: "https://mphelaindsutriespty.netlify.app",
       description: "Professional industrial services website with modern design and clear messaging."
     },
@@ -21,7 +21,7 @@ const PortfolioGrid = () => {
       id: 2,
       title: "SKCC Legal Services",
       category: "Landing Pages", 
-      image: "/lovable-uploads/b3b81645-c461-448a-83e2-237dc3110495.png",
+      image: "https://images.pexels.com/photos/5668772/pexels-photo-5668772.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop",
       url: "https://skcc.netlify.app/",
       description: "Legal services firm website with trust-building elements and professional layout."
     },
@@ -29,7 +29,7 @@ const PortfolioGrid = () => {
       id: 3,
       title: "Ytshika Attorneys",
       category: "Landing Pages",
-      image: "/lovable-uploads/a09ff793-260b-40e3-9294-de5fbc351529.png", 
+      image: "https://images.pexels.com/photos/5668858/pexels-photo-5668858.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop",
       url: "https://ytshikaattorneys.co.za",
       description: "Attorney firm website with comprehensive legal services showcase."
     },
@@ -37,7 +37,7 @@ const PortfolioGrid = () => {
       id: 4,
       title: "Empirial Attorney",
       category: "Landing Pages",
-      image: "/lovable-uploads/0738d373-2742-4c8e-8182-17a0cc933634.png",
+      image: "https://images.pexels.com/photos/5668473/pexels-photo-5668473.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop",
       url: "https://empirialattorney.netlify.app",
       description: "Modern legal practice website with client-focused design approach."
     },
@@ -45,7 +45,7 @@ const PortfolioGrid = () => {
       id: 5,
       title: "Empirial Spa", 
       category: "Landing Pages",
-      image: "/lovable-uploads/98b58ad9-141b-46b5-9f3e-0f4a40632f60.png",
+      image: "https://images.pexels.com/photos/3757942/pexels-photo-3757942.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop",
       url: "https://empirialspa.netlify.app/",
       description: "Luxury spa website with elegant design and booking functionality."
     },
@@ -53,7 +53,7 @@ const PortfolioGrid = () => {
       id: 6,
       title: "Empirial Designs",
       category: "Landing Pages",
-      image: "/lovable-uploads/d07e4413-7fb3-4990-84d0-93630a872628.png",
+      image: "https://images.pexels.com/photos/196644/pexels-photo-196644.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop",
       url: "https://empirialdesigns.netlify.app",
       description: "Design agency portfolio showcasing creative services and client work."
     },
@@ -61,7 +61,7 @@ const PortfolioGrid = () => {
       id: 7,
       title: "Restaurant Poster",
       category: "Posters",
-      image: "/lovable-uploads/22d9c514-b27e-4c39-839f-cac29355479e.png",
+      image: "https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=600&h=800&fit=crop",
       url: "#",
       description: "Eye-catching restaurant promotional poster with bold typography."
     },
@@ -69,7 +69,7 @@ const PortfolioGrid = () => {
       id: 8,
       title: "Event Poster Design",
       category: "Posters",
-      image: "/lovable-uploads/8f876b0e-769b-491f-a69f-66d9c471ffd0.png",
+      image: "https://images.pexels.com/photos/1190298/pexels-photo-1190298.jpeg?auto=compress&cs=tinysrgb&w=600&h=800&fit=crop",
       url: "#",
       description: "Event marketing poster with vibrant colors and clear messaging."
     },
@@ -77,7 +77,7 @@ const PortfolioGrid = () => {
       id: 9,
       title: "Brand Logo Design",
       category: "Logos",
-      image: "/lovable-uploads/feffd106-e239-4344-93f0-ebb963e8fc96.png",
+      image: "https://images.pexels.com/photos/267350/pexels-photo-267350.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop",
       url: "#",
       description: "Professional logo design with modern typography and clean aesthetics."
     }

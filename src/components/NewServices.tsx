@@ -48,12 +48,12 @@ const NewServices = () => {
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             Services & <span className="text-gradient">Pricing</span>
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto px-4">
+          <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
             Clear, upfront pricing with no hidden fees. Choose the service that fits your needs.
           </p>
         </div>
         
-        <div className="grid md:grid-cols-2 gap-6 lg:gap-8 max-w-5xl mx-auto px-4">
+        <div className="grid md:grid-cols-2 gap-6 md:gap-8 max-w-4xl mx-auto px-4">
           {services.map((service, index) => (
             <ServiceCard 
               key={index} 
