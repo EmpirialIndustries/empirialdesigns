@@ -50,21 +50,21 @@ const NewServices = () => {
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             Services & <span className="text-gradient">Pricing</span>
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto px-4">
             Clear, upfront pricing with no hidden fees. Choose the service that fits your needs.
           </p>
         </div>
         
-        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        <div className="grid md:grid-cols-2 gap-6 lg:gap-8 max-w-5xl mx-auto px-4">
           {services.map((service, index) => (
-            <Card key={index} className={`relative elegant-shadow smooth-transition hover:elegant-glow ${service.popular ? 'ring-2 ring-primary' : ''}`}>
+            <Card key={index} className={`relative elegant-shadow smooth-transition hover:elegant-glow w-full ${service.popular ? 'ring-2 ring-primary' : ''}`}>
               {service.popular && (
                 <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground">
                   Most Popular
                 </Badge>
               )}
               
-              <CardHeader className="text-center pb-4">
+              <CardHeader className="text-center pb-4 px-4 lg:px-6">
                 <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
                   <service.icon className="w-8 h-8 text-primary" />
                 </div>
@@ -73,7 +73,7 @@ const NewServices = () => {
                 <CardDescription className="mt-2">{service.description}</CardDescription>
               </CardHeader>
               
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 px-4 lg:px-6">
                 <div className="space-y-3">
                   {service.features.map((feature, featureIndex) => (
                     <div key={featureIndex} className="flex items-start gap-3">
@@ -88,7 +88,7 @@ const NewServices = () => {
                 </div>
               </CardContent>
               
-              <CardFooter>
+              <CardFooter className="px-4 lg:px-6">
                 <Button 
                   onClick={openWhatsApp}
                   className="w-full"

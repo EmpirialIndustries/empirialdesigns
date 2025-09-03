@@ -24,20 +24,20 @@ const Hero = () => {
       </div>
       
       <div className="container mx-auto px-4 relative z-10">
-        <div className="text-center max-w-4xl mx-auto">
+        <div className="text-center max-w-5xl mx-auto">
           <h1 className="text-5xl md:text-7xl font-black text-white mb-6 tracking-tight animate-fade-in">
             Websites & Graphics that win customers.
           </h1>
           
-          <p className="text-xl md:text-2xl text-white/90 max-w-3xl mx-auto leading-relaxed animate-fade-in delay-300 mb-8">
+          <p className="text-xl md:text-2xl text-white/90 max-w-4xl mx-auto leading-relaxed animate-fade-in delay-300 mb-8 px-4">
             Custom landing pages and marketing designs for South African businesses—fast, original, and conversion-focused.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in delay-500">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in delay-500 px-4">
             <Button 
               size="lg" 
               onClick={openWhatsApp}
-              className="bg-white text-black hover:bg-white/90 font-semibold text-lg px-8 py-4"
+              className="bg-white text-black hover:bg-white/90 font-semibold text-lg px-8 py-4 w-full sm:w-auto"
             >
               Get a Free Quote
             </Button>
@@ -45,7 +45,7 @@ const Hero = () => {
               size="lg" 
               variant="outline" 
               onClick={() => scrollToSection('portfolio')}
-              className="border-white text-white hover:bg-white hover:text-black font-semibold text-lg px-8 py-4"
+              className="border-white text-white hover:bg-white hover:text-black font-semibold text-lg px-8 py-4 w-full sm:w-auto"
             >
               View Work
             </Button>
