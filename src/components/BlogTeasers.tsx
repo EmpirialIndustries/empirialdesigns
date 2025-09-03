@@ -1,8 +1,19 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, ArrowRight } from 'lucide-react';
+import { Calendar, ArrowRight, Facebook, Instagram } from 'lucide-react';
 import { Link } from 'react-router-dom';
+
+// TikTok icon component since it's not available in lucide-react
+const TikTokIcon = ({ className }: { className?: string }) => (
+  <svg
+    className={className}
+    viewBox="0 0 24 24"
+    fill="currentColor"
+  >
+    <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-.88-.05A6.33 6.33 0 005 20.1a6.34 6.34 0 0010.86-4.43v-7a8.16 8.16 0 004.77 1.52v-3.4a4.85 4.85 0 01-1-.1z"/>
+  </svg>
+);
 
 const BlogTeasers = () => {
   const blogPosts = [
@@ -31,6 +42,33 @@ const BlogTeasers = () => {
       category: "Small Biz Growth",
       date: "2024-03-08",
       readTime: "6 min read",
+      slug: "/blog"
+    },
+    {
+      id: 4,
+      title: "The Psychology of Color in Marketing Design",
+      excerpt: "How different colors trigger emotions and drive purchasing decisions in your marketing materials.",
+      category: "Design Psychology",
+      date: "2024-03-20",
+      readTime: "7 min read",
+      slug: "/blog"
+    },
+    {
+      id: 5,
+      title: "Social Media Graphics That Convert: A Complete Guide",
+      excerpt: "Create scroll-stopping visuals that increase engagement and drive traffic to your business.",
+      category: "Social Media",
+      date: "2024-03-18",
+      readTime: "8 min read",
+      slug: "/blog"
+    },
+    {
+      id: 6,
+      title: "From Logo to Website: Building a Cohesive Brand Identity",
+      excerpt: "Step-by-step process to create a unified brand experience across all customer touchpoints.",
+      category: "Brand Strategy",
+      date: "2024-03-25",
+      readTime: "10 min read",
       slug: "/blog"
     }
   ];
@@ -78,13 +116,52 @@ const BlogTeasers = () => {
           ))}
         </div>
 
-        <div className="text-center">
+        <div className="text-center mb-16">
           <Link to="/blog">
             <Button variant="outline" size="lg">
               View All Articles
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           </Link>
+        </div>
+
+        {/* Social Media Links */}
+        <div className="text-center">
+          <h3 className="text-2xl font-bold mb-6">
+            Follow Us for More <span className="text-gradient">Design Tips</span>
+          </h3>
+          <p className="text-muted-foreground mb-8 max-w-xl mx-auto">
+            Stay updated with the latest design trends, business tips, and behind-the-scenes content on our social channels.
+          </p>
+          <div className="flex justify-center gap-6">
+            <a
+              href="https://facebook.com/empirialdesigns"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 bg-card border border-border rounded-lg px-6 py-4 hover:bg-accent smooth-transition group"
+            >
+              <Facebook className="w-6 h-6 text-blue-600 group-hover:scale-110 smooth-transition" />
+              <span className="font-medium">Facebook</span>
+            </a>
+            <a
+              href="https://instagram.com/empirialdesigns"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 bg-card border border-border rounded-lg px-6 py-4 hover:bg-accent smooth-transition group"
+            >
+              <Instagram className="w-6 h-6 text-pink-600 group-hover:scale-110 smooth-transition" />
+              <span className="font-medium">Instagram</span>
+            </a>
+            <a
+              href="https://tiktok.com/@empirialdesigns"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 bg-card border border-border rounded-lg px-6 py-4 hover:bg-accent smooth-transition group"
+            >
+              <TikTokIcon className="w-6 h-6 text-foreground group-hover:scale-110 smooth-transition" />
+              <span className="font-medium">TikTok</span>
+            </a>
+          </div>
         </div>
       </div>
     </section>
