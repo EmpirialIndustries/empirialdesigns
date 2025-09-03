@@ -40,7 +40,8 @@ const Navigation = () => {
 
   const navItems = [
     { name: 'Home', href: '/' },
-    { name: 'WebAudit', href: '/seo-audit' }
+    { name: 'SEOAudit', href: '/seo-audit' },
+    { name: 'TextEx', href: '/textex' }
   ];
 
   return (
