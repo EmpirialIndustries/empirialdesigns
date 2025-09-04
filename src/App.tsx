@@ -10,6 +10,7 @@ import EliteSneakers from "./pages/EliteSneakers";
 import TradingEAStore from "./pages/TradingEAStore";
 import Blog from "./pages/Blog";
 import SEOAudit from "./pages/SEOAudit";
+import TextEx from "./pages/TextEx";
 
 const queryClient = new QueryClient();
 
@@ -23,6 +24,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/seo-audit" element={<SEOAudit />} />
+          <Route path="/textex" element={<TextEx />} />
           <Route path="/empirial-iphones" element={<EmpirialIPhones />} />
           <Route path="/elite-sneakers" element={<EliteSneakers />} />
           <Route path="/trading-ea-store" element={<TradingEAStore />} />
