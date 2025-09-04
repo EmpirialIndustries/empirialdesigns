@@ -59,27 +59,43 @@ const PortfolioGrid = () => {
     },
     {
       id: 7,
-      title: "Restaurant Poster",
+      title: "Website Design Poster",
       category: "Posters",
-      image: "https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=600&h=800&fit=crop",
+      image: "/lovable-uploads/Website Design Poster.png",
       url: "#",
-      description: "Eye-catching restaurant promotional poster with bold typography."
+      description: "Professional website design service poster with modern layout and clear messaging."
     },
     {
       id: 8,
-      title: "Event Poster Design",
+      title: "Restaurant Menu Design",
       category: "Posters",
-      image: "https://images.pexels.com/photos/1190298/pexels-photo-1190298.jpeg?auto=compress&cs=tinysrgb&w=600&h=800&fit=crop",
+      image: "/lovable-uploads/Our Menu (3).pdf.png",
       url: "#",
-      description: "Event marketing poster with vibrant colors and clear messaging."
+      description: "Elegant restaurant menu design with professional typography and layout."
     },
     {
       id: 9,
-      title: "Brand Logo Design",
-      category: "Logos",
-      image: "https://images.pexels.com/photos/267350/pexels-photo-267350.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop",
+      title: "Gudani Driving School",
+      category: "Posters",
+      image: "/lovable-uploads/Gudani Driving School.png",
       url: "#",
-      description: "Professional logo design with modern typography and clean aesthetics."
+      description: "Driving school promotional poster with clear branding and contact information."
+    },
+    {
+      id: 10,
+      title: "Genesis & Her Nails",
+      category: "Posters",
+      image: "/lovable-uploads/Genesis & Her Nails (2).png",
+      url: "#",
+      description: "Beauty salon promotional design with elegant styling and service highlights."
+    },
+    {
+      id: 11,
+      title: "Breakfast Hamper",
+      category: "Posters",
+      image: "/lovable-uploads/Breakfast Hamper BW.png",
+      url: "#",
+      description: "Food service promotional poster with appetizing design and clear pricing."
     }
   ];
 
