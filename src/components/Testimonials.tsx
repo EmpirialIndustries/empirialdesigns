@@ -78,6 +78,36 @@ const Testimonials = () => {
             </Card>
           ))}
         </div>
+        
+        {/* Design Showcase */}
+        <div className="mt-16 text-center">
+          <h3 className="text-2xl font-bold mb-8">
+            Designs That <span className="text-gradient">Get Results</span>
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 px-4">
+            <div className="bg-white rounded-lg p-6 elegant-shadow">
+              <div className="aspect-[3/4] mb-4 rounded-lg overflow-hidden">
+                <img src="/lovable-uploads/Gudani Driving School.png" alt="Driving School Poster" className="w-full h-full object-cover" />
+              </div>
+              <h4 className="font-semibold mb-2">Professional Service Posters</h4>
+              <p className="text-sm text-muted-foreground">Clear messaging that converts prospects into customers</p>
+            </div>
+            <div className="bg-white rounded-lg p-6 elegant-shadow">
+              <div className="aspect-[3/4] mb-4 rounded-lg overflow-hidden">
+                <img src="/lovable-uploads/Our Menu (3).pdf.png" alt="Restaurant Menu" className="w-full h-full object-cover" />
+              </div>
+              <h4 className="font-semibold mb-2">Restaurant Menus</h4>
+              <p className="text-sm text-muted-foreground">Appetizing designs that increase average order value</p>
+            </div>
+            <div className="bg-white rounded-lg p-6 elegant-shadow">
+              <div className="aspect-[3/4] mb-4 rounded-lg overflow-hidden">
+                <img src="/lovable-uploads/Genesis & Her Nails (2).png" alt="Beauty Salon Design" className="w-full h-full object-cover" />
+              </div>
+              <h4 className="font-semibold mb-2">Beauty & Wellness</h4>
+              <p className="text-sm text-muted-foreground">Elegant designs that attract premium clients</p>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );

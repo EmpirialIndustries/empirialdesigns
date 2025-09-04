@@ -20,6 +20,19 @@ const Hero = () => {
         <div className="absolute inset-0 bg-black/50"></div>
       </div>
       
+      {/* Floating Design Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-32 h-40 opacity-10 rotate-12 hidden lg:block">
+          <img src="/lovable-uploads/Website Design Poster.png" alt="" className="w-full h-full object-cover rounded-lg" />
+        </div>
+        <div className="absolute bottom-20 right-10 w-28 h-36 opacity-10 -rotate-12 hidden lg:block">
+          <img src="/lovable-uploads/Genesis & Her Nails (2).png" alt="" className="w-full h-full object-cover rounded-lg" />
+        </div>
+        <div className="absolute top-1/2 right-20 w-24 h-32 opacity-10 rotate-6 hidden xl:block">
+          <img src="/lovable-uploads/Gudani Driving School.png" alt="" className="w-full h-full object-cover rounded-lg" />
+        </div>
+      </div>
+      
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="text-center max-w-5xl mx-auto">
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white mb-6 tracking-tight leading-tight">

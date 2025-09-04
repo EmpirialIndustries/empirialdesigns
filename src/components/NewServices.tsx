@@ -62,6 +62,25 @@ const NewServices = () => {
             />
           ))}
         </div>
+        
+        {/* Service Examples */}
+        <div className="mt-16 text-center">
+          <h3 className="text-2xl font-bold mb-8">Recent Work Examples</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto px-4">
+            <div className="aspect-[3/4] rounded-lg overflow-hidden elegant-shadow hover:elegant-glow smooth-transition">
+              <img src="/lovable-uploads/Website Design Poster.png" alt="Website Design Service" className="w-full h-full object-cover" />
+            </div>
+            <div className="aspect-[3/4] rounded-lg overflow-hidden elegant-shadow hover:elegant-glow smooth-transition">
+              <img src="/lovable-uploads/Our Menu (3).pdf.png" alt="Menu Design Service" className="w-full h-full object-cover" />
+            </div>
+            <div className="aspect-[3/4] rounded-lg overflow-hidden elegant-shadow hover:elegant-glow smooth-transition">
+              <img src="/lovable-uploads/Genesis & Her Nails (2).png" alt="Beauty Salon Design" className="w-full h-full object-cover" />
+            </div>
+            <div className="aspect-[3/4] rounded-lg overflow-hidden elegant-shadow hover:elegant-glow smooth-transition">
+              <img src="/lovable-uploads/Breakfast Hamper BW.png" alt="Food Service Design" className="w-full h-full object-cover" />
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );
