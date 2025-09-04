@@ -1,6 +1,6 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ExternalLink } from 'lucide-react';
 
 interface PortfolioItem {
@@ -43,6 +43,7 @@ const PortfolioCard = ({ item }: PortfolioCardProps) => {
             </div>
           </DialogTrigger>
           <DialogContent className="max-w-4xl w-full p-0 bg-transparent border-0">
+            <DialogTitle className="sr-only">{item.title}</DialogTitle>
             <img 
               src={item.image} 
               alt={item.title}
