@@ -1,30 +1,228 @@
-import ContactInfo from './contact/ContactInfo';
-import ProjectForm from './contact/ProjectForm';
+import React, { useState } from 'react';
+import emailjs from '@emailjs/browser';
 
-const ContactForm = () => {
+const ProjectForm = () => {
+  const [formData, setFormData] = useState({
+    from_name: '',
+    from_email: '',
+    phone: '',
+    company: '',
+    project_type: '',
+    budget: '',
+    timeline: '',
+    message: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitStatus('idle');
+
+    try {
+      await emailjs.send(
+        'YOUR_SERVICE_ID', // Replace with your Gmail service ID
+        'contact_form_template', // Replace with your template ID
+        formData,
+        'YOUR_PUBLIC_KEY' // Replace with your EmailJS public key
+      );
+      
+      setSubmitStatus('success');
+      setFormData({
+        from_name: '',
+        from_email: '',
+        phone: '',
+        company: '',
+        project_type: '',
+        budget: '',
+        timeline: '',
+        message: ''
+      });
+    } catch (error) {
+      console.error('EmailJS error:', error);
+      setSubmitStatus('error');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
-    <section id="contact" className="py-16 md:py-24 scroll-mt-nav">
-      <div className="container mx-auto px-4 max-w-6xl">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Let's Start Your <span className="text-gradient">Project</span>
-          </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto px-4">
-            Ready to take your business to the next level? Fill out the form below or reach out directly via WhatsApp.
-          </p>
+    <div className="bg-card rounded-lg p-6 shadow-sm">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="grid md:grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="from_name" className="block text-sm font-medium mb-2">
+              Full Name *
+            </label>
+            <input
+              type="text"
+              id="from_name"
+              name="from_name"
+              value={formData.from_name}
+              onChange={handleChange}
+              required
+              className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+          </div>
+          
+          <div>
+            <label htmlFor="from_email" className="block text-sm font-medium mb-2">
+              Email Address *
+            </label>
+            <input
+              type="email"
+              id="from_email"
+              name="from_email"
+              value={formData.from_email}
+              onChange={handleChange}
+              required
+              className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+          </div>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-6 lg:gap-8 px-4">
-          <div className="lg:col-span-1">
-            <ContactInfo />
+        <div className="grid md:grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="phone" className="block text-sm font-medium mb-2">
+              Phone Number
+            </label>
+            <input
+              type="tel"
+              id="phone"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+            />
           </div>
-          <div className="lg:col-span-2">
-            <ProjectForm />
+          
+          <div>
+            <label htmlFor="company" className="block text-sm font-medium mb-2">
+              Company
+            </label>
+            <input
+              type="text"
+              id="company"
+              name="company"
+              value={formData.company}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+            />
           </div>
         </div>
-      </div>
-    </section>
+
+        <div className="grid md:grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="project_type" className="block text-sm font-medium mb-2">
+              Project Type *
+            </label>
+            <select
+              id="project_type"
+              name="project_type"
+              value={formData.project_type}
+              onChange={handleChange}
+              required
+              className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              <option value="">Select a project type</option>
+              <option value="web-development">Web Development</option>
+              <option value="mobile-app">Mobile App</option>
+              <option value="e-commerce">E-commerce</option>
+              <option value="branding">Branding & Design</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          
+          <div>
+            <label htmlFor="budget" className="block text-sm font-medium mb-2">
+              Budget Range
+            </label>
+            <select
+              id="budget"
+              name="budget"
+              value={formData.budget}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+            >
+              <option value="">Select budget range</option>
+              <option value="under-5k">Under $5,000</option>
+              <option value="5k-10k">$5,000 - $10,000</option>
+              <option value="10k-25k">$10,000 - $25,000</option>
+              <option value="25k-plus">$25,000+</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label htmlFor="timeline" className="block text-sm font-medium mb-2">
+            Project Timeline
+          </label>
+          <select
+            id="timeline"
+            name="timeline"
+            value={formData.timeline}
+            onChange={handleChange}
+            className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+          >
+            <option value="">Select timeline</option>
+            <option value="asap">ASAP</option>
+            <option value="1-month">Within 1 month</option>
+            <option value="2-3-months">2-3 months</option>
+            <option value="flexible">Flexible</option>
+          </select>
+        </div>
+
+        <div>
+          <label htmlFor="message" className="block text-sm font-medium mb-2">
+            Project Details *
+          </label>
+          <textarea
+            id="message"
+            name="message"
+            value={formData.message}
+            onChange={handleChange}
+            required
+            rows={4}
+            placeholder="Tell us about your project requirements, goals, and any specific features you need..."
+            className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary resize-vertical"
+          />
+        </div>
+
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className={`w-full py-3 px-6 rounded-md font-medium transition-colors ${
+            isSubmitting
+              ? 'bg-gray-400 cursor-not-allowed'
+              : 'bg-primary text-primary-foreground hover:bg-primary/90'
+          }`}
+        >
+          {isSubmitting ? 'Sending...' : 'Send Message'}
+        </button>
+
+        {submitStatus === 'success' && (
+          <div className="p-4 bg-green-50 border border-green-200 rounded-md text-green-800">
+            Thank you! Your message has been sent successfully. We'll get back to you soon.
+          </div>
+        )}
+
+        {submitStatus === 'error' && (
+          <div className="p-4 bg-red-50 border border-red-200 rounded-md text-red-800">
+            Sorry, there was an error sending your message. Please try again or contact us directly.
+          </div>
+        )}
+      </form>
+    </div>
   );
 };
 
+export default ProjectForm;
 export default ContactForm;
