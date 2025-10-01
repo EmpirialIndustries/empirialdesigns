@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import emailjs from '@emailjs/browser';
 
-const ProjectForm = () => {
+const ContactForm = () => {
   const [formData, setFormData] = useState({
     from_name: '',
     from_email: '',
@@ -22,36 +21,25 @@ const ProjectForm = () => {
     });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    setSubmitStatus('idle');
+    
+    // Format message for WhatsApp
+    const whatsappMessage = `*New Contact Form Submission*
 
-    try {
-      await emailjs.send(
-        'YOUR_SERVICE_ID', // Replace with your Gmail service ID
-        'contact_form_template', // Replace with your template ID
-        formData,
-        'YOUR_PUBLIC_KEY' // Replace with your EmailJS public key
-      );
-      
-      setSubmitStatus('success');
-      setFormData({
-        from_name: '',
-        from_email: '',
-        phone: '',
-        company: '',
-        project_type: '',
-        budget: '',
-        timeline: '',
-        message: ''
-      });
-    } catch (error) {
-      console.error('EmailJS error:', error);
-      setSubmitStatus('error');
-    } finally {
-      setIsSubmitting(false);
-    }
+*Name:* ${formData.from_name}
+*Email:* ${formData.from_email}
+*Phone:* ${formData.phone || 'Not provided'}
+*Company:* ${formData.company || 'Not provided'}
+*Project Type:* ${formData.project_type}
+*Budget:* ${formData.budget || 'Not specified'}
+*Timeline:* ${formData.timeline || 'Not specified'}
+
+*Message:*
+${formData.message}`;
+
+    const whatsappUrl = `https://wa.me/27606691849?text=${encodeURIComponent(whatsappMessage)}`;
+    window.open(whatsappUrl, '_blank');
   };
 
   return (
@@ -224,5 +212,4 @@ const ProjectForm = () => {
   );
 };
 
-export default ProjectForm;
 export default ContactForm;

@@ -1,4 +1,4 @@
-import { Globe, Image } from 'lucide-react';
+import { Globe, ShoppingCart, Layers } from 'lucide-react';
 import ServiceCard from './services/ServiceCard';
 
 const NewServices = () => {
@@ -9,56 +9,87 @@ const NewServices = () => {
   const services = [
     {
       icon: Globe,
-      title: "Landing Page Website",
-      price: "R1,499.99",
-      popular: true,
-      description: "Custom responsive landing page designed to convert visitors into customers.",
+      title: "Landing Page",
+      price: "R3,000",
+      popular: false,
+      description: "Perfect for startups and small businesses. Get a stunning single-page website that converts.",
       features: [
-        "1 responsive page (hero, features, social proof, FAQ, contact)",
-        "SEO basics & analytics setup",
-        "1 round of revisions included",
-        "Delivery in 5–7 days",
-        "Mobile-optimized design"
+        "1 Custom Landing Page",
+        "Responsive Mobile Design",
+        "Contact Form Integration",
+        "Basic SEO Setup",
+        "WhatsApp Integration",
+        "Fast Loading Speed",
+        "Free Stock Images",
+        "1 Week Delivery"
       ],
-      addons: "Add-ons: copywriting, extra sections, email capture, blog, CMS",
-      cta: "Start Your Website"
+      addons: "Add-ons available: Extra pages (R500 each), Logo design (R1,000)",
+      cta: "Get Started"
     },
     {
-      icon: Image,
-      title: "Poster / Social Design",
-      price: "R249.99",
-      popular: false,
-      description: "Professional marketing materials that capture attention and drive results.",
+      icon: Layers,
+      title: "Full Website",
+      price: "R5,000",
+      popular: true,
+      description: "Complete multi-page website with advanced features. Perfect for growing businesses.",
       features: [
-        "Print-ready PDF + web formats",
-        "PNG/JPG optimized files",
-        "Source file on request",
-        "2 concepts + 2 revisions",
-        "48–72h delivery"
+        "Up to 5 Custom Pages",
+        "Premium Responsive Design",
+        "Advanced Contact Forms",
+        "Full SEO Optimization",
+        "Social Media Integration",
+        "Google Analytics Setup",
+        "Content Management System",
+        "Blog Section",
+        "2 Weeks Delivery"
       ],
-      addons: "Add-ons: additional concepts, rush delivery, brand guidelines",
-      cta: "Order a Design"
+      addons: "Add-ons: Extra pages (R400 each), Custom animations (R800), Email marketing (R1,200)",
+      cta: "Most Popular"
+    },
+    {
+      icon: ShoppingCart,
+      title: "E-commerce Website",
+      price: "R8,000",
+      popular: false,
+      description: "Full-featured online store with payment processing. Start selling online today.",
+      features: [
+        "Unlimited Products",
+        "Shopping Cart & Checkout",
+        "Payment Gateway Integration",
+        "Product Management System",
+        "Order Tracking System",
+        "Customer Accounts",
+        "Inventory Management",
+        "Email Notifications",
+        "Mobile Responsive",
+        "3 Weeks Delivery"
+      ],
+      addons: "Add-ons: Advanced shipping (R1,500), Multi-currency (R1,000), Product reviews (R800)",
+      cta: "Start Selling"
     }
   ];
 
   return (
-    <section id="services" className="py-16 md:py-24 scroll-mt-nav">
-      <div className="container mx-auto px-4 max-w-6xl">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Services & <span className="text-gradient">Pricing</span>
+    <section id="services" className="py-20 bg-background relative overflow-hidden scroll-mt-nav">
+      {/* Grid overlay */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,215,0,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,215,0,0.02)_1px,transparent_1px)] bg-[size:50px_50px]"></div>
+      
+      <div className="container mx-auto px-4 relative z-10">
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <h2 className="text-4xl md:text-5xl font-black mb-4">
+            Choose Your <span className="text-gradient">Package</span>
           </h2>
-          <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
-            Clear, upfront pricing with no hidden fees. Choose the service that fits your needs.
+          <p className="text-lg text-muted-foreground">
+            Transparent pricing. Premium quality. No hidden fees.
           </p>
         </div>
-        
-        <div className="grid md:grid-cols-2 gap-6 md:gap-8 max-w-4xl mx-auto px-4">
+
+        <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto">
           {services.map((service, index) => (
             <ServiceCard 
               key={index} 
               service={service} 
-              onGetStarted={openWhatsApp} 
+              onGetStarted={openWhatsApp}
             />
           ))}
         </div>

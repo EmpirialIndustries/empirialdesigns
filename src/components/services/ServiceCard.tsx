@@ -21,17 +21,17 @@ const ServiceCard = ({ service, onGetStarted }: ServiceCardProps) => {
   return (
     <Card className={`relative shadow-lg transition-all duration-300 hover:shadow-xl w-full ${service.popular ? 'ring-2 ring-primary' : ''}`}>
       {service.popular && (
-        <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-black text-white">
+        <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-primary text-black font-bold border-2 border-primary">
           Most Popular
         </Badge>
       )}
       
       <CardHeader className="text-center pb-4 p-4 md:p-6">
-        <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+        <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-gradient-primary flex items-center justify-center elegant-glow">
           <service.icon className="w-8 h-8 text-black" />
         </div>
         <CardTitle className="text-xl">{service.title}</CardTitle>
-        <div className="text-2xl md:text-3xl font-bold text-black">{service.price}</div>
+        <div className="text-2xl md:text-3xl font-black text-gradient">{service.price}</div>
         <CardDescription className="mt-2">{service.description}</CardDescription>
       </CardHeader>
       
