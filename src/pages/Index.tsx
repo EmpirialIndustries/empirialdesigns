@@ -12,6 +12,7 @@ import BlogTeasers from '@/components/BlogTeasers';
 import PrimaryCTA from '@/components/PrimaryCTA';
 import ContactForm from '@/components/ContactForm';
 import Footer from '@/components/Footer';
+import AdUnit from '@/components/AdUnit';
 
 const Index = () => {
   return (
@@ -21,6 +22,7 @@ const Index = () => {
       <main id="main">
         <Hero />
         <TrustBar />
+        <AdUnit />
         <NewServices />
         <Workflow />
         <WhyChooseUs />
