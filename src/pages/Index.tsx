@@ -2,6 +2,7 @@
 import Navigation from '@/components/Navigation';
 import Hero from '@/components/Hero';
 import TrustBar from '@/components/TrustBar';
+import AboutFounder from '@/components/AboutFounder';
 import NewServices from '@/components/NewServices';
 import Workflow from '@/components/Workflow';
 import WhyChooseUs from '@/components/WhyChooseUs';
@@ -22,6 +23,7 @@ const Index = () => {
       <main id="main">
         <Hero />
         <TrustBar />
+        <AboutFounder />
         <AdUnit />
         <NewServices />
         <Workflow />
