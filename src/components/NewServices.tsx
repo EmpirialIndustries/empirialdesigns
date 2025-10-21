@@ -10,7 +10,7 @@ const NewServices = () => {
     {
       icon: Globe,
       title: "Landing Page",
-      price: "R3,000",
+      price: "R1,999.99",
       popular: false,
       description: "Perfect for startups and small businesses. Get a stunning single-page website that converts.",
       features: [
@@ -29,7 +29,7 @@ const NewServices = () => {
     {
       icon: Layers,
       title: "Full Website",
-      price: "R5,000",
+      price: "R3,999.99",
       popular: true,
       description: "Complete multi-page website with advanced features. Perfect for growing businesses.",
       features: [
@@ -49,7 +49,7 @@ const NewServices = () => {
     {
       icon: ShoppingCart,
       title: "E-commerce Website",
-      price: "R8,000",
+      price: "R5,999.99",
       popular: false,
       description: "Full-featured online store with payment processing. Start selling online today.",
       features: [
