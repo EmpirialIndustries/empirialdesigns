@@ -2,6 +2,13 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Filter } from 'lucide-react';
 import PortfolioCard from './portfolio/PortfolioCard';
+import MILogo from '@/assets/MI logo.png';
+import SKCCLogo from '@/assets/skcclogo.png';
+import YtshikaLogo from '@/assets/ytshikalogo.png';
+import EmpirialAttorneysLogo from '@/assets/EmpirialAttorneysLogo.png';
+import EmpirialSpaLogo from '@/assets/Empirialspalogo.png';
+import EmpirialDesignsLogo from '@/assets/Empirialdesignslogo.png';
+import SiyaleleProjectsLogo from '@/assets/SiyaleleprojectsLogo.png';
 
 const PortfolioGrid = () => {
   const [activeFilter, setActiveFilter] = useState('All');
@@ -13,7 +20,7 @@ const PortfolioGrid = () => {
       id: 1,
       title: "Mphela Industries",
       category: "Landing Pages",
-      image: "https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop",
+      image: MILogo,
       url: "https://mphelaindsutriespty.netlify.app",
       description: "Professional industrial services website with modern design and clear messaging."
     },
@@ -21,7 +28,7 @@ const PortfolioGrid = () => {
       id: 2,
       title: "SKCC Legal Services",
       category: "Landing Pages", 
-      image: "https://images.pexels.com/photos/5668772/pexels-photo-5668772.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop",
+      image: SKCCLogo,
       url: "https://skcc.netlify.app/",
       description: "Legal services firm website with trust-building elements and professional layout."
     },
@@ -29,7 +36,7 @@ const PortfolioGrid = () => {
       id: 3,
       title: "Ytshika Attorneys",
       category: "Landing Pages",
-      image: "https://images.pexels.com/photos/5668858/pexels-photo-5668858.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop",
+      image: YtshikaLogo,
       url: "https://ytshikaattorneys.co.za",
       description: "Attorney firm website with comprehensive legal services showcase."
     },
@@ -37,7 +44,7 @@ const PortfolioGrid = () => {
       id: 4,
       title: "Empirial Attorney",
       category: "Landing Pages",
-      image: "https://images.pexels.com/photos/5668473/pexels-photo-5668473.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop",
+      image: EmpirialAttorneysLogo,
       url: "https://empirialattorney.netlify.app",
       description: "Modern legal practice website with client-focused design approach."
     },
@@ -45,7 +52,7 @@ const PortfolioGrid = () => {
       id: 5,
       title: "Empirial Spa", 
       category: "Landing Pages",
-      image: "https://images.pexels.com/photos/3757942/pexels-photo-3757942.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop",
+      image: EmpirialSpaLogo,
       url: "https://empirialspa.netlify.app/",
       description: "Luxury spa website with elegant design and booking functionality."
     },
@@ -53,12 +60,28 @@ const PortfolioGrid = () => {
       id: 6,
       title: "Empirial Designs",
       category: "Landing Pages",
-      image: "https://images.pexels.com/photos/196644/pexels-photo-196644.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop",
+      image: EmpirialDesignsLogo,
       url: "https://empirialdesigns.netlify.app",
       description: "Design agency portfolio showcasing creative services and client work."
     },
     {
       id: 7,
+      title: "Mbendela Matt Attorneys",
+      category: "Landing Pages",
+      image: "https://images.pexels.com/photos/5668772/pexels-photo-5668772.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop",
+      url: "https://www.mbendelamtattorneys.co.za",
+      description: "Professional legal services with expertise in various law practice areas."
+    },
+    {
+      id: 8,
+      title: "Siyalele Projects",
+      category: "Landing Pages",
+      image: SiyaleleProjectsLogo,
+      url: "https://www.siyaleleprojects.co.za",
+      description: "Project management and construction services website with comprehensive showcase."
+    },
+    {
+      id: 9,
       title: "Website Design Poster",
       category: "Posters",
       image: "/lovable-uploads/Website Design Poster.png",
@@ -66,7 +89,7 @@ const PortfolioGrid = () => {
       description: "Professional website design service poster with modern layout and clear messaging."
     },
     {
-      id: 8,
+      id: 10,
       title: "Restaurant Menu Design",
       category: "Posters",
       image: "/lovable-uploads/Our Menu (3).pdf.png",
@@ -74,7 +97,7 @@ const PortfolioGrid = () => {
       description: "Elegant restaurant menu design with professional typography and layout."
     },
     {
-      id: 9,
+      id: 11,
       title: "Gudani Driving School",
       category: "Posters",
       image: "/lovable-uploads/Gudani Driving School.png",
@@ -82,7 +105,7 @@ const PortfolioGrid = () => {
       description: "Driving school promotional poster with clear branding and contact information."
     },
     {
-      id: 10,
+      id: 12,
       title: "Genesis & Her Nails",
       category: "Posters",
       image: "/lovable-uploads/Genesis & Her Nails (2).png",
@@ -90,7 +113,7 @@ const PortfolioGrid = () => {
       description: "Beauty salon promotional design with elegant styling and service highlights."
     },
     {
-      id: 11,
+      id: 13,
       title: "Breakfast Hamper",
       category: "Posters",
       image: "/lovable-uploads/Breakfast Hamper BW.png",
