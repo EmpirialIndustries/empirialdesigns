@@ -11,6 +11,8 @@ import TradingEAStore from "./pages/TradingEAStore";
 import Blog from "./pages/Blog";
 import SEOAudit from "./pages/SEOAudit";
 import TextEx from "./pages/TextEx";
+import Auth from "./pages/Auth";
+import ChatInterface from "./pages/ChatInterface";
 
 const queryClient = new QueryClient();
 
@@ -22,6 +24,8 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/chat" element={<ChatInterface />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/seo-audit" element={<SEOAudit />} />
           <Route path="/textex" element={<TextEx />} />

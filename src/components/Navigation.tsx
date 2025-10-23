@@ -69,6 +69,13 @@ const Navigation = () => {
               </button>
             ))}
             <Button 
+              variant="outline"
+              className="font-bold px-6 py-3 text-base xl:text-lg transition-all duration-300 rounded-full"
+              onClick={() => navigate('/auth')}
+            >
+              Sign In
+            </Button>
+            <Button 
               className="bg-primary text-primary-foreground font-bold px-6 py-3 text-base xl:text-lg hover:bg-primary/90 transition-all duration-300 rounded-full elegant-shadow"
               onClick={openWhatsApp}
             >
@@ -105,7 +112,17 @@ const Navigation = () => {
                   {item.name}
                 </button>
               ))}
-              <div className="pt-4">
+              <div className="pt-4 space-y-3">
+                <Button 
+                  variant="outline"
+                  className="w-full font-bold text-lg py-3 rounded-full"
+                  onClick={() => {
+                    navigate('/auth');
+                    setIsOpen(false);
+                  }}
+                >
+                  Sign In
+                </Button>
                 <Button 
                   className="w-full bg-primary text-primary-foreground font-bold text-lg py-3 rounded-full elegant-shadow"
                   onClick={openWhatsApp}
