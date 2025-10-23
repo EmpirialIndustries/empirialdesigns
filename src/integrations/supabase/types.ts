@@ -7,14 +7,84 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "12.2.3 (519615d)"
+    PostgrestVersion: "13.0.4"
   }
   public: {
     Tables: {
-      [_ in never]: never
+      edit_logs: {
+        Row: {
+          changes_made: string | null
+          created_at: string
+          file_path: string
+          id: string
+          prompt: string
+          repo_id: string
+          user_id: string
+        }
+        Insert: {
+          changes_made?: string | null
+          created_at?: string
+          file_path: string
+          id?: string
+          prompt: string
+          repo_id: string
+          user_id: string
+        }
+        Update: {
+          changes_made?: string | null
+          created_at?: string
+          file_path?: string
+          id?: string
+          prompt?: string
+          repo_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "edit_logs_repo_id_fkey"
+            columns: ["repo_id"]
+            isOneToOne: false
+            referencedRelation: "user_repos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_repos: {
+        Row: {
+          created_at: string
+          github_token: string | null
+          id: string
+          repo_name: string
+          repo_owner: string
+          repo_url: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          github_token?: string | null
+          id?: string
+          repo_name: string
+          repo_owner: string
+          repo_url: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          github_token?: string | null
+          id?: string
+          repo_name?: string
+          repo_owner?: string
+          repo_url?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
