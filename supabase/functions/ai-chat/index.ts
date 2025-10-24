@@ -1,3 +1,4 @@
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.4";
 
@@ -12,41 +13,64 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, repoContext } = await req.json();
+    const { messages, repoOwner, repoName, repoId } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    const GITHUB_TOKEN = Deno.env.get('GITHUB_ACCESS_TOKEN');
     const authHeader = req.headers.get('Authorization');
 
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
-    // Initialize Supabase client
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
       { global: { headers: { Authorization: authHeader! } } }
     );
 
-    // Get user from auth
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
     if (userError || !user) {
       throw new Error('Unauthorized');
     }
 
-    console.log('Processing chat request for user:', user.id);
+    // Get last user message
+    const lastUserMessage = messages[messages.length - 1]?.content || '';
+    
+    // Fetch current code from GitHub if repo info provided
+    let codeContext = '';
+    if (repoOwner && repoName && GITHUB_TOKEN) {
+      try {
+        const repoContentsUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents`;
+        const contentsResponse = await fetch(repoContentsUrl, {
+          headers: {
+            'Authorization': `Bearer ${GITHUB_TOKEN}`,
+            'Accept': 'application/vnd.github.v3+json',
+          },
+        });
 
-    // Build system prompt
-    let systemPrompt = `You are an AI assistant that helps edit and improve web applications. 
-You specialize in React, TypeScript, Tailwind CSS, and modern web development.`;
-
-    if (repoContext) {
-      systemPrompt += `\n\nCurrent repository context:
-Owner: ${repoContext.owner}
-Repo: ${repoContext.repo}
-File: ${repoContext.filePath || 'Not specified'}
-
-When the user asks for code changes, provide the complete updated code that can be committed to GitHub.`;
+        if (contentsResponse.ok) {
+          const files = await contentsResponse.json();
+          codeContext = `\n\nCurrent repository structure:\n${JSON.stringify(files.slice(0, 10), null, 2)}`;
+        }
+      } catch (e) {
+        console.log('Could not fetch repo contents:', e);
+      }
     }
+
+    const systemPrompt = `You are an expert web developer AI assistant that helps users edit their websites by generating code changes.
+
+When a user asks for changes:
+1. Analyze their request carefully
+2. Generate the specific code changes needed
+3. Provide clear explanations
+4. Include file paths and exact code to change
+
+Format your response as:
+- Brief explanation of what you'll change
+- Code snippets with file paths
+- Any important notes
+
+${codeContext}`;
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -66,24 +90,134 @@ When the user asks for code changes, provide the complete updated code that can 
 
     if (!response.ok) {
       if (response.status === 429) {
-        return new Response(JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }), {
+        return new Response(JSON.stringify({ error: 'Rate limits exceeded, please try again later.' }), {
           status: 429,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
       if (response.status === 402) {
-        return new Response(JSON.stringify({ error: 'Payment required. Please add credits to your workspace.' }), {
+        return new Response(JSON.stringify({ error: 'Payment required, please add funds to your Lovable AI workspace.' }), {
           status: 402,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
-      const errorText = await response.text();
-      console.error('AI gateway error:', response.status, errorText);
-      throw new Error('AI gateway error');
+      const t = await response.text();
+      console.error('AI gateway error:', response.status, t);
+      return new Response(JSON.stringify({ error: 'AI gateway error' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
-    // Return the streaming response
-    return new Response(response.body, {
+    // Stream the AI response and try to commit code changes if detected
+    const reader = response.body?.getReader();
+    if (!reader) {
+      throw new Error('No response body');
+    }
+
+    const encoder = new TextEncoder();
+    const decoder = new TextDecoder();
+    let fullResponse = '';
+    let commitUrl = '';
+
+    const stream = new ReadableStream({
+      async start(controller) {
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            const chunk = decoder.decode(value);
+            fullResponse += chunk;
+            controller.enqueue(value);
+          }
+
+          // After streaming completes, check if we should commit code
+          if (repoOwner && repoName && GITHUB_TOKEN && fullResponse.includes('```')) {
+            try {
+              // Extract code blocks from response
+              const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g;
+              const matches = [...fullResponse.matchAll(codeBlockRegex)];
+              
+              if (matches.length > 0) {
+                // For now, commit the first code block found
+                const [, language, code] = matches[0];
+                const fileName = language === 'tsx' || language === 'jsx' ? 'src/App.tsx' : 'README.md';
+                
+                console.log('Attempting to commit code changes...');
+                
+                // Get current file SHA if it exists
+                let sha = '';
+                try {
+                  const fileResponse = await fetch(
+                    `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${fileName}`,
+                    {
+                      headers: {
+                        'Authorization': `Bearer ${GITHUB_TOKEN}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                      },
+                    }
+                  );
+                  if (fileResponse.ok) {
+                    const fileData = await fileResponse.json();
+                    sha = fileData.sha;
+                  }
+                } catch (e) {
+                  console.log('File does not exist yet');
+                }
+
+                // Commit the changes
+                const commitResponse = await fetch(
+                  `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${fileName}`,
+                  {
+                    method: 'PUT',
+                    headers: {
+                      'Authorization': `Bearer ${GITHUB_TOKEN}`,
+                      'Accept': 'application/vnd.github.v3+json',
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                      message: `AI Edit: ${lastUserMessage.slice(0, 50)}`,
+                      content: btoa(code),
+                      ...(sha && { sha }),
+                    }),
+                  }
+                );
+
+                if (commitResponse.ok) {
+                  const commitData = await commitResponse.json();
+                  commitUrl = commitData.commit.html_url;
+                  console.log('Code committed successfully:', commitUrl);
+
+                  // Log the edit
+                  if (repoId) {
+                    await supabaseClient.from('edit_logs').insert({
+                      user_id: user.id,
+                      repo_id: repoId,
+                      file_path: fileName,
+                      prompt: lastUserMessage,
+                      changes_made: 'AI generated code changes',
+                    });
+                  }
+
+                  // Send commit URL as additional event
+                  const commitEvent = `data: ${JSON.stringify({ commit_url: commitUrl })}\n\n`;
+                  controller.enqueue(encoder.encode(commitEvent));
+                }
+              }
+            } catch (commitError) {
+              console.error('Error committing code:', commitError);
+            }
+          }
+
+          controller.close();
+        } catch (error) {
+          controller.error(error);
+        }
+      },
+    });
+
+    return new Response(stream, {
       headers: { ...corsHeaders, 'Content-Type': 'text/event-stream' },
     });
   } catch (error) {

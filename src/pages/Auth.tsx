@@ -48,7 +48,7 @@ const Auth = () => {
           description: "You've successfully signed in.",
         });
         
-        navigate('/chat');
+        navigate('/repos');
       }
     } catch (error: any) {
       toast({

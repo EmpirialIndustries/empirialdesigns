@@ -13,6 +13,8 @@ import SEOAudit from "./pages/SEOAudit";
 import TextEx from "./pages/TextEx";
 import Auth from "./pages/Auth";
 import ChatInterface from "./pages/ChatInterface";
+import Preview from "./pages/Preview";
+import RepoManagement from "./pages/RepoManagement";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +28,8 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/chat" element={<ChatInterface />} />
+          <Route path="/repos" element={<RepoManagement />} />
+          <Route path="/preview/:repoId" element={<Preview />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/seo-audit" element={<SEOAudit />} />
           <Route path="/textex" element={<TextEx />} />
