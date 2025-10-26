@@ -209,7 +209,7 @@ const Preview = () => {
     return null;
   }
 
-  const previewUrl = repo.deploy_url || `https://${repo.repo_name}.vercel.app`;
+  const previewUrl = repo.deploy_url || `https://${repo.repo_name}.netlify.app`;
 
   return (
     <div className="h-screen flex bg-background">
