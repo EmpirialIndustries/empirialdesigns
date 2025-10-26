@@ -11,6 +11,7 @@ const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [siteName, setSiteName] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -21,15 +22,29 @@ const Auth = () => {
 
     try {
       if (isSignUp) {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/chat`
+            emailRedirectTo: `${window.location.origin}/repos`
           }
         });
         
         if (error) throw error;
+
+        // Create initial repo entry with deploy URL if site name provided
+        if (data.user && siteName.trim()) {
+          const cleanName = siteName.trim().replace(/[^a-z0-9-]/gi, '');
+          const deployUrl = `https://${cleanName}.netlify.app`;
+          
+          await supabase.from('user_repos').insert({
+            user_id: data.user.id,
+            repo_name: cleanName,
+            repo_owner: email.split('@')[0],
+            repo_url: deployUrl,
+            deploy_url: deployUrl
+          });
+        }
         
         toast({
           title: "Success!",
@@ -117,6 +132,23 @@ const Auth = () => {
                 className="h-12"
               />
             </div>
+
+            {isSignUp && (
+              <div className="space-y-2">
+                <Label htmlFor="siteName">Site Name (optional)</Label>
+                <Input
+                  id="siteName"
+                  type="text"
+                  placeholder="e.g. my-portfolio-site"
+                  value={siteName}
+                  onChange={(e) => setSiteName(e.target.value)}
+                  className="h-12"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Will be used as: https://{siteName.trim().replace(/[^a-z0-9-]/gi, '') || 'your-site'}.netlify.app
+                </p>
+              </div>
+            )}
 
             <Button
               type="submit"

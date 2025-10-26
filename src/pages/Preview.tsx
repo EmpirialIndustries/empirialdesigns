@@ -21,6 +21,7 @@ interface Repo {
   repo_owner: string;
   repo_name: string;
   repo_url: string;
+  deploy_url?: string;
 }
 
 const Preview = () => {
@@ -208,7 +209,7 @@ const Preview = () => {
     return null;
   }
 
-  const previewUrl = `https://${repo.repo_name}.vercel.app`;
+  const previewUrl = repo.deploy_url || `https://${repo.repo_name}.vercel.app`;
 
   return (
     <div className="h-screen flex bg-background">

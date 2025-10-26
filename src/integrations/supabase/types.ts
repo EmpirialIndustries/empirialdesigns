@@ -55,6 +55,7 @@ export type Database = {
       user_repos: {
         Row: {
           created_at: string
+          deploy_url: string | null
           github_token: string | null
           id: string
           repo_name: string
@@ -65,6 +66,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          deploy_url?: string | null
           github_token?: string | null
           id?: string
           repo_name: string
@@ -75,6 +77,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          deploy_url?: string | null
           github_token?: string | null
           id?: string
           repo_name?: string
