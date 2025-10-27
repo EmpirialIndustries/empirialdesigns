@@ -15,8 +15,16 @@ interface Message {
   timestamp: Date;
 }
 
+interface Repo {
+  id: string;
+  repo_owner: string;
+  repo_name: string;
+  github_token: string | null;
+}
+
 const ChatInterface = () => {
   const [user, setUser] = useState<User | null>(null);
+  const [repo, setRepo] = useState<Repo | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -25,10 +33,31 @@ const ChatInterface = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Check authentication
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // Check authentication and load repo
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
         setUser(session.user);
+        
+        // Fetch user's repository
+        const { data: repoData, error } = await supabase
+          .from('user_repos')
+          .select('*')
+          .eq('user_id', session.user.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        
+        if (!error && repoData) {
+          setRepo(repoData);
+          
+          // Show initial greeting
+          setMessages([{
+            id: 'initial',
+            role: 'assistant',
+            content: "Hi there! 👋\nMy name is Empirial. How can I assist you today?\n\nI can help you with your GitHub repository and make code changes for you!",
+            timestamp: new Date(),
+          }]);
+        }
       } else {
         navigate('/auth');
       }
@@ -76,15 +105,18 @@ const ChatInterface = () => {
     setLoading(true);
 
     try {
-      const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-chat`;
+      const CHAT_URL = `https://vfysnkkzesbovtnmoccb.supabase.co/functions/v1/ai-chat`;
       const response = await fetch(CHAT_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmeXNua2t6ZXNib3Z0bm1vY2NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIxMzg2NjcsImV4cCI6MjA2NzcxNDY2N30.a7oWYYvQtQtyiRX4bSFEOsqJyEbmOiP_3V3EKFXxMKk`,
         },
         body: JSON.stringify({
-          messages: [...messages.map(m => ({ role: m.role, content: m.content })), { role: 'user', content: input }]
+          messages: [...messages.map(m => ({ role: m.role, content: m.content })).filter(m => m.role !== 'assistant' || m.content), { role: 'user', content: input }],
+          repoOwner: repo?.repo_owner,
+          repoName: repo?.repo_name,
+          repoId: repo?.id,
         }),
       });
 
@@ -215,7 +247,14 @@ const ChatInterface = () => {
             >
               <Menu className="h-5 w-5" />
             </Button>
-            <h1 className="text-xl font-bold text-gradient">AI Assistant</h1>
+            <div>
+              <h1 className="text-xl font-bold text-gradient">Empirial AI Assistant</h1>
+              {repo && (
+                <p className="text-xs text-muted-foreground">
+                  Connected to: {repo.repo_owner}/{repo.repo_name}
+                </p>
+              )}
+            </div>
           </div>
           <Button
             variant="ghost"
@@ -232,10 +271,12 @@ const ChatInterface = () => {
             {messages.length === 0 ? (
               <div className="text-center py-12">
                 <h2 className="text-2xl font-bold text-gradient mb-4">
-                  Welcome to Your AI Assistant
+                  Welcome to Empirial AI
                 </h2>
                 <p className="text-muted-foreground">
-                  Start a conversation by typing a message below.
+                  {repo 
+                    ? "I'm ready to help with your repository!" 
+                    : "Please connect a repository to get started."}
                 </p>
               </div>
             ) : (
