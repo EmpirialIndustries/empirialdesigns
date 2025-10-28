@@ -1,26 +1,43 @@
+/// <reference lib="deno.ns" />
+/// <reference lib="deno.unstable" />
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.4";
+
+// Type declarations
+interface DenoRequest {
+  method: string;
+  headers: Headers;
+  json(): Promise<any>;
+}
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-serve(async (req) => {
+serve(async (req: DenoRequest) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const { messages, repoOwner, repoName, repoId } = await req.json();
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    const OPENROUTER_API_KEY = Deno.env.get('OPENROUTER_API_KEY');
     const GITHUB_TOKEN = Deno.env.get('GITHUB_ACCESS_TOKEN');
     const authHeader = req.headers.get('Authorization');
 
-    if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY is not configured');
+    if (!OPENROUTER_API_KEY) {
+      throw new Error('OPENROUTER_API_KEY is not configured');
     }
+
+    // Define models in order of preference (fallback)
+    const models = [
+      'anthropic/claude-3-opus',      // Primary choice - most capable
+      'anthropic/claude-3-sonnet',    // First fallback - good balance
+      'google/gemini-pro',            // Second fallback
+      'mistralai/mistral-large'       // Final fallback
+    ];
 
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -77,38 +94,64 @@ ${codeContext}
 
 Remember: You can directly commit code changes to the user's GitHub repository. When you provide code in markdown code blocks, it will be automatically committed.`;
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          ...messages
-        ],
-        stream: true,
-      }),
-    });
+    // Try models in sequence until one works
+    let response;
+    let currentModelIndex = 0;
+    let lastError;
 
-    if (!response.ok) {
-      if (response.status === 429) {
+    while (currentModelIndex < models.length) {
+      const currentModel = models[currentModelIndex];
+      try {
+        response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+            'HTTP-Referer': 'https://empirialdesigns.co.za',  // Your website URL
+            'X-Title': 'Empirial Designs',  // Your app name
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: currentModel,
+            messages: [
+              { role: 'system', content: systemPrompt },
+              ...messages
+            ],
+            stream: true,
+          }),
+        });
+
+        if (response.ok) {
+          break; // Success! Exit the loop
+        }
+
+        // Store the error and try next model
+        lastError = await response.text();
+        currentModelIndex++;
+        
+      } catch (error) {
+        lastError = error instanceof Error ? error.message : 'Unknown error occurred';
+        currentModelIndex++;
+        continue;
+      }
+    }
+
+    // If we've tried all models and none worked
+    if (!response || !response.ok) {
+      if (response?.status === 429) {
         return new Response(JSON.stringify({ error: 'Rate limits exceeded, please try again later.' }), {
           status: 429,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: 'Payment required, please add funds to your Lovable AI workspace.' }), {
+      if (response?.status === 402) {
+        return new Response(JSON.stringify({ error: 'Payment required, please check your OpenRouter API key and credits.' }), {
           status: 402,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
-      const t = await response.text();
-      console.error('AI gateway error:', response.status, t);
-      return new Response(JSON.stringify({ error: 'AI gateway error' }), {
+      const errorText = response ? await response.text() : 'No response received';
+      console.error('AI gateway error:', response?.status ?? 'No status', errorText);
+      return new Response(JSON.stringify({ error: 'AI gateway error', details: errorText }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -227,7 +270,8 @@ Remember: You can directly commit code changes to the user's GitHub repository. 
     });
   } catch (error) {
     console.error('Error in ai-chat:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+    return new Response(JSON.stringify({ error: errorMessage }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
