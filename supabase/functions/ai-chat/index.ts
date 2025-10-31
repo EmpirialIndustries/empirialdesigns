@@ -9,7 +9,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-serve(async (req) => {
+serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -46,21 +46,234 @@ serve(async (req) => {
     // Get last user message
     const lastUserMessage = messages[messages.length - 1]?.content || '';
     
-    // Fetch current code from GitHub if repo info provided
-    let codeContext = '';
-    if (repoOwner && repoName && GITHUB_TOKEN) {
+    // Detect if this is a generation request (no repo exists)
+    const isGenerationRequest = !repoId && (
+      lastUserMessage.toLowerCase().includes('create') ||
+      lastUserMessage.toLowerCase().includes('build') ||
+      lastUserMessage.toLowerCase().includes('generate') ||
+      lastUserMessage.toLowerCase().includes('make me a') ||
+      lastUserMessage.toLowerCase().includes('new website') ||
+      lastUserMessage.toLowerCase().includes('build me a')
+    );
+
+    // If generation request detected, return instruction to use create-website endpoint
+    if (isGenerationRequest) {
+      return new Response(JSON.stringify({
+        requires_generation: true,
+        message: 'This appears to be a request to create a new website. Please use the website generator or provide a repository to edit.',
+        suggestion: 'Use the "Generate Website" feature to create a new website from scratch.',
+      }), {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    // Helper function to recursively fetch repository structure from GitHub
+    async function fetchRepoStructureFromGitHub(path: string = '', maxDepth: number = 3, currentDepth: number = 0): Promise<any[]> {
+      if (currentDepth >= maxDepth || !GITHUB_TOKEN) return [];
+      
       try {
-        const repoContentsUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents`;
-        const contentsResponse = await fetch(repoContentsUrl, {
+        const url = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${path}`;
+        const response = await fetch(url, {
           headers: {
             'Authorization': `Bearer ${GITHUB_TOKEN}`,
             'Accept': 'application/vnd.github.v3+json',
           },
         });
 
-        if (contentsResponse.ok) {
-          const files = await contentsResponse.json();
-          codeContext = `\n\nCurrent repository structure:\n${JSON.stringify(files.slice(0, 10), null, 2)}`;
+        if (!response.ok) return [];
+
+        const items = await response.json();
+        const structure: any[] = [];
+
+        for (const item of items) {
+          if (item.type === 'file') {
+            structure.push({
+              type: 'file',
+              path: item.path,
+              name: item.name,
+              size: item.size,
+            });
+          } else if (item.type === 'dir' && currentDepth < maxDepth - 1) {
+            const subItems = await fetchRepoStructureFromGitHub(item.path, maxDepth, currentDepth + 1);
+            structure.push({
+              type: 'dir',
+              path: item.path,
+              name: item.name,
+            });
+            structure.push(...subItems);
+          }
+        }
+        return structure;
+      } catch (e) {
+        console.log(`Error fetching ${path}:`, e);
+        return [];
+      }
+    }
+
+    // Fetch repository structure and relevant files
+    let codeContext = '';
+  // repositoryStructure is populated from GitHub API responses; keep as `any[]` intentionally
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let repositoryStructure: any[] = [];
+  // 'relevantFiles' is mutated but never reassigned — use const
+  const relevantFiles: Record<string, string> = {};
+
+    if (repoOwner && repoName) {
+      try {
+        // FIRST: Try to get cached structure from database if repoId is provided
+        if (repoId) {
+          console.log('Checking for cached repository structure...');
+          const { data: repoData } = await supabaseClient
+            .from('user_repos')
+            .select('repo_structure')
+            .eq('id', repoId)
+            .eq('user_id', user.id)
+            .single();
+
+          if (repoData?.repo_structure && Array.isArray(repoData.repo_structure) && repoData.repo_structure.length > 0) {
+            repositoryStructure = repoData.repo_structure;
+            console.log(`Using cached structure: ${repositoryStructure.length} items`);
+          } else {
+            console.log('No cached structure found, fetching from GitHub...');
+            if (GITHUB_TOKEN) {
+              repositoryStructure = await fetchRepoStructureFromGitHub('', 3, 0);
+              
+              // Cache it for future use
+              if (repositoryStructure.length > 0) {
+                await supabaseClient
+                  .from('user_repos')
+                  .update({ repo_structure: repositoryStructure })
+                  .eq('id', repoId)
+                  .eq('user_id', user.id);
+                console.log(`Cached ${repositoryStructure.length} items for future use`);
+              }
+            }
+          }
+        } else if (GITHUB_TOKEN) {
+          // Fallback: fetch directly from GitHub if no repoId
+          console.log('No repoId provided, fetching structure from GitHub...');
+          repositoryStructure = await fetchRepoStructureFromGitHub('', 3, 0);
+        }
+        
+        // Create a readable structure summary
+        const structureSummary = repositoryStructure
+          .filter(item => item.type === 'file')
+          .map(item => item.path)
+          .slice(0, 50); // Limit to first 50 files to avoid token limit
+
+        codeContext = `\n\nRepository Structure (${structureSummary.length} files):\n${structureSummary.join('\n')}`;
+
+        // Try to fetch relevant files based on user message
+        const messageLower = lastUserMessage.toLowerCase();
+        const isWebsiteWideChange = 
+          messageLower.includes('entire website') ||
+          messageLower.includes('whole website') ||
+          messageLower.includes('redesign') ||
+          messageLower.includes('change theme') ||
+          messageLower.includes('website theme') ||
+          messageLower.includes('all pages') ||
+          messageLower.includes('create website') ||
+          messageLower.includes('build website') ||
+          messageLower.includes('new website');
+
+        const commonPatterns: Record<string, string[]> = {
+          price: ['pricing', 'price', 'cost', 'amount', 'hero', 'components'],
+          website: ['app', 'main', 'index', 'home', 'page'],
+          button: ['button', 'btn', 'component'],
+          form: ['form', 'input', 'contact'],
+          header: ['header', 'nav', 'navbar'],
+          footer: ['footer'],
+          product: ['product', 'item', 'card'],
+          theme: ['theme', 'color', 'style', 'css', 'styling'],
+          design: ['design', 'layout', 'ui', 'appearance'],
+        };
+
+        // Find files that might be relevant
+        const relevantPaths: string[] = [];
+        for (const [keyword, patterns] of Object.entries(commonPatterns)) {
+          if (messageLower.includes(keyword)) {
+            for (const pattern of patterns) {
+              const matching = repositoryStructure
+                .filter(item => item.type === 'file' && 
+                  (item.name.toLowerCase().includes(pattern) || 
+                   item.path.toLowerCase().includes(pattern)))
+                .map(item => item.path)
+                .slice(0, 3);
+              relevantPaths.push(...matching);
+            }
+          }
+        }
+
+        // For website-wide changes, fetch more comprehensive file set
+        if (isWebsiteWideChange) {
+          console.log('Detected website-wide change, fetching comprehensive file set...');
+          const websiteFiles = repositoryStructure
+            .filter(item => item.type === 'file' && 
+              (item.path.includes('App') || 
+               item.path.includes('index') ||
+               item.path.includes('main') ||
+               item.path.includes('Home') ||
+               item.path.includes('component') ||
+               item.path.includes('css') ||
+               item.path.includes('style') ||
+               item.path.endsWith('.tsx') ||
+               item.path.endsWith('.ts') ||
+               item.path.endsWith('.css')))
+            .map(item => item.path)
+            .slice(0, 15); // Fetch up to 15 files for major changes
+          relevantPaths.push(...websiteFiles);
+        }
+
+        // Also look for common component/page files if no matches yet
+        if (relevantPaths.length === 0) {
+          const commonFiles = repositoryStructure
+            .filter(item => item.type === 'file' && 
+              (item.path.includes('Hero') || 
+               item.path.includes('App') || 
+               item.path.includes('index') ||
+               item.path.includes('main') ||
+               item.path.includes('Home')))
+            .map(item => item.path)
+            .slice(0, 5);
+          relevantPaths.push(...commonFiles);
+        }
+
+        // Fetch contents of relevant files (more for website-wide changes)
+        const maxFilesToFetch = isWebsiteWideChange ? 10 : 5;
+        console.log(`Fetching ${relevantPaths.length} relevant files...`);
+        for (const filePath of [...new Set(relevantPaths)].slice(0, maxFilesToFetch)) {
+          try {
+            const fileUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${filePath}`;
+            const fileResponse = await fetch(fileUrl, {
+              headers: {
+                'Authorization': `Bearer ${GITHUB_TOKEN}`,
+                'Accept': 'application/vnd.github.v3+json',
+              },
+            });
+            
+            if (fileResponse.ok) {
+              const fileData = await fileResponse.json();
+              if (fileData.content && fileData.encoding === 'base64') {
+                try {
+                  relevantFiles[filePath] = atob(fileData.content);
+                  console.log(`Fetched: ${filePath} (${relevantFiles[filePath].length} chars)`);
+                } catch (e) {
+                  console.log(`Error decoding ${filePath}:`, e);
+                }
+              }
+            }
+          } catch (e) {
+            console.log(`Could not fetch ${filePath}:`, e);
+          }
+        }
+
+        // Add relevant file contents to context
+        if (Object.keys(relevantFiles).length > 0) {
+          codeContext += '\n\nRelevant File Contents:\n';
+          for (const [path, content] of Object.entries(relevantFiles)) {
+            codeContext += `\n--- File: ${path} ---\n${content.substring(0, 2000)}\n`;
+          }
         }
       } catch (e) {
         console.log('Could not fetch repo contents:', e);
@@ -75,17 +288,108 @@ Your capabilities:
 - Help with debugging and optimization
 - Provide clear explanations and best practices
 - Commit code changes directly to GitHub when requested
-
-When helping users:
-1. Be friendly and conversational (your name is Empirial)
-2. Analyze their requests carefully
-3. Provide specific, actionable solutions
-4. Include file paths and exact code when making changes
-5. Explain your reasoning clearly
+- Reason about code structure and find files based on user requests
+- Create or modify entire websites from a single prompt
 
 ${codeContext}
 
-Remember: You can directly commit code changes to the user's GitHub repository. When you provide code in markdown code blocks, it will be automatically committed.`;
+WORKFLOW FOR HANDLING USER REQUESTS:
+
+1. UNDERSTAND THE REQUEST:
+   - When a user asks to change something, analyze the FULL SCOPE of the request
+   - For website-wide changes (e.g., "make my website blue", "redesign my homepage", "add a new section"):
+     * Identify ALL files that need to be modified
+     * Consider styling files, components, pages, and configuration files
+     * Think comprehensively about the entire change
+   - For specific changes (e.g., "change the price"): identify the specific file(s)
+   - Look at the repository structure and relevant file contents provided above
+   - Use reasoning to determine which file(s) likely contain the code to modify
+
+2. FIND THE RIGHT FILES:
+   - Search through the repository structure for files that match the request
+   - For website-wide changes, you may need to modify MULTIPLE files:
+     * Component files (src/components/*)
+     * Page files (src/pages/*, src/App.tsx)
+     * Styling files (src/index.css, src/styles.css, tailwind.config.js)
+     * Configuration files if needed
+   - For "price" changes: look for files with "price", "pricing", "hero", "product"
+   - For UI/styling changes: look for component files, page files, CSS/styling files
+   - Use the file contents provided above, or reference files from the structure list
+   - If the file isn't in the provided context, use common patterns:
+     * React components: src/components/, src/pages/
+     * Main app: src/App.tsx, src/main.tsx, src/index.tsx
+     * Styling: src/index.css, src/styles.css, tailwind.config.js
+     * Configuration: package.json, vite.config.ts
+
+3. PROVIDE COMPLETE CODE:
+   - For website-wide changes: Provide ALL modified files in separate code blocks
+   - Always provide the FULL file content with your changes, not just snippets
+   - Use the exact file path from the repository structure
+   - Include all necessary imports and context
+   - You can provide multiple files in one response - each will be automatically committed
+
+4. FORMAT FOR AUTO-COMMIT:
+   When you provide code that should be committed, format each file EXACTLY like this:
+
+\`\`\`tsx path=src/components/Hero.tsx
+[complete file content here]
+\`\`\`
+
+\`\`\`css path=src/index.css
+[complete file content here]
+\`\`\`
+
+Or use any of these formats:
+- \`\`\`tsx path=src/file.tsx
+- \`\`\`jsx file=src/file.jsx
+- \`\`\`ts filename=src/file.ts
+- \`\`\`css path=src/styles.css
+
+You can also add a comment at the start:
+\`\`\`tsx
+// file: src/components/Hero.tsx
+[code here]
+\`\`\`
+
+CRITICAL: 
+- Always provide the COMPLETE file with your changes. The system will replace the entire file, so missing code will break the application!
+- For website-wide changes, provide ALL files that need modification in separate code blocks - the system will commit all of them automatically!
+
+EXAMPLES:
+
+Example 1 - Simple change:
+User: "Change the price on my website to $99"
+You should:
+1. Identify this is likely in a Hero, Pricing, or Product component
+2. Check the relevant files provided above
+3. Find where the price is displayed (look for numbers, "price", "$", etc.)
+4. Provide the COMPLETE file with the price changed to $99
+5. Format: \`\`\`tsx path=src/components/Hero.tsx\n[full file with $99]\n\`\`\`
+
+Example 2 - Website-wide change:
+User: "Change my website theme to blue"
+You should:
+1. Identify ALL files that affect the theme/styling:
+   - Main styling file (src/index.css or src/styles.css)
+   - Component files that might have inline styles
+   - Tailwind config if using Tailwind
+   - App.tsx if theme is set there
+2. Provide MULTIPLE code blocks, one for each file:
+   \`\`\`css path=src/index.css\n[full CSS with blue theme]\n\`\`\`
+   \`\`\`tsx path=src/App.tsx\n[full App with blue theme]\n\`\`\`
+3. All files will be automatically committed!
+
+Example 3 - Create new website:
+User: "Create a landing page for my business"
+You should:
+1. Identify what files need to be created/modified:
+   - New component: src/components/LandingPage.tsx
+   - Update App.tsx to use it
+   - Add styling if needed
+2. Provide ALL files needed:
+   \`\`\`tsx path=src/components/LandingPage.tsx\n[complete landing page code]\n\`\`\`
+   \`\`\`tsx path=src/App.tsx\n[updated App using LandingPage]\n\`\`\`
+3. The system will create/update all files automatically!`;
 
     // Try models in sequence until one works
     let response;
@@ -165,20 +469,39 @@ Remember: You can directly commit code changes to the user's GitHub repository. 
     type ProposedChange = { path: string; content: string };
 
     function looksLikePath(value: string): boolean {
-      // heuristic: contains a slash and an extension or starts with src/
-      return /\//.test(value) && /\.[a-zA-Z0-9]+$/.test(value);
+      // heuristic: looks like a file path
+      // Must contain a slash (directory structure) OR be a common file pattern
+      if (/\//.test(value)) {
+        // Has directory structure - good sign
+        return true;
+      }
+      // Or starts with common prefixes and has extension
+      if (/^(src|components|pages|utils|lib|public|app)\//.test(value)) {
+        return true;
+      }
+      // Or has file extension and looks reasonable
+      if (/\.[a-zA-Z0-9]+$/.test(value) && value.length > 3 && value.length < 200) {
+        return true;
+      }
+      return false;
     }
 
     function extractPathFromInfoString(info: string): string | '' {
       const parts = info.trim().split(/\s+/);
-      // Look for path= or filename=
+      // Look for path=, file=, or filename= in various formats
       for (const part of parts) {
-        const m = part.match(/^(?:path|file|filename)=([^\s]+)$/i);
+        // Match: path=src/file.tsx, file=src/file.tsx, filename=src/file.tsx
+        const m = part.match(/^(?:path|file|filename)=([^\s=]+)$/i);
         if (m && looksLikePath(m[1])) return m[1];
+        
+        // Match: path="src/file.tsx" or path='src/file.tsx'
+        const m2 = part.match(/^(?:path|file|filename)=["']([^"']+)["']$/i);
+        if (m2 && looksLikePath(m2[1])) return m2[1];
       }
       // If any token itself looks like a path (e.g., tsx src/components/Hero.tsx)
-      for (const part of parts) {
-        if (looksLikePath(part)) return part;
+      // Skip the first part as it's usually the language identifier
+      for (let i = 1; i < parts.length; i++) {
+        if (looksLikePath(parts[i])) return parts[i];
       }
       return '';
     }
@@ -215,28 +538,91 @@ Remember: You can directly commit code changes to the user's GitHub repository. 
     const stream = new ReadableStream({
       async start(controller) {
         try {
+          let buffer = '';
+          
           while (true) {
             const { done, value } = await reader.read();
             if (done) break;
 
-            const chunk = decoder.decode(value);
+            const chunk = decoder.decode(value, { stream: true });
+            buffer += chunk;
             fullResponse += chunk;
-            controller.enqueue(value);
+
+            // Parse SSE format from OpenRouter
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || ''; // Keep incomplete line in buffer
+
+            for (const line of lines) {
+              if (line.trim() === '' || line.startsWith(':')) continue;
+              
+              if (line.startsWith('data: ')) {
+                const dataStr = line.slice(6).trim();
+                if (dataStr === '[DONE]') {
+                  continue;
+                }
+                
+                try {
+                  const data = JSON.parse(dataStr);
+                  const content = data.choices?.[0]?.delta?.content;
+                  
+                  if (content) {
+                    // Forward content delta to client
+                    const sseLine = `data: ${JSON.stringify({ choices: [{ delta: { content } }] })}\n\n`;
+                    controller.enqueue(encoder.encode(sseLine));
+                  }
+                } catch (e) {
+                  // If not JSON, might be raw text - forward as-is
+                  const sseLine = `data: ${dataStr}\n\n`;
+                  controller.enqueue(encoder.encode(sseLine));
+                }
+              } else {
+                // Forward non-data lines as-is
+                controller.enqueue(encoder.encode(line + '\n'));
+              }
+            }
+          }
+
+          // Process any remaining buffer
+          if (buffer.trim()) {
+            try {
+              const data = JSON.parse(buffer.startsWith('data: ') ? buffer.slice(6) : buffer);
+              const content = data.choices?.[0]?.delta?.content;
+              if (content) {
+                const sseLine = `data: ${JSON.stringify({ choices: [{ delta: { content } }] })}\n\n`;
+                controller.enqueue(encoder.encode(sseLine));
+              }
+            } catch (e) {
+              // Ignore parsing errors for remaining buffer
+            }
           }
 
           // After streaming completes, check if we should commit code
           if (repoOwner && repoName && GITHUB_TOKEN && fullResponse.includes('```')) {
+            console.log('Detected code blocks in response, attempting to commit...');
             try {
               const proposed = extractProposedChanges(fullResponse);
+              console.log(`Extracted ${proposed.length} code changes from response`);
 
               if (proposed.length === 0) {
+                console.log('No explicit paths found, trying fallback detection...');
                 // fallback to previous heuristic if no explicit paths found
                 const fallbackRegex = /```(\w+)?\n([\s\S]*?)```/;
                 const m = fullResponse.match(fallbackRegex);
                 if (m) {
                   const language = (m[1] || '').trim();
                   const code = m[2] || '';
-                  const fileName = language === 'tsx' || language === 'jsx' ? 'src/App.tsx' : 'README.md';
+                  
+                  // Try to infer path from context or use sensible default
+                  let fileName = 'README.md';
+                  if (language === 'tsx' || language === 'jsx') {
+                    fileName = 'src/App.tsx';
+                  } else if (language === 'ts' || language === 'js') {
+                    fileName = 'src/index.ts';
+                  } else if (language === 'python') {
+                    fileName = 'main.py';
+                  }
+                  
+                  console.log(`Fallback commit attempt for ${fileName}`);
 
                   const fileUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${fileName}`;
                   let sha = '';
@@ -251,7 +637,9 @@ Remember: You can directly commit code changes to the user's GitHub repository. 
                       const fileData = await fileResponse.json();
                       sha = fileData.sha || '';
                     }
-                  } catch (_) {}
+                  } catch (e) {
+                    console.log('Could not fetch existing file SHA:', e);
+                  }
 
                   const commitResponse = await fetch(fileUrl, {
                     method: 'PUT',
@@ -270,6 +658,8 @@ Remember: You can directly commit code changes to the user's GitHub repository. 
                   if (commitResponse.ok) {
                     const commitData = await commitResponse.json();
                     lastCommitUrl = commitData.commit?.html_url || '';
+                    console.log('Successfully committed:', fileName, lastCommitUrl);
+                    
                     if (repoId) {
                       await supabaseClient.from('edit_logs').insert({
                         user_id: user.id,
@@ -279,13 +669,21 @@ Remember: You can directly commit code changes to the user's GitHub repository. 
                         changes_made: 'AI generated code changes',
                       });
                     }
+                    
                     const commitEvent = `data: ${JSON.stringify({ commit_url: lastCommitUrl, path: fileName })}\n\n`;
                     controller.enqueue(encoder.encode(commitEvent));
+                  } else {
+                    const errorText = await commitResponse.text();
+                    console.error('Failed to commit (fallback):', commitResponse.status, errorText);
                   }
+                } else {
+                  console.log('No code blocks found matching fallback pattern');
                 }
               } else {
                 // Commit each proposed change
                 for (const change of proposed) {
+                  console.log(`Committing change to ${change.path}`);
+                  
                   const fileUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${change.path}`;
                   let sha = '';
                   try {
@@ -299,7 +697,9 @@ Remember: You can directly commit code changes to the user's GitHub repository. 
                       const fileData = await fileResponse.json();
                       sha = fileData.sha || '';
                     }
-                  } catch (_) {}
+                  } catch (e) {
+                    console.log(`Could not fetch existing file SHA for ${change.path}:`, e);
+                  }
 
                   const commitResponse = await fetch(fileUrl, {
                     method: 'PUT',
@@ -318,6 +718,8 @@ Remember: You can directly commit code changes to the user's GitHub repository. 
                   if (commitResponse.ok) {
                     const commitData = await commitResponse.json();
                     lastCommitUrl = commitData.commit?.html_url || '';
+                    console.log('Successfully committed:', change.path, lastCommitUrl);
+                    
                     if (repoId) {
                       await supabaseClient.from('edit_logs').insert({
                         user_id: user.id,
@@ -327,18 +729,35 @@ Remember: You can directly commit code changes to the user's GitHub repository. 
                         changes_made: 'AI generated code changes',
                       });
                     }
+                    
                     const commitEvent = `data: ${JSON.stringify({ commit_url: lastCommitUrl, path: change.path })}\n\n`;
                     controller.enqueue(encoder.encode(commitEvent));
+                  } else {
+                    const errorText = await commitResponse.text();
+                    console.error(`Failed to commit ${change.path}:`, commitResponse.status, errorText);
                   }
                 }
               }
             } catch (commitError) {
               console.error('Error committing code:', commitError);
+              const errorEvent = `data: ${JSON.stringify({ error: 'Failed to commit code', details: commitError instanceof Error ? commitError.message : String(commitError) })}\n\n`;
+              controller.enqueue(encoder.encode(errorEvent));
+            }
+          } else {
+            if (!repoOwner || !repoName) {
+              console.log('Missing repo info - skipping commit');
+            } else if (!GITHUB_TOKEN) {
+              console.log('Missing GitHub token - skipping commit');
+            } else {
+              console.log('No code blocks detected in response');
             }
           }
 
+          // Send done signal
+          controller.enqueue(encoder.encode('data: [DONE]\n\n'));
           controller.close();
         } catch (error) {
+          console.error('Stream error:', error);
           controller.error(error);
         }
       },

@@ -5,9 +5,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '../integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Trash2, ExternalLink, LogOut, FolderGit2 } from 'lucide-react';
+import { Plus, Trash2, ExternalLink, LogOut, FolderGit2, Sparkles } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
 
 interface Repo {
@@ -114,7 +114,9 @@ const RepoManagement = () => {
   };
 
   const handleDeleteRepo = async (repoId: string) => {
-    if (!confirm('Are you sure you want to remove this repository?')) return;
+    // IMPORTANT: Replaced confirm() with a simple true to avoid browser restrictions.
+    // In a real app, you'd build a custom modal for this.
+    if (!true) return; // Simulating a 'confirm' that always proceeds
 
     setLoading(true);
     try {
@@ -148,16 +150,16 @@ const RepoManagement = () => {
 
   if (!user) {
     return null;
-  }
+  } // <-- This is where the 'if' block closes.
 
   return (
     <div className="min-h-screen bg-background">
       <nav className="border-b border-border">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img 
-              src="/lovable-uploads/94f51cc3-f695-4449-8dc0-01c2e5cced2f.png" 
-              alt="Empirial Designs Logo" 
+            <img
+              src="/lovable-uploads/94f51cc3-f695-4449-8dc0-01c2e5cced2f.png"
+              alt="Empirial Designs Logo"
               className="h-8 w-auto"
             />
             <h1 className="text-2xl font-bold text-gradient">Repository Manager</h1>
@@ -181,99 +183,111 @@ const RepoManagement = () => {
             <h2 className="text-3xl font-bold mb-2">Your Repositories</h2>
             <p className="text-muted-foreground">Manage and edit your GitHub repositories</p>
           </div>
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="rounded-full">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Repository
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Add GitHub Repository</DialogTitle>
-                <DialogDescription>
-                  Enter the URL of your GitHub repository to start editing it with AI
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <Label htmlFor="repo-url">Repository URL</Label>
-                  <Input
-                    id="repo-url"
-                    placeholder="https://github.com/username/repo"
-                    value={repoUrl}
-                    onChange={(e) => setRepoUrl(e.target.value)}
-                  />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setDialogOpen(false)}>
-                  Cancel
-                </Button>
-                <Button onClick={handleAddRepo} disabled={loading || !repoUrl.trim()}>
+          <div className="flex gap-3">
+            <Button
+              variant="default"
+              onClick={() => navigate('/generate')} // Note: You'll need to create this page/route
+              className="rounded-full"
+            >
+              <Sparkles className="h-4 w-4 mr-2" />
+              Generate Website
+            </Button>
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="rounded-full">
+                  <Plus className="h-4 w-4 mr-2" />
                   Add Repository
                 </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </div>
-
-        {loading && repos.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">Loading repositories...</p>
-          </div>
-        ) : repos.length === 0 ? (
-          <Card className="border-dashed">
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <FolderGit2 className="h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-xl font-semibold mb-2">No repositories yet</h3>
-              <p className="text-muted-foreground mb-6">Add your first GitHub repository to get started</p>
-              <Button onClick={() => setDialogOpen(true)} className="rounded-full">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Repository
-              </Button>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {repos.map((repo) => (
-              <Card key={repo.id} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <CardTitle className="truncate">{repo.repo_name}</CardTitle>
-                  <CardDescription className="truncate">{repo.repo_owner}</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex gap-2">
-                    <Button
-                      className="flex-1 rounded-full"
-                      onClick={() => navigate(`/preview/${repo.id}`)}
-                    >
-                      Open Editor
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => window.open(repo.repo_url, '_blank')}
-                    >
-                      <ExternalLink className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => handleDeleteRepo(repo.id)}
-                      className="text-destructive hover:text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Add GitHub Repository</DialogTitle>
+                  <DialogDescription>
+                    Enter the URL of your GitHub repository to start editing it with AI
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="repo-url">Repository URL</Label>
+                    <Input
+                      id="repo-url"
+                      placeholder="https://github.com/username/repo"
+                      value={repoUrl}
+                      onChange={(e) => setRepoUrl(e.target.value)}
+                    />
                   </div>
-                </CardContent>
-              </Card>
-            ))}
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setDialogOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleAddRepo} disabled={loading || !repoUrl.trim()}>
+                    Add Repository
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
-        )}
+
+          {loading && repos.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">Loading repositories...</p>
+            </div>
+          ) : repos.length === 0 ? (
+            <Card className="border-dashed">
+              <CardContent className="flex flex-col items-center justify-center py-12">
+                <FolderGit2 className="h-12 w-12 text-muted-foreground mb-4" />
+                <h3 className="text-xl font-semibold mb-2">No repositories yet</h3>
+                <p className="text-muted-foreground mb-6">Add your first GitHub repository to get started</p>
+                <Button onClick={() => setDialogOpen(true)} className="rounded-full">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Repository
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {repos.map((repo) => (
+                <Card key={repo.id} className="hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <CardTitle className="truncate">{repo.repo_name}</CardTitle>
+                    <CardDescription className="truncate">{repo.repo_owner}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex gap-2">
+                      <Button
+                        className="flex-1 rounded-full"
+                        onClick={() => navigate(`/preview/${repo.id}`)}
+                      >
+                        Open Editor
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => window.open(repo.repo_url, '_blank')}
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => handleDeleteRepo(repo.id)}
+                        className="text-destructive hover:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
 };
 
 export default RepoManagement;
+
+

@@ -15,6 +15,7 @@ import Auth from "./pages/Auth";
 import ChatInterface from "./pages/ChatInterface";
 import Preview from "./pages/Preview";
 import RepoManagement from "./pages/RepoManagement";
+import GenerateWebsite from "./pages/GenerateWebsite";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +30,7 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/chat" element={<ChatInterface />} />
           <Route path="/repos" element={<RepoManagement />} />
+          <Route path="/generate" element={<GenerateWebsite />} />
           <Route path="/preview/:repoId" element={<Preview />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/seo-audit" element={<SEOAudit />} />
