@@ -6,12 +6,26 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { ArrowLeft } from 'lucide-react';
+import { getAccessToken } from '@/utils/debug-token';
 
 const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [siteName, setSiteName] = useState('');
+  
+  // DEBUG: Function to show access token
+  const showToken = async () => {
+    const token = await getAccessToken();
+    if (token) {
+      console.log('Access Token:', token);
+      // Also show in toast for easy copying
+      toast({
+        title: "Access Token Retrieved",
+        description: "Check your browser console (F12) to copy the token",
+      });
+    }
+  };
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -159,7 +173,7 @@ const Auth = () => {
             </Button>
           </form>
 
-          <div className="mt-6 text-center">
+          <div className="mt-6 text-center space-y-4">
             <button
               type="button"
               onClick={() => setIsSignUp(!isSignUp)}
@@ -170,6 +184,18 @@ const Auth = () => {
                 : "Don't have an account? Sign up"
               }
             </button>
+
+            {/* Debug button to show access token */}
+            <div>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={showToken}
+                className="text-xs text-muted-foreground"
+              >
+                Show Access Token
+              </Button>
+            </div>
           </div>
         </div>
       </div>

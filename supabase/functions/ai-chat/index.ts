@@ -1,22 +1,15 @@
-/// <reference lib="deno.ns" />
-/// <reference lib="deno.unstable" />
+/// <reference path="../deno.d.ts" />
+
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.4";
-
-// Type declarations
-interface DenoRequest {
-  method: string;
-  headers: Headers;
-  json(): Promise<any>;
-}
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-serve(async (req: DenoRequest) => {
+serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -33,8 +26,8 @@ serve(async (req: DenoRequest) => {
 
     // Define models in order of preference (fallback)
     const models = [
-      'anthropic/claude-3-opus',      // Primary choice - most capable
-      'anthropic/claude-3-sonnet',    // First fallback - good balance
+      'deepseek/deepseek-r1-0528',      // Primary choice - most capable
+      'deepseek/deepseek-r1',    // First fallback - good balance
       'google/gemini-pro',            // Second fallback
       'mistralai/mistral-large'       // Final fallback
     ];
@@ -166,7 +159,58 @@ Remember: You can directly commit code changes to the user's GitHub repository. 
     const encoder = new TextEncoder();
     const decoder = new TextDecoder();
     let fullResponse = '';
-    let commitUrl = '';
+    let lastCommitUrl = '';
+
+    // ---- Helpers: extract proposed changes from response ----
+    type ProposedChange = { path: string; content: string };
+
+    function looksLikePath(value: string): boolean {
+      // heuristic: contains a slash and an extension or starts with src/
+      return /\//.test(value) && /\.[a-zA-Z0-9]+$/.test(value);
+    }
+
+    function extractPathFromInfoString(info: string): string | '' {
+      const parts = info.trim().split(/\s+/);
+      // Look for path= or filename=
+      for (const part of parts) {
+        const m = part.match(/^(?:path|file|filename)=([^\s]+)$/i);
+        if (m && looksLikePath(m[1])) return m[1];
+      }
+      // If any token itself looks like a path (e.g., tsx src/components/Hero.tsx)
+      for (const part of parts) {
+        if (looksLikePath(part)) return part;
+      }
+      return '';
+    }
+
+    function extractPathFromCodePreamble(code: string): string | '' {
+      // Check first few lines for comments like: // file: src/x.ts, /* file: src/x */, # file: src/x
+      const firstLines = code.split(/\r?\n/).slice(0, 5);
+      for (const line of firstLines) {
+        const m = line.match(/(?:\/\/|#|<!--|\*)\s*file:\s*([^\s>]+)\s*(?:-->)?/i);
+        if (m && looksLikePath(m[1])) return m[1];
+        const m2 = line.match(/(?:\/\/|#|<!--|\*)\s*path:\s*([^\s>]+)\s*(?:-->)?/i);
+        if (m2 && looksLikePath(m2[1])) return m2[1];
+      }
+      return '';
+    }
+
+    function extractProposedChanges(text: string): ProposedChange[] {
+      const changes: ProposedChange[] = [];
+      const fenceRegex = /```([^\n]*)\n([\s\S]*?)```/g; // info string + code
+      let match: RegExpExecArray | null;
+      while ((match = fenceRegex.exec(text)) !== null) {
+        const info = match[1] || '';
+        const code = match[2] || '';
+        let path = extractPathFromInfoString(info);
+        if (!path) path = extractPathFromCodePreamble(code);
+
+        if (path) {
+          changes.push({ path, content: code });
+        }
+      }
+      return changes;
+    }
 
     const stream = new ReadableStream({
       async start(controller) {
@@ -183,41 +227,33 @@ Remember: You can directly commit code changes to the user's GitHub repository. 
           // After streaming completes, check if we should commit code
           if (repoOwner && repoName && GITHUB_TOKEN && fullResponse.includes('```')) {
             try {
-              // Extract code blocks from response
-              const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g;
-              const matches = [...fullResponse.matchAll(codeBlockRegex)];
-              
-              if (matches.length > 0) {
-                // For now, commit the first code block found
-                const [, language, code] = matches[0];
-                const fileName = language === 'tsx' || language === 'jsx' ? 'src/App.tsx' : 'README.md';
-                
-                console.log('Attempting to commit code changes...');
-                
-                // Get current file SHA if it exists
-                let sha = '';
-                try {
-                  const fileResponse = await fetch(
-                    `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${fileName}`,
-                    {
+              const proposed = extractProposedChanges(fullResponse);
+
+              if (proposed.length === 0) {
+                // fallback to previous heuristic if no explicit paths found
+                const fallbackRegex = /```(\w+)?\n([\s\S]*?)```/;
+                const m = fullResponse.match(fallbackRegex);
+                if (m) {
+                  const language = (m[1] || '').trim();
+                  const code = m[2] || '';
+                  const fileName = language === 'tsx' || language === 'jsx' ? 'src/App.tsx' : 'README.md';
+
+                  const fileUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${fileName}`;
+                  let sha = '';
+                  try {
+                    const fileResponse = await fetch(fileUrl, {
                       headers: {
                         'Authorization': `Bearer ${GITHUB_TOKEN}`,
                         'Accept': 'application/vnd.github.v3+json',
                       },
+                    });
+                    if (fileResponse.ok) {
+                      const fileData = await fileResponse.json();
+                      sha = fileData.sha || '';
                     }
-                  );
-                  if (fileResponse.ok) {
-                    const fileData = await fileResponse.json();
-                    sha = fileData.sha;
-                  }
-                } catch (e) {
-                  console.log('File does not exist yet');
-                }
+                  } catch (_) {}
 
-                // Commit the changes
-                const commitResponse = await fetch(
-                  `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${fileName}`,
-                  {
+                  const commitResponse = await fetch(fileUrl, {
                     method: 'PUT',
                     headers: {
                       'Authorization': `Bearer ${GITHUB_TOKEN}`,
@@ -229,28 +265,71 @@ Remember: You can directly commit code changes to the user's GitHub repository. 
                       content: btoa(code),
                       ...(sha && { sha }),
                     }),
+                  });
+
+                  if (commitResponse.ok) {
+                    const commitData = await commitResponse.json();
+                    lastCommitUrl = commitData.commit?.html_url || '';
+                    if (repoId) {
+                      await supabaseClient.from('edit_logs').insert({
+                        user_id: user.id,
+                        repo_id: repoId,
+                        file_path: fileName,
+                        prompt: lastUserMessage,
+                        changes_made: 'AI generated code changes',
+                      });
+                    }
+                    const commitEvent = `data: ${JSON.stringify({ commit_url: lastCommitUrl, path: fileName })}\n\n`;
+                    controller.enqueue(encoder.encode(commitEvent));
                   }
-                );
-
-                if (commitResponse.ok) {
-                  const commitData = await commitResponse.json();
-                  commitUrl = commitData.commit.html_url;
-                  console.log('Code committed successfully:', commitUrl);
-
-                  // Log the edit
-                  if (repoId) {
-                    await supabaseClient.from('edit_logs').insert({
-                      user_id: user.id,
-                      repo_id: repoId,
-                      file_path: fileName,
-                      prompt: lastUserMessage,
-                      changes_made: 'AI generated code changes',
+                }
+              } else {
+                // Commit each proposed change
+                for (const change of proposed) {
+                  const fileUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${change.path}`;
+                  let sha = '';
+                  try {
+                    const fileResponse = await fetch(fileUrl, {
+                      headers: {
+                        'Authorization': `Bearer ${GITHUB_TOKEN}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                      },
                     });
-                  }
+                    if (fileResponse.ok) {
+                      const fileData = await fileResponse.json();
+                      sha = fileData.sha || '';
+                    }
+                  } catch (_) {}
 
-                  // Send commit URL as additional event
-                  const commitEvent = `data: ${JSON.stringify({ commit_url: commitUrl })}\n\n`;
-                  controller.enqueue(encoder.encode(commitEvent));
+                  const commitResponse = await fetch(fileUrl, {
+                    method: 'PUT',
+                    headers: {
+                      'Authorization': `Bearer ${GITHUB_TOKEN}`,
+                      'Accept': 'application/vnd.github.v3+json',
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                      message: `AI Edit: ${lastUserMessage.slice(0, 50)} (${change.path})`,
+                      content: btoa(change.content),
+                      ...(sha && { sha }),
+                    }),
+                  });
+
+                  if (commitResponse.ok) {
+                    const commitData = await commitResponse.json();
+                    lastCommitUrl = commitData.commit?.html_url || '';
+                    if (repoId) {
+                      await supabaseClient.from('edit_logs').insert({
+                        user_id: user.id,
+                        repo_id: repoId,
+                        file_path: change.path,
+                        prompt: lastUserMessage,
+                        changes_made: 'AI generated code changes',
+                      });
+                    }
+                    const commitEvent = `data: ${JSON.stringify({ commit_url: lastCommitUrl, path: change.path })}\n\n`;
+                    controller.enqueue(encoder.encode(commitEvent));
+                  }
                 }
               }
             } catch (commitError) {

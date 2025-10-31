@@ -106,11 +106,17 @@ const ChatInterface = () => {
 
     try {
       const CHAT_URL = `https://vfysnkkzesbovtnmoccb.supabase.co/functions/v1/ai-chat`;
+      const { data: { session } } = await supabase.auth.getSession();
+      const accessToken = session?.access_token;
+      if (!accessToken) {
+        throw new Error('Not authenticated');
+      }
+
       const response = await fetch(CHAT_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmeXNua2t6ZXNib3Z0bm1vY2NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIxMzg2NjcsImV4cCI6MjA2NzcxNDY2N30.a7oWYYvQtQtyiRX4bSFEOsqJyEbmOiP_3V3EKFXxMKk`,
+          'Authorization': `Bearer ${accessToken}`,
         },
         body: JSON.stringify({
           messages: [...messages.map(m => ({ role: m.role, content: m.content })).filter(m => m.role !== 'assistant' || m.content), { role: 'user', content: input }],

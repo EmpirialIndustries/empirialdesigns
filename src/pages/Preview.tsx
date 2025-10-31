@@ -8,6 +8,10 @@ import { useToast } from '@/hooks/use-toast';
 import { Send, LogOut, RefreshCw, ExternalLink, ArrowLeft } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
 
+// Supabase constants (matching client.ts)
+const SUPABASE_URL = "https://vfysnkkzesbovtnmoccb.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmeXNua2t6ZXNib3Z0bm1vY2NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIxMzg2NjcsImV4cCI6MjA2NzcxNDY2N30.a7oWYYvQtQtyiRX4bSFEOsqJyEbmOiP_3V3EKFXxMKk";
+
 interface Message {
   id: string;
   role: 'user' | 'assistant';
@@ -105,12 +109,18 @@ const Preview = () => {
     setLoading(true);
 
     try {
-      const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-chat`;
+      const CHAT_URL = `${SUPABASE_URL}/functions/v1/ai-chat`;
+      const { data: { session } } = await supabase.auth.getSession();
+      const accessToken = session?.access_token;
+      if (!accessToken) {
+        throw new Error('Not authenticated');
+      }
+
       const response = await fetch(CHAT_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          'Authorization': `Bearer ${accessToken}`,
         },
         body: JSON.stringify({
           messages: [...messages.map(m => ({ role: m.role, content: m.content })), { role: 'user', content: input }],
@@ -121,8 +131,17 @@ const Preview = () => {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to get AI response');
+        let message = 'Failed to get AI response';
+        try {
+          const text = await response.text();
+          try {
+            const json = JSON.parse(text);
+            message = json.error || message;
+          } catch {
+            message = text || message;
+          }
+        } catch {}
+        throw new Error(message);
       }
 
       if (!response.body) {
