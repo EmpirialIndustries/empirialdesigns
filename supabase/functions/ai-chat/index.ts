@@ -596,9 +596,14 @@ You should:
             }
           }
 
-          // After streaming completes, check if we should commit code
+           // After streaming completes, check if we should commit code
           if (repoOwner && repoName && GITHUB_TOKEN && fullResponse.includes('```')) {
             console.log('Detected code blocks in response, attempting to commit...');
+            
+            // Send tool call start event
+            const toolStartEvent = `data: ${JSON.stringify({ type: 'tool_call', id: 'commit_1', name: 'commit_code', status: 'running' })}\n\n`;
+            controller.enqueue(encoder.encode(toolStartEvent));
+            
             try {
               const proposed = extractProposedChanges(fullResponse);
               console.log(`Extracted ${proposed.length} code changes from response`);
@@ -660,6 +665,14 @@ You should:
                     lastCommitUrl = commitData.commit?.html_url || '';
                     console.log('Successfully committed:', fileName, lastCommitUrl);
                     
+                    // Send tool complete event
+                    const toolCompleteEvent = `data: ${JSON.stringify({ type: 'tool_call', id: 'commit_1', name: 'commit_code', status: 'complete', output: { path: fileName, url: lastCommitUrl } })}\n\n`;
+                    controller.enqueue(encoder.encode(toolCompleteEvent));
+                    
+                    // Send commit URL event
+                    const commitEvent = `data: ${JSON.stringify({ type: 'commit', url: lastCommitUrl, path: fileName })}\n\n`;
+                    controller.enqueue(encoder.encode(commitEvent));
+                    
                     if (repoId) {
                       await supabaseClient.from('edit_logs').insert({
                         user_id: user.id,
@@ -669,12 +682,13 @@ You should:
                         changes_made: 'AI generated code changes',
                       });
                     }
-                    
-                    const commitEvent = `data: ${JSON.stringify({ commit_url: lastCommitUrl, path: fileName })}\n\n`;
-                    controller.enqueue(encoder.encode(commitEvent));
                   } else {
                     const errorText = await commitResponse.text();
                     console.error('Failed to commit (fallback):', commitResponse.status, errorText);
+                    
+                    // Send tool error event
+                    const toolErrorEvent = `data: ${JSON.stringify({ type: 'tool_call', id: 'commit_1', name: 'commit_code', status: 'error', output: { error: errorText } })}\n\n`;
+                    controller.enqueue(encoder.encode(toolErrorEvent));
                   }
                 } else {
                   console.log('No code blocks found matching fallback pattern');
@@ -683,6 +697,10 @@ You should:
                 // Commit each proposed change
                 for (const change of proposed) {
                   console.log(`Committing change to ${change.path}`);
+                  
+                  // Send tool call for each file
+                  const toolFileEvent = `data: ${JSON.stringify({ type: 'tool_call', id: `commit_${change.path}`, name: 'commit_file', status: 'running', input: { path: change.path } })}\n\n`;
+                  controller.enqueue(encoder.encode(toolFileEvent));
                   
                   const fileUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${change.path}`;
                   let sha = '';
@@ -720,6 +738,14 @@ You should:
                     lastCommitUrl = commitData.commit?.html_url || '';
                     console.log('Successfully committed:', change.path, lastCommitUrl);
                     
+                    // Send tool complete event
+                    const toolFileCompleteEvent = `data: ${JSON.stringify({ type: 'tool_call', id: `commit_${change.path}`, name: 'commit_file', status: 'complete', output: { path: change.path, url: lastCommitUrl } })}\n\n`;
+                    controller.enqueue(encoder.encode(toolFileCompleteEvent));
+                    
+                    // Send commit URL event
+                    const commitEvent = `data: ${JSON.stringify({ type: 'commit', url: lastCommitUrl, path: change.path })}\n\n`;
+                    controller.enqueue(encoder.encode(commitEvent));
+                    
                     if (repoId) {
                       await supabaseClient.from('edit_logs').insert({
                         user_id: user.id,
@@ -729,12 +755,13 @@ You should:
                         changes_made: 'AI generated code changes',
                       });
                     }
-                    
-                    const commitEvent = `data: ${JSON.stringify({ commit_url: lastCommitUrl, path: change.path })}\n\n`;
-                    controller.enqueue(encoder.encode(commitEvent));
                   } else {
                     const errorText = await commitResponse.text();
                     console.error(`Failed to commit ${change.path}:`, commitResponse.status, errorText);
+                    
+                    // Send tool error event
+                    const toolFileErrorEvent = `data: ${JSON.stringify({ type: 'tool_call', id: `commit_${change.path}`, name: 'commit_file', status: 'error', output: { error: errorText } })}\n\n`;
+                    controller.enqueue(encoder.encode(toolFileErrorEvent));
                   }
                 }
               }

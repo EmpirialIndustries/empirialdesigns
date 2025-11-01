@@ -158,4 +158,49 @@
       @apply px-4;
     }
   }
+  
+  /* Prose styles for markdown rendering */
+  .prose {
+    @apply text-foreground;
+  }
+  
+  .prose code {
+    @apply bg-muted px-1.5 py-0.5 rounded text-sm;
+  }
+  
+  .prose pre {
+    @apply bg-muted rounded-lg my-4 overflow-x-auto;
+  }
+  
+  .prose pre code {
+    @apply bg-transparent p-0;
+  }
+  
+  .prose h1, .prose h2, .prose h3, .prose h4 {
+    @apply font-bold text-foreground mt-6 mb-3;
+  }
+  
+  .prose h1 { @apply text-2xl; }
+  .prose h2 { @apply text-xl; }
+  .prose h3 { @apply text-lg; }
+  
+  .prose p {
+    @apply my-3 leading-relaxed;
+  }
+  
+  .prose ul, .prose ol {
+    @apply my-3 pl-6;
+  }
+  
+  .prose li {
+    @apply my-1;
+  }
+  
+  .prose a {
+    @apply text-primary hover:underline;
+  }
+  
+  .prose blockquote {
+    @apply border-l-4 border-border pl-4 italic my-4;
+  }
 }

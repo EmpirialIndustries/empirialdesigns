@@ -5,14 +5,27 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Send, LogOut, Menu } from 'lucide-react';
+import { Send, LogOut, Menu, FileCode, GitCommit, Loader2 } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
+import ReactMarkdown from 'react-markdown';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+
+interface ToolCall {
+  id: string;
+  name: string;
+  status: 'pending' | 'running' | 'complete' | 'error';
+  input?: any;
+  output?: any;
+}
 
 interface Message {
   id: string;
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
+  toolCalls?: ToolCall[];
+  commitUrl?: string;
 }
 
 interface Repo {
@@ -140,6 +153,8 @@ const ChatInterface = () => {
       let assistantContent = '';
       let textBuffer = '';
       let streamDone = false;
+      const toolCalls: ToolCall[] = [];
+      let commitUrl = '';
 
       // Create initial assistant message
       const assistantId = (Date.now() + 1).toString();
@@ -148,6 +163,7 @@ const ChatInterface = () => {
         role: 'assistant',
         content: '',
         timestamp: new Date(),
+        toolCalls: [],
       }]);
 
       while (!streamDone) {
@@ -173,6 +189,31 @@ const ChatInterface = () => {
 
           try {
             const parsed = JSON.parse(jsonStr);
+            
+            // Handle tool calls
+            if (parsed.type === 'tool_call') {
+              const toolCall: ToolCall = {
+                id: parsed.id || `tool_${Date.now()}`,
+                name: parsed.name,
+                status: parsed.status || 'running',
+                input: parsed.input,
+                output: parsed.output,
+              };
+              toolCalls.push(toolCall);
+              setMessages(prev => prev.map(m => 
+                m.id === assistantId ? { ...m, toolCalls: [...(m.toolCalls || []), toolCall] } : m
+              ));
+            }
+            
+            // Handle commit URL
+            if (parsed.type === 'commit') {
+              commitUrl = parsed.url;
+              setMessages(prev => prev.map(m => 
+                m.id === assistantId ? { ...m, commitUrl } : m
+              ));
+            }
+            
+            // Handle regular content
             const content = parsed.choices?.[0]?.delta?.content;
             if (content) {
               assistantContent += content;
@@ -298,7 +339,68 @@ const ChatInterface = () => {
                         : 'bg-muted/50 border border-border'
                     }`}
                   >
-                    <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                    {message.role === 'user' ? (
+                      <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                    ) : (
+                      <div className="space-y-4">
+                        {/* Tool calls */}
+                        {message.toolCalls && message.toolCalls.length > 0 && (
+                          <div className="space-y-2 pb-4 border-b border-border/50">
+                            {message.toolCalls.map((tool) => (
+                              <div key={tool.id} className="flex items-center gap-2 text-xs text-muted-foreground">
+                                {tool.status === 'running' && <Loader2 className="h-3 w-3 animate-spin" />}
+                                {tool.status === 'complete' && <FileCode className="h-3 w-3 text-green-500" />}
+                                {tool.status === 'error' && <FileCode className="h-3 w-3 text-destructive" />}
+                                <span className="font-medium">{tool.name}</span>
+                                {tool.input && <span className="text-xs opacity-70">({JSON.stringify(tool.input).slice(0, 50)}...)</span>}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        
+                        {/* Message content with markdown */}
+                        <div className="prose prose-sm dark:prose-invert max-w-none">
+                          <ReactMarkdown
+                            components={{
+                              code: ({ node, className, children, ...props }: any) => {
+                                const match = /language-(\w+)/.exec(className || '');
+                                const inline = !match;
+                                return !inline && match ? (
+                                  <SyntaxHighlighter
+                                    style={vscDarkPlus as any}
+                                    language={match[1]}
+                                    PreTag="div"
+                                  >
+                                    {String(children).replace(/\n$/, '')}
+                                  </SyntaxHighlighter>
+                                ) : (
+                                  <code className={className} {...props}>
+                                    {children}
+                                  </code>
+                                );
+                              },
+                            }}
+                          >
+                            {message.content}
+                          </ReactMarkdown>
+                        </div>
+
+                        {/* Commit link */}
+                        {message.commitUrl && (
+                          <div className="pt-4 border-t border-border/50">
+                            <a 
+                              href={message.commitUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 text-xs text-primary hover:underline"
+                            >
+                              <GitCommit className="h-3 w-3" />
+                              View commit on GitHub
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               ))
