@@ -104,7 +104,7 @@ serve(async (req) => {
 
     // Step 1: Create GitHub repository
     console.log(`Creating repository: ${repoName}`);
-    let createRepoResponse;
+    let createRepoResponse: Response;
     try {
       createRepoResponse = await fetch('https://api.github.com/user/repos', {
         method: 'POST',
@@ -122,7 +122,7 @@ serve(async (req) => {
       });
 
       if (!createRepoResponse.ok) {
-        const errorData = await createRepoResponse.json().catch(() => ({ message: await createRepoResponse.text() }));
+        const errorData = await createRepoResponse.json().catch(async () => ({ message: await createRepoResponse.text() }));
         
         if (createRepoResponse.status === 422 && errorData.errors?.some((e: any) => e.field === 'name')) {
           throw new Error(`Repository name "${repoName}" is invalid or already exists. Please choose a different name.`);
@@ -343,7 +343,7 @@ CRITICAL:
     }
 
     // Create tree
-    let treeResponse;
+    let treeResponse: Response;
     try {
       treeResponse = await fetch(
         `https://api.github.com/repos/${repoOwner}/${repoName}/git/trees`,
@@ -362,7 +362,7 @@ CRITICAL:
       );
 
       if (!treeResponse.ok) {
-        const errorData = await treeResponse.json().catch(() => ({ message: await treeResponse.text() }));
+        const errorData = await treeResponse.json().catch(async () => ({ message: await treeResponse.text() }));
         throw new Error(`Failed to create file tree: ${errorData.message || errorData.error || 'Unknown error'}`);
       }
     } catch (error) {
