@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Send, LogOut, Menu, FileCode, GitCommit, Loader2, File, Folder, ChevronDown, X } from 'lucide-react';
+import { Send, FileCode, GitCommit, Loader2, File, X, Menu } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -17,6 +17,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/AppSidebar";
+import { useConversations } from "@/hooks/useConversations";
 
 interface ToolCall {
   id: string;
@@ -52,7 +55,6 @@ interface FileItem {
 const ChatInterface = () => {
   const [user, setUser] = useState<User | null>(null);
   const [repo, setRepo] = useState<Repo | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
@@ -61,6 +63,17 @@ const ChatInterface = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const {
+    conversations,
+    currentConversationId,
+    messages,
+    setMessages,
+    setCurrentConversationId,
+    createConversation,
+    saveMessage,
+    deleteConversation,
+  } = useConversations(user?.id, repo?.id);
 
   // Fetch repository files
   const fetchRepoFiles = async (repoData: Repo) => {
@@ -91,7 +104,7 @@ const ChatInterface = () => {
       console.error('Failed to fetch files:', error);
       toast({
         title: "Failed to load files",
-        description: error.message,
+        description: error.message || "An error occurred",
         variant: "destructive",
       });
     } finally {
@@ -116,17 +129,7 @@ const ChatInterface = () => {
         
         if (!error && repoData) {
           setRepo(repoData);
-          
-          // Fetch repository files
           fetchRepoFiles(repoData);
-          
-          // Show initial greeting
-          setMessages([{
-            id: 'initial',
-            role: 'assistant',
-            content: "Hi there! 👋\nMy name is Empirial. How can I assist you today?\n\nI can help you with your GitHub repository and make code changes for you!",
-            timestamp: new Date(),
-          }]);
         }
       } else {
         navigate('/auth');
@@ -151,6 +154,13 @@ const ChatInterface = () => {
     }
   }, [messages]);
 
+  // Auto-create first conversation if none exists
+  useEffect(() => {
+    if (user && conversations.length === 0 && !currentConversationId) {
+      createConversation();
+    }
+  }, [user, conversations, currentConversationId]);
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     toast({
@@ -160,8 +170,20 @@ const ChatInterface = () => {
     navigate('/');
   };
 
+  const handleNewConversation = async () => {
+    await createConversation();
+  };
+
   const handleSend = async () => {
     if (!input.trim()) return;
+    if (!currentConversationId) {
+      toast({
+        title: "No conversation",
+        description: "Please start a new conversation first.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     // Build context message if files are selected
     let contextMessage = input;
@@ -180,6 +202,9 @@ const ChatInterface = () => {
     setInput('');
     setSelectedFiles([]);
     setLoading(true);
+
+    // Save user message
+    await saveMessage(userMessage);
 
     try {
       const CHAT_URL = `https://vfysnkkzesbovtnmoccb.supabase.co/functions/v1/ai-chat`;
@@ -223,13 +248,14 @@ const ChatInterface = () => {
 
       // Create initial assistant message
       const assistantId = (Date.now() + 1).toString();
-      setMessages(prev => [...prev, {
+      const assistantMessage: Message = {
         id: assistantId,
         role: 'assistant',
         content: '',
         timestamp: new Date(),
         toolCalls: [],
-      }]);
+      };
+      setMessages(prev => [...prev, assistantMessage]);
 
       while (!streamDone) {
         const { done, value } = await reader.read();
@@ -294,7 +320,22 @@ const ChatInterface = () => {
         }
       }
 
+      // Save complete assistant message
+      await saveMessage({
+        role: 'assistant',
+        content: assistantContent,
+        toolCalls,
+        commitUrl: commitUrl || undefined,
+      });
+
       setLoading(false);
+
+      if (commitUrl) {
+        toast({
+          title: "Code committed!",
+          description: "Your changes have been pushed to GitHub",
+        });
+      }
     } catch (error: any) {
       console.error('Chat error:', error);
       toast({
@@ -311,281 +352,245 @@ const ChatInterface = () => {
   }
 
   return (
-    <div className="h-screen flex bg-background">
-      {/* Sidebar */}
-      <div className="w-64 border-r border-border bg-muted/20 hidden md:flex flex-col">
-        <div className="p-4 border-b border-border">
-          <img 
-            src="/lovable-uploads/94f51cc3-f695-4449-8dc0-01c2e5cced2f.png" 
-            alt="Empirial Designs Logo" 
-            className="h-8 w-auto"
-          />
-        </div>
-        
-        <div className="flex-1 p-4">
-          <Button 
-            variant="outline" 
-            className="w-full justify-start rounded-full"
-            onClick={() => setMessages([])}
-          >
-            New Chat
-          </Button>
-        </div>
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-background">
+        <AppSidebar
+          user={user}
+          conversations={conversations}
+          currentConversationId={currentConversationId}
+          onNewConversation={handleNewConversation}
+          onSelectConversation={setCurrentConversationId}
+          onDeleteConversation={deleteConversation}
+          onSignOut={handleSignOut}
+        />
 
-        <div className="p-4 border-t border-border space-y-2">
-          <div className="text-sm text-muted-foreground px-3">
-            {user.email}
-          </div>
-          <Button
-            variant="ghost"
-            className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10"
-            onClick={handleSignOut}
-          >
-            <LogOut className="mr-2 h-4 w-4" />
-            Sign Out
-          </Button>
-        </div>
-      </div>
-
-      {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col">
-        {/* Header */}
-        <div className="h-16 border-b border-border flex items-center justify-between px-6">
-          <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="md:hidden"
-            >
-              <Menu className="h-5 w-5" />
-            </Button>
-            <div>
-              <h1 className="text-xl font-bold text-gradient">Empirial AI Assistant</h1>
-              {repo && (
-                <p className="text-xs text-muted-foreground">
-                  Connected to: {repo.repo_owner}/{repo.repo_name}
-                </p>
-              )}
+        {/* Main Chat Area */}
+        <div className="flex-1 flex flex-col min-w-0">
+          {/* Header */}
+          <div className="h-16 border-b border-border flex items-center justify-between px-6 shrink-0">
+            <div className="flex items-center gap-3">
+              <SidebarTrigger />
+              <div>
+                <h1 className="text-xl font-bold text-gradient">Empirial AI Assistant</h1>
+                {repo && (
+                  <p className="text-xs text-muted-foreground">
+                    Connected to: {repo.repo_owner}/{repo.repo_name}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
-          <Button
-            variant="ghost"
-            className="md:hidden"
-            onClick={handleSignOut}
-          >
-            <LogOut className="h-4 w-4" />
-          </Button>
-        </div>
 
-        {/* Messages */}
-        <ScrollArea className="flex-1 p-6">
-          <div className="max-w-3xl mx-auto space-y-6">
-            {messages.length === 0 ? (
-              <div className="text-center py-12">
-                <h2 className="text-2xl font-bold text-gradient mb-4">
-                  Welcome to Empirial AI
-                </h2>
-                <p className="text-muted-foreground">
-                  {repo 
-                    ? "I'm ready to help with your repository!" 
-                    : "Please connect a repository to get started."}
-                </p>
-              </div>
-            ) : (
-              messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                >
+          {/* Messages */}
+          <ScrollArea className="flex-1 p-6">
+            <div className="max-w-3xl mx-auto space-y-6">
+              {messages.length === 0 ? (
+                <div className="text-center py-12">
+                  <h2 className="text-2xl font-bold text-gradient mb-4">
+                    Welcome to Empirial AI
+                  </h2>
+                  <p className="text-muted-foreground">
+                    {repo 
+                      ? "I'm ready to help with your repository!" 
+                      : "Please connect a repository to get started."}
+                  </p>
+                </div>
+              ) : (
+                messages.map((message) => (
                   <div
-                    className={`max-w-[80%] rounded-2xl px-6 py-4 ${
-                      message.role === 'user'
-                        ? 'bg-primary text-primary-foreground elegant-shadow'
-                        : 'bg-muted/50 border border-border'
-                    }`}
+                    key={message.id}
+                    className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
-                    {message.role === 'user' ? (
-                      <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                    ) : (
-                      <div className="space-y-4">
-                        {/* Tool calls */}
-                        {message.toolCalls && message.toolCalls.length > 0 && (
-                          <div className="space-y-2 pb-4 border-b border-border/50">
-                            {message.toolCalls.map((tool) => (
-                              <div key={tool.id} className="flex items-center gap-2 text-xs text-muted-foreground">
-                                {tool.status === 'running' && <Loader2 className="h-3 w-3 animate-spin" />}
-                                {tool.status === 'complete' && <FileCode className="h-3 w-3 text-green-500" />}
-                                {tool.status === 'error' && <FileCode className="h-3 w-3 text-destructive" />}
-                                <span className="font-medium">{tool.name}</span>
-                                {tool.input && <span className="text-xs opacity-70">({JSON.stringify(tool.input).slice(0, 50)}...)</span>}
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                        
-                        {/* Message content with markdown */}
-                        <div className="prose prose-sm dark:prose-invert max-w-none">
-                          <ReactMarkdown
-                            components={{
-                              code: ({ node, className, children, ...props }: any) => {
-                                const match = /language-(\w+)/.exec(className || '');
-                                const inline = !match;
-                                return !inline && match ? (
-                                  <SyntaxHighlighter
-                                    style={vscDarkPlus as any}
-                                    language={match[1]}
-                                    PreTag="div"
-                                  >
-                                    {String(children).replace(/\n$/, '')}
-                                  </SyntaxHighlighter>
-                                ) : (
-                                  <code className={className} {...props}>
-                                    {children}
-                                  </code>
-                                );
-                              },
-                            }}
-                          >
-                            {message.content}
-                          </ReactMarkdown>
-                        </div>
-
-                        {/* Commit link */}
-                        {message.commitUrl && (
-                          <div className="pt-4 border-t border-border/50">
-                            <a 
-                              href={message.commitUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-2 text-xs text-primary hover:underline"
-                            >
-                              <GitCommit className="h-3 w-3" />
-                              View commit on GitHub
-                            </a>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))
-            )}
-            {loading && (
-              <div className="flex justify-start">
-                <div className="max-w-[80%] rounded-2xl px-6 py-4 bg-muted/50 border border-border">
-                  <div className="flex gap-2">
-                    <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '300ms' }} />
-                  </div>
-                </div>
-              </div>
-            )}
-            <div ref={scrollRef} />
-          </div>
-        </ScrollArea>
-
-        {/* Input Area */}
-        <div className="border-t border-border p-6">
-          <div className="max-w-3xl mx-auto space-y-3">
-            {/* Selected Files Display */}
-            {selectedFiles.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {selectedFiles.map((file) => (
-                  <Badge key={file} variant="secondary" className="gap-1">
-                    <File className="h-3 w-3" />
-                    {file.split('/').pop()}
-                    <X
-                      className="h-3 w-3 cursor-pointer hover:text-destructive"
-                      onClick={() => setSelectedFiles(prev => prev.filter(f => f !== file))}
-                    />
-                  </Badge>
-                ))}
-              </div>
-            )}
-            
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleSend();
-              }}
-              className="flex gap-3"
-            >
-              {/* File Selector Dropdown */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-12 w-12 rounded-full shrink-0"
-                    disabled={loading || loadingFiles}
-                    type="button"
-                  >
-                    {loadingFiles ? (
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                    ) : (
-                      <FileCode className="h-5 w-5" />
-                    )}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-80 max-h-96 overflow-y-auto">
-                  {repoFiles.length === 0 ? (
-                    <div className="p-4 text-sm text-muted-foreground text-center">
-                      No files found
-                    </div>
-                  ) : (
-                    <>
-                      <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
-                        Select files to edit
-                      </div>
-                      {repoFiles
-                        .filter(file => file.type === 'file')
-                        .map((file) => (
-                          <DropdownMenuItem
-                            key={file.path}
-                            onClick={() => {
-                              setSelectedFiles(prev => 
-                                prev.includes(file.path)
-                                  ? prev.filter(f => f !== file.path)
-                                  : [...prev, file.path]
-                              );
-                            }}
-                            className="cursor-pointer"
-                          >
-                            <div className="flex items-center gap-2 w-full">
-                              <File className="h-4 w-4 shrink-0" />
-                              <span className="flex-1 truncate text-sm">{file.path}</span>
-                              {selectedFiles.includes(file.path) && (
-                                <Badge variant="secondary" className="shrink-0">Selected</Badge>
-                              )}
+                    <div
+                      className={`max-w-[80%] rounded-2xl px-6 py-4 ${
+                        message.role === 'user'
+                          ? 'bg-primary text-primary-foreground elegant-shadow'
+                          : 'bg-muted/50 border border-border'
+                      }`}
+                    >
+                      {message.role === 'user' ? (
+                        <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                      ) : (
+                        <div className="space-y-4">
+                          {/* Tool calls */}
+                          {message.toolCalls && message.toolCalls.length > 0 && (
+                            <div className="space-y-2 pb-4 border-b border-border/50">
+                              {message.toolCalls.map((tool) => (
+                                <div key={tool.id} className="flex items-center gap-2 text-xs text-muted-foreground">
+                                  {tool.status === 'running' && <Loader2 className="h-3 w-3 animate-spin" />}
+                                  {tool.status === 'complete' && <FileCode className="h-3 w-3 text-green-500" />}
+                                  {tool.status === 'error' && <FileCode className="h-3 w-3 text-destructive" />}
+                                  <span className="font-medium">{tool.name}</span>
+                                  {tool.input && <span className="text-xs opacity-70">({JSON.stringify(tool.input).slice(0, 50)}...)</span>}
+                                </div>
+                              ))}
                             </div>
-                          </DropdownMenuItem>
-                        ))}
-                    </>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
+                          )}
+                          
+                          {/* Message content with markdown */}
+                          <div className="prose prose-sm dark:prose-invert max-w-none">
+                            <ReactMarkdown
+                              components={{
+                                code: ({ node, className, children, ...props }: any) => {
+                                  const match = /language-(\w+)/.exec(className || '');
+                                  const inline = !match;
+                                  return !inline && match ? (
+                                    <SyntaxHighlighter
+                                      style={vscDarkPlus as any}
+                                      language={match[1]}
+                                      PreTag="div"
+                                    >
+                                      {String(children).replace(/\n$/, '')}
+                                    </SyntaxHighlighter>
+                                  ) : (
+                                    <code className={className} {...props}>
+                                      {children}
+                                    </code>
+                                  );
+                                },
+                              }}
+                            >
+                              {message.content}
+                            </ReactMarkdown>
+                          </div>
 
-              <Input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder={selectedFiles.length > 0 ? `Editing ${selectedFiles.length} file(s)...` : "Type your message..."}
-                className="flex-1 h-12 rounded-full"
-                disabled={loading}
-              />
-              <Button
-                type="submit"
-                size="icon"
-                className="h-12 w-12 rounded-full elegant-shadow shrink-0"
-                disabled={loading || !input.trim()}
+                          {/* Commit link */}
+                          {message.commitUrl && (
+                            <div className="pt-4 border-t border-border/50">
+                              <a 
+                                href={message.commitUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-2 text-xs text-primary hover:underline"
+                              >
+                                <GitCommit className="h-3 w-3" />
+                                View commit on GitHub
+                              </a>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))
+              )}
+              {loading && (
+                <div className="flex justify-start">
+                  <div className="max-w-[80%] rounded-2xl px-6 py-4 bg-muted/50 border border-border">
+                    <div className="flex gap-2">
+                      <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0ms' }} />
+                      <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '150ms' }} />
+                      <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '300ms' }} />
+                    </div>
+                  </div>
+                </div>
+              )}
+              <div ref={scrollRef} />
+            </div>
+          </ScrollArea>
+
+          {/* Input Area */}
+          <div className="border-t border-border p-6 shrink-0">
+            <div className="max-w-3xl mx-auto space-y-3">
+              {/* Selected Files Display */}
+              {selectedFiles.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {selectedFiles.map((file) => (
+                    <Badge key={file} variant="secondary" className="gap-1">
+                      <File className="h-3 w-3" />
+                      {file.split('/').pop()}
+                      <X
+                        className="h-3 w-3 cursor-pointer hover:text-destructive"
+                        onClick={() => setSelectedFiles(prev => prev.filter(f => f !== file))}
+                      />
+                    </Badge>
+                  ))}
+                </div>
+              )}
+              
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleSend();
+                }}
+                className="flex gap-3"
               >
-                <Send className="h-5 w-5" />
-              </Button>
-            </form>
+                {/* File Selector Dropdown */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-12 w-12 rounded-full shrink-0"
+                      disabled={loading || loadingFiles}
+                      type="button"
+                    >
+                      {loadingFiles ? (
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                      ) : (
+                        <FileCode className="h-5 w-5" />
+                      )}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-80 max-h-96 overflow-y-auto">
+                    {repoFiles.length === 0 ? (
+                      <div className="p-4 text-sm text-muted-foreground text-center">
+                        No files found
+                      </div>
+                    ) : (
+                      <>
+                        <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
+                          Select files to edit
+                        </div>
+                        {repoFiles
+                          .filter(file => file.type === 'file')
+                          .map((file) => (
+                            <DropdownMenuItem
+                              key={file.path}
+                              onClick={() => {
+                                setSelectedFiles(prev => 
+                                  prev.includes(file.path)
+                                    ? prev.filter(f => f !== file.path)
+                                    : [...prev, file.path]
+                                );
+                              }}
+                              className="cursor-pointer"
+                            >
+                              <div className="flex items-center gap-2 w-full">
+                                <File className="h-4 w-4 shrink-0" />
+                                <span className="flex-1 truncate text-sm">{file.path}</span>
+                                {selectedFiles.includes(file.path) && (
+                                  <Badge variant="secondary" className="shrink-0">Selected</Badge>
+                                )}
+                              </div>
+                            </DropdownMenuItem>
+                          ))}
+                      </>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                <Input
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder={selectedFiles.length > 0 ? `Editing ${selectedFiles.length} file(s)...` : "Type your message..."}
+                  className="flex-1 h-12 rounded-full"
+                  disabled={loading}
+                />
+                <Button
+                  type="submit"
+                  size="icon"
+                  className="h-12 w-12 rounded-full elegant-shadow shrink-0"
+                  disabled={loading || !input.trim()}
+                >
+                  <Send className="h-5 w-5" />
+                </Button>
+              </form>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </SidebarProvider>
   );
 };
 

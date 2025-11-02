@@ -14,6 +14,85 @@ export type Database = {
   }
   public: {
     Tables: {
+      chat_messages: {
+        Row: {
+          commit_url: string | null
+          content: string
+          conversation_id: string
+          created_at: string | null
+          id: string
+          repo_id: string | null
+          role: string
+          tool_calls: Json | null
+          user_id: string
+        }
+        Insert: {
+          commit_url?: string | null
+          content: string
+          conversation_id: string
+          created_at?: string | null
+          id?: string
+          repo_id?: string | null
+          role: string
+          tool_calls?: Json | null
+          user_id: string
+        }
+        Update: {
+          commit_url?: string | null
+          content?: string
+          conversation_id?: string
+          created_at?: string | null
+          id?: string
+          repo_id?: string | null
+          role?: string
+          tool_calls?: Json | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_repo_id_fkey"
+            columns: ["repo_id"]
+            isOneToOne: false
+            referencedRelation: "user_repos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversations: {
+        Row: {
+          created_at: string | null
+          id: string
+          repo_id: string | null
+          title: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          repo_id?: string | null
+          title?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          repo_id?: string | null
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversations_repo_id_fkey"
+            columns: ["repo_id"]
+            isOneToOne: false
+            referencedRelation: "user_repos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       edit_logs: {
         Row: {
           changes_made: string | null

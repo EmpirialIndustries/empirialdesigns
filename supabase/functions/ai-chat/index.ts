@@ -21,7 +21,25 @@ serve(async (req: Request) => {
     const authHeader = req.headers.get('Authorization');
 
     if (!OPENROUTER_API_KEY) {
-      throw new Error('OPENROUTER_API_KEY is not configured');
+      console.error('OPENROUTER_API_KEY not configured');
+      return new Response(JSON.stringify({ 
+        error: 'AI service not configured',
+        details: 'The AI service is not properly set up. Please contact support.' 
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (!authHeader) {
+      console.error('No authorization header provided');
+      return new Response(JSON.stringify({ 
+        error: 'Authentication required',
+        details: 'Please sign in to use the AI assistant.' 
+      }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     // Define models in order of preference (fallback)
@@ -40,8 +58,17 @@ serve(async (req: Request) => {
 
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
     if (userError || !user) {
-      throw new Error('Unauthorized');
+      console.error('Authentication error:', userError);
+      return new Response(JSON.stringify({ 
+        error: 'Authentication failed',
+        details: 'Your session has expired. Please sign in again.' 
+      }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
+
+    console.log(`AI chat request from user: ${user.id}, repo: ${repoOwner}/${repoName}`);
 
     // Get last user message
     const lastUserMessage = messages[messages.length - 1]?.content || '';
@@ -448,22 +475,32 @@ You should:
 
     // If we've tried all models and none worked
     if (!response || !response.ok) {
-      if (response?.status === 429) {
-        return new Response(JSON.stringify({ error: 'Rate limits exceeded, please try again later.' }), {
-          status: 429,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
+      const status = response?.status || 500;
+      let errorMessage = 'AI service unavailable';
+      let errorDetails = 'The AI service is currently unavailable. Please try again later.';
+
+      if (status === 429) {
+        errorMessage = 'Rate limit exceeded';
+        errorDetails = 'Too many requests. Please wait a moment before trying again.';
+      } else if (status === 402) {
+        errorMessage = 'Payment required';
+        errorDetails = 'AI service credits depleted. Please contact support.';
+      } else if (status === 401 || status === 403) {
+        errorMessage = 'API authentication failed';
+        errorDetails = 'The AI service authentication failed. Please contact support.';
       }
-      if (response?.status === 402) {
-        return new Response(JSON.stringify({ error: 'Payment required, please check your OpenRouter API key and credits.' }), {
-          status: 402,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-      const errorText = response ? await response.text() : 'No response received';
-      console.error('AI gateway error:', response?.status ?? 'No status', errorText);
-      return new Response(JSON.stringify({ error: 'AI gateway error', details: errorText }), {
-        status: 500,
+
+      console.error('AI gateway error:', {
+        status,
+        lastError,
+        model: models[currentModelIndex - 1] || 'unknown'
+      });
+
+      return new Response(JSON.stringify({ 
+        error: errorMessage,
+        details: errorDetails 
+      }), {
+        status,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }

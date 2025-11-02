@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { supabase } from '../integrations/supabase/client';
@@ -21,6 +22,8 @@ interface Repo {
 const RepoManagement = () => {
   const [user, setUser] = useState<User | null>(null);
   const [repos, setRepos] = useState<Repo[]>([]);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [repoToDelete, setRepoToDelete] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [repoUrl, setRepoUrl] = useState('');
@@ -114,32 +117,38 @@ const RepoManagement = () => {
   };
 
   const handleDeleteRepo = async (repoId: string) => {
-    // IMPORTANT: Replaced confirm() with a simple true to avoid browser restrictions.
-    // In a real app, you'd build a custom modal for this.
-    if (!true) return; // Simulating a 'confirm' that always proceeds
+    setRepoToDelete(repoId);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!repoToDelete) return;
 
     setLoading(true);
     try {
       const { error } = await supabase.functions.invoke('manage-repo', {
-        body: { action: 'delete', repoId }
+        body: { action: 'delete', repoId: repoToDelete }
       });
 
       if (error) throw error;
 
       toast({
         title: "Success",
-        description: "Repository removed",
+        description: "Repository removed successfully",
       });
 
-      if (user) loadRepos(user.id);
+      if (user) await loadRepos(user.id);
     } catch (error: any) {
+      console.error('Failed to delete repo:', error);
       toast({
         title: "Error",
-        description: error.message || "Failed to remove repository",
+        description: error.message || "Failed to delete repository",
         variant: "destructive",
       });
     } finally {
       setLoading(false);
+      setDeleteDialogOpen(false);
+      setRepoToDelete(null);
     }
   };
 
@@ -284,6 +293,24 @@ const RepoManagement = () => {
           )}
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete this repository from your list. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setRepoToDelete(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
