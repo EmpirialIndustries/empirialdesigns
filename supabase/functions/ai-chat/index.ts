@@ -15,7 +15,7 @@ serve(async (req: Request) => {
   }
 
   try {
-    const { messages, repoOwner, repoName, repoId } = await req.json();
+    const { messages, repoOwner, repoName, repoId, selectedFiles } = await req.json();
     const OPENROUTER_API_KEY = Deno.env.get('OPENROUTER_API_KEY');
     const GITHUB_TOKEN = Deno.env.get('GITHUB_ACCESS_TOKEN');
     const authHeader = req.headers.get('Authorization');
@@ -190,23 +190,35 @@ serve(async (req: Request) => {
         };
 
         // Find files that might be relevant
-        const relevantPaths: string[] = [];
-        for (const [keyword, patterns] of Object.entries(commonPatterns)) {
-          if (messageLower.includes(keyword)) {
-            for (const pattern of patterns) {
-              const matching = repositoryStructure
-                .filter(item => item.type === 'file' && 
-                  (item.name.toLowerCase().includes(pattern) || 
-                   item.path.toLowerCase().includes(pattern)))
-                .map(item => item.path)
-                .slice(0, 3);
-              relevantPaths.push(...matching);
+        let relevantPaths: string[] = [];
+        
+        // If user selected specific files, use those as the primary context
+        if (selectedFiles && Array.isArray(selectedFiles) && selectedFiles.length > 0) {
+          console.log(`User selected ${selectedFiles.length} files explicitly`);
+          relevantPaths = selectedFiles;
+        } else {
+          // Otherwise, use automatic file detection
+          relevantPaths = [];
+        }
+        // Only do pattern matching if user didn't select files
+        if (relevantPaths.length === 0) {
+          for (const [keyword, patterns] of Object.entries(commonPatterns)) {
+            if (messageLower.includes(keyword)) {
+              for (const pattern of patterns) {
+                const matching = repositoryStructure
+                  .filter(item => item.type === 'file' && 
+                    (item.name.toLowerCase().includes(pattern) || 
+                     item.path.toLowerCase().includes(pattern)))
+                  .map(item => item.path)
+                  .slice(0, 3);
+                relevantPaths.push(...matching);
+              }
             }
           }
         }
 
-        // For website-wide changes, fetch more comprehensive file set
-        if (isWebsiteWideChange) {
+        // For website-wide changes, fetch more comprehensive file set (only if no files selected)
+        if (isWebsiteWideChange && relevantPaths.length === 0) {
           console.log('Detected website-wide change, fetching comprehensive file set...');
           const websiteFiles = repositoryStructure
             .filter(item => item.type === 'file' && 
@@ -292,6 +304,8 @@ Your capabilities:
 - Create or modify entire websites from a single prompt
 
 ${codeContext}
+
+${selectedFiles && selectedFiles.length > 0 ? `\n\nUSER-SELECTED FILES FOR EDITING:\nThe user has explicitly selected these files to edit: ${selectedFiles.join(', ')}\nFocus your changes on these specific files unless the request requires modifying additional files.\n` : ''}
 
 WORKFLOW FOR HANDLING USER REQUESTS:
 

@@ -5,11 +5,18 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Send, LogOut, Menu, FileCode, GitCommit, Loader2 } from 'lucide-react';
+import { Send, LogOut, Menu, FileCode, GitCommit, Loader2, File, Folder, ChevronDown, X } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
 
 interface ToolCall {
   id: string;
@@ -35,15 +42,62 @@ interface Repo {
   github_token: string | null;
 }
 
+interface FileItem {
+  type: 'file' | 'dir';
+  path: string;
+  name: string;
+  size?: number;
+}
+
 const ChatInterface = () => {
   const [user, setUser] = useState<User | null>(null);
   const [repo, setRepo] = useState<Repo | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
+  const [repoFiles, setRepoFiles] = useState<FileItem[]>([]);
+  const [loadingFiles, setLoadingFiles] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Fetch repository files
+  const fetchRepoFiles = async (repoData: Repo) => {
+    setLoadingFiles(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('github-repo-contents', {
+        body: {
+          owner: repoData.repo_owner,
+          repo: repoData.repo_name,
+          path: '',
+        },
+      });
+
+      if (error) throw error;
+
+      if (Array.isArray(data)) {
+        const files = data
+          .filter((item: any) => item.type === 'file' || item.type === 'dir')
+          .map((item: any) => ({
+            type: item.type,
+            path: item.path,
+            name: item.name,
+            size: item.size,
+          }));
+        setRepoFiles(files);
+      }
+    } catch (error: any) {
+      console.error('Failed to fetch files:', error);
+      toast({
+        title: "Failed to load files",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingFiles(false);
+    }
+  };
 
   useEffect(() => {
     // Check authentication and load repo
@@ -62,6 +116,9 @@ const ChatInterface = () => {
         
         if (!error && repoData) {
           setRepo(repoData);
+          
+          // Fetch repository files
+          fetchRepoFiles(repoData);
           
           // Show initial greeting
           setMessages([{
@@ -106,6 +163,12 @@ const ChatInterface = () => {
   const handleSend = async () => {
     if (!input.trim()) return;
 
+    // Build context message if files are selected
+    let contextMessage = input;
+    if (selectedFiles.length > 0) {
+      contextMessage = `Context: I want to edit these files: ${selectedFiles.join(', ')}\n\nRequest: ${input}`;
+    }
+
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
@@ -115,6 +178,7 @@ const ChatInterface = () => {
 
     setMessages(prev => [...prev, userMessage]);
     setInput('');
+    setSelectedFiles([]);
     setLoading(true);
 
     try {
@@ -132,10 +196,11 @@ const ChatInterface = () => {
           'Authorization': `Bearer ${accessToken}`,
         },
         body: JSON.stringify({
-          messages: [...messages.map(m => ({ role: m.role, content: m.content })).filter(m => m.role !== 'assistant' || m.content), { role: 'user', content: input }],
+          messages: [...messages.map(m => ({ role: m.role, content: m.content })).filter(m => m.role !== 'assistant' || m.content), { role: 'user', content: contextMessage }],
           repoOwner: repo?.repo_owner,
           repoName: repo?.repo_name,
           repoId: repo?.id,
+          selectedFiles: selectedFiles.length > 0 ? selectedFiles : undefined,
         }),
       });
 
@@ -422,7 +487,23 @@ const ChatInterface = () => {
 
         {/* Input Area */}
         <div className="border-t border-border p-6">
-          <div className="max-w-3xl mx-auto">
+          <div className="max-w-3xl mx-auto space-y-3">
+            {/* Selected Files Display */}
+            {selectedFiles.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {selectedFiles.map((file) => (
+                  <Badge key={file} variant="secondary" className="gap-1">
+                    <File className="h-3 w-3" />
+                    {file.split('/').pop()}
+                    <X
+                      className="h-3 w-3 cursor-pointer hover:text-destructive"
+                      onClick={() => setSelectedFiles(prev => prev.filter(f => f !== file))}
+                    />
+                  </Badge>
+                ))}
+              </div>
+            )}
+            
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -430,17 +511,72 @@ const ChatInterface = () => {
               }}
               className="flex gap-3"
             >
+              {/* File Selector Dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-12 w-12 rounded-full shrink-0"
+                    disabled={loading || loadingFiles}
+                    type="button"
+                  >
+                    {loadingFiles ? (
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                    ) : (
+                      <FileCode className="h-5 w-5" />
+                    )}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-80 max-h-96 overflow-y-auto">
+                  {repoFiles.length === 0 ? (
+                    <div className="p-4 text-sm text-muted-foreground text-center">
+                      No files found
+                    </div>
+                  ) : (
+                    <>
+                      <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
+                        Select files to edit
+                      </div>
+                      {repoFiles
+                        .filter(file => file.type === 'file')
+                        .map((file) => (
+                          <DropdownMenuItem
+                            key={file.path}
+                            onClick={() => {
+                              setSelectedFiles(prev => 
+                                prev.includes(file.path)
+                                  ? prev.filter(f => f !== file.path)
+                                  : [...prev, file.path]
+                              );
+                            }}
+                            className="cursor-pointer"
+                          >
+                            <div className="flex items-center gap-2 w-full">
+                              <File className="h-4 w-4 shrink-0" />
+                              <span className="flex-1 truncate text-sm">{file.path}</span>
+                              {selectedFiles.includes(file.path) && (
+                                <Badge variant="secondary" className="shrink-0">Selected</Badge>
+                              )}
+                            </div>
+                          </DropdownMenuItem>
+                        ))}
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+
               <Input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Type your message..."
+                placeholder={selectedFiles.length > 0 ? `Editing ${selectedFiles.length} file(s)...` : "Type your message..."}
                 className="flex-1 h-12 rounded-full"
                 disabled={loading}
               />
               <Button
                 type="submit"
                 size="icon"
-                className="h-12 w-12 rounded-full elegant-shadow"
+                className="h-12 w-12 rounded-full elegant-shadow shrink-0"
                 disabled={loading || !input.trim()}
               >
                 <Send className="h-5 w-5" />
