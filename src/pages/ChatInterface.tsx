@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Send, FileCode, GitCommit, Loader2, File, X, Menu, Target } from 'lucide-react';
+import { Send, FileCode, GitCommit, Loader2, File, X, Menu, Target, Crosshair } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -20,6 +20,7 @@ import { Badge } from "@/components/ui/badge";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { useConversations } from "@/hooks/useConversations";
+import { VisualInspector } from "@/components/VisualInspector";
 
 interface ToolCall {
   id: string;
@@ -61,6 +62,7 @@ const ChatInterface = () => {
   const [repoFiles, setRepoFiles] = useState<FileItem[]>([]);
   const [loadingFiles, setLoadingFiles] = useState(false);
   const [selectedComponent, setSelectedComponent] = useState<string>('');
+  const [inspectorActive, setInspectorActive] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -173,6 +175,14 @@ const ChatInterface = () => {
 
   const handleNewConversation = async () => {
     await createConversation();
+  };
+
+  const handleElementSelect = (elementInfo: string) => {
+    setSelectedComponent(elementInfo);
+    toast({
+      title: "Element selected",
+      description: `Selected: ${elementInfo}`,
+    });
   };
 
   const handleSend = async () => {
@@ -364,6 +374,11 @@ const ChatInterface = () => {
 
   return (
     <SidebarProvider>
+      <VisualInspector 
+        isActive={inspectorActive}
+        onClose={() => setInspectorActive(false)}
+        onElementSelect={handleElementSelect}
+      />
       <div className="min-h-screen flex w-full bg-background">
         <AppSidebar
           user={user}
@@ -590,6 +605,19 @@ const ChatInterface = () => {
                     )}
                   </DropdownMenuContent>
                 </DropdownMenu>
+
+                {/* Visual Inspector Toggle */}
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="h-12 w-12 rounded-full shrink-0"
+                  disabled={loading}
+                  type="button"
+                  onClick={() => setInspectorActive(true)}
+                  title="Visual Element Inspector"
+                >
+                  <Crosshair className="h-5 w-5" />
+                </Button>
 
                 {/* Component Selector Dropdown */}
                 <DropdownMenu>
