@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Send, FileCode, GitCommit, Loader2, File, X, Menu } from 'lucide-react';
+import { Send, FileCode, GitCommit, Loader2, File, X, Menu, Target } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -60,6 +60,7 @@ const ChatInterface = () => {
   const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
   const [repoFiles, setRepoFiles] = useState<FileItem[]>([]);
   const [loadingFiles, setLoadingFiles] = useState(false);
+  const [selectedComponent, setSelectedComponent] = useState<string>('');
   const navigate = useNavigate();
   const { toast } = useToast();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -185,10 +186,19 @@ const ChatInterface = () => {
       return;
     }
 
-    // Build context message if files are selected
+    // Build context message if files or component are selected
     let contextMessage = input;
+    const contextParts: string[] = [];
+    
     if (selectedFiles.length > 0) {
-      contextMessage = `Context: I want to edit these files: ${selectedFiles.join(', ')}\n\nRequest: ${input}`;
+      contextParts.push(`Files to edit: ${selectedFiles.join(', ')}`);
+    }
+    if (selectedComponent) {
+      contextParts.push(`Component/Section to edit: ${selectedComponent}`);
+    }
+    
+    if (contextParts.length > 0) {
+      contextMessage = `Context: ${contextParts.join(' | ')}\n\nRequest: ${input}`;
     }
 
     const userMessage: Message = {
@@ -201,6 +211,7 @@ const ChatInterface = () => {
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setSelectedFiles([]);
+    setSelectedComponent('');
     setLoading(true);
 
     // Save user message
@@ -492,8 +503,8 @@ const ChatInterface = () => {
           {/* Input Area */}
           <div className="border-t border-border p-6 shrink-0">
             <div className="max-w-3xl mx-auto space-y-3">
-              {/* Selected Files Display */}
-              {selectedFiles.length > 0 && (
+              {/* Selected Context Display */}
+              {(selectedFiles.length > 0 || selectedComponent) && (
                 <div className="flex flex-wrap gap-2">
                   {selectedFiles.map((file) => (
                     <Badge key={file} variant="secondary" className="gap-1">
@@ -505,6 +516,16 @@ const ChatInterface = () => {
                       />
                     </Badge>
                   ))}
+                  {selectedComponent && (
+                    <Badge variant="default" className="gap-1">
+                      <Target className="h-3 w-3" />
+                      {selectedComponent}
+                      <X
+                        className="h-3 w-3 cursor-pointer hover:text-destructive"
+                        onClick={() => setSelectedComponent('')}
+                      />
+                    </Badge>
+                  )}
                 </div>
               )}
               
@@ -570,10 +591,65 @@ const ChatInterface = () => {
                   </DropdownMenuContent>
                 </DropdownMenu>
 
+                {/* Component Selector Dropdown */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-12 w-12 rounded-full shrink-0"
+                      disabled={loading}
+                      type="button"
+                    >
+                      <Target className="h-5 w-5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-64">
+                    <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
+                      Select component to edit
+                    </div>
+                    {[
+                      'Header/Navigation',
+                      'Hero Section',
+                      'Footer',
+                      'Sidebar',
+                      'Contact Form',
+                      'About Section',
+                      'Services Section',
+                      'Portfolio/Gallery',
+                      'Testimonials',
+                      'Pricing Section',
+                      'FAQ Section',
+                      'Blog Section',
+                      'CTA Buttons',
+                    ].map((component) => (
+                      <DropdownMenuItem
+                        key={component}
+                        onClick={() => setSelectedComponent(component)}
+                        className="cursor-pointer"
+                      >
+                        <div className="flex items-center gap-2 w-full">
+                          <Target className="h-4 w-4 shrink-0" />
+                          <span className="flex-1 text-sm">{component}</span>
+                          {selectedComponent === component && (
+                            <Badge variant="default" className="shrink-0">Selected</Badge>
+                          )}
+                        </div>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
                 <Input
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder={selectedFiles.length > 0 ? `Editing ${selectedFiles.length} file(s)...` : "Type your message..."}
+                  placeholder={
+                    selectedComponent 
+                      ? `Editing ${selectedComponent}...` 
+                      : selectedFiles.length > 0 
+                        ? `Editing ${selectedFiles.length} file(s)...` 
+                        : "Type your message..."
+                  }
                   className="flex-1 h-12 rounded-full"
                   disabled={loading}
                 />
