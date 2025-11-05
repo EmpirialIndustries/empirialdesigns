@@ -1,11 +1,11 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Send, FileCode, GitCommit, Loader2, File, X, Menu, Target, Crosshair } from 'lucide-react';
+import { Send, FileCode, GitCommit, Loader2, File, X, Menu, Target, Crosshair, Eye } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -20,7 +20,6 @@ import { Badge } from "@/components/ui/badge";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { useConversations } from "@/hooks/useConversations";
-import { VisualInspector } from "@/components/VisualInspector";
 
 interface ToolCall {
   id: string;
@@ -63,6 +62,8 @@ const ChatInterface = () => {
   const [loadingFiles, setLoadingFiles] = useState(false);
   const [selectedComponent, setSelectedComponent] = useState<string>('');
   const [inspectorActive, setInspectorActive] = useState(false);
+  const [hoveredElement, setHoveredElement] = useState<HTMLElement | null>(null);
+  const [highlightStyle, setHighlightStyle] = useState<React.CSSProperties>({});
   const navigate = useNavigate();
   const { toast } = useToast();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -177,13 +178,107 @@ const ChatInterface = () => {
     await createConversation();
   };
 
-  const handleElementSelect = (elementInfo: string) => {
-    setSelectedComponent(elementInfo);
+  // Visual Inspector Logic
+  const getElementInfo = useCallback((element: HTMLElement) => {
+    const tag = element.tagName.toLowerCase();
+    const classes = Array.from(element.classList);
+    const id = element.id || undefined;
+    const text = element.textContent?.slice(0, 50) || undefined;
+    
+    let component = element.getAttribute('data-component');
+    if (!component) {
+      const componentClasses = classes.find(c => 
+        c.includes('Hero') || c.includes('Navigation') || c.includes('Footer') || 
+        c.includes('Sidebar') || c.includes('Contact') || c.includes('About') ||
+        c.includes('Services') || c.includes('Portfolio') || c.includes('Testimonials') ||
+        c.includes('Pricing') || c.includes('FAQ') || c.includes('Blog') || c.includes('CTA')
+      );
+      component = componentClasses;
+    }
+    
+    return { tag, classes, id, text, component };
+  }, []);
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (!inspectorActive) return;
+    
+    const elements = document.elementsFromPoint(e.clientX, e.clientY);
+    const targetElement = elements.find(el => 
+      !el.closest('.visual-inspector-overlay') && 
+      !el.closest('.visual-inspector-controls')
+    ) as HTMLElement;
+    
+    if (!targetElement || targetElement === hoveredElement) return;
+    
+    setHoveredElement(targetElement);
+    
+    const rect = targetElement.getBoundingClientRect();
+    setHighlightStyle({
+      position: 'fixed',
+      left: `${rect.left}px`,
+      top: `${rect.top}px`,
+      width: `${rect.width}px`,
+      height: `${rect.height}px`,
+      pointerEvents: 'none',
+      transition: 'all 0.1s ease',
+    });
+  }, [inspectorActive, hoveredElement]);
+
+  const handleInspectorClick = useCallback((e: MouseEvent) => {
+    if (!inspectorActive || !hoveredElement) return;
+    
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const elementInfo = getElementInfo(hoveredElement);
+    let description = '';
+    
+    if (elementInfo.component) {
+      description = elementInfo.component;
+    } else if (elementInfo.id) {
+      description = `#${elementInfo.id}`;
+    } else if (elementInfo.classes.length > 0) {
+      const meaningfulClasses = elementInfo.classes.filter(c => 
+        !c.startsWith('text-') && 
+        !c.startsWith('bg-') && 
+        !c.startsWith('p-') && 
+        !c.startsWith('m-') &&
+        !c.startsWith('w-') &&
+        !c.startsWith('h-') &&
+        !c.startsWith('flex') &&
+        !c.startsWith('grid')
+      );
+      description = meaningfulClasses.join(' ') || elementInfo.tag;
+    } else {
+      description = `${elementInfo.tag} element`;
+    }
+    
+    if (elementInfo.text) {
+      description += ` ("${elementInfo.text}")`;
+    }
+    
+    setSelectedComponent(description);
+    setInspectorActive(false);
     toast({
       title: "Element selected",
-      description: `Selected: ${elementInfo}`,
+      description: `Selected: ${description}`,
     });
-  };
+  }, [inspectorActive, hoveredElement, getElementInfo, toast]);
+
+  useEffect(() => {
+    if (!inspectorActive) {
+      setHoveredElement(null);
+      return;
+    }
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('click', handleInspectorClick, true);
+    
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('click', handleInspectorClick, true);
+    };
+  }, [inspectorActive, handleMouseMove, handleInspectorClick]);
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -374,11 +469,41 @@ const ChatInterface = () => {
 
   return (
     <SidebarProvider>
-      <VisualInspector 
-        isActive={inspectorActive}
-        onClose={() => setInspectorActive(false)}
-        onElementSelect={handleElementSelect}
-      />
+      {/* Visual Inspector Overlay */}
+      {inspectorActive && (
+        <>
+          <div 
+            className="fixed inset-0 bg-primary/5 backdrop-blur-[1px] z-[9998]"
+            style={{ pointerEvents: 'none' }}
+          />
+          
+          {hoveredElement && (
+            <div
+              style={highlightStyle}
+              className="border-2 border-primary bg-primary/10 z-[9999] rounded"
+            />
+          )}
+          
+          <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[10000] flex items-center gap-3 bg-background border-2 border-primary rounded-full px-6 py-3 shadow-2xl">
+            <Eye className="h-5 w-5 text-primary animate-pulse" />
+            <span className="text-sm font-medium">Click any element to select it</span>
+            {hoveredElement && (
+              <Badge variant="secondary" className="ml-2">
+                {getElementInfo(hoveredElement).component || getElementInfo(hoveredElement).tag}
+              </Badge>
+            )}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setInspectorActive(false)}
+              className="h-8 w-8 rounded-full ml-2"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        </>
+      )}
+
       <div className="min-h-screen flex w-full bg-background">
         <AppSidebar
           user={user}
