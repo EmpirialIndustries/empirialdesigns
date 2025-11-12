@@ -20,10 +20,9 @@ const NewServices = () => {
         "Basic SEO Setup",
         "WhatsApp Integration",
         "Fast Loading Speed",
-        "Free Stock Images",
-        "1 Week Delivery"
+        "3 Days Delivery"
       ],
-      addons: "Add-ons available: Extra pages (R500 each), Logo design (R1,000)",
+      addons: "Add-ons available: Extra pages (R500 each), Logo design (R200)",
       cta: "Get Started"
     },
     {
@@ -33,18 +32,17 @@ const NewServices = () => {
       popular: true,
       description: "Complete multi-page website with advanced features. Perfect for growing businesses.",
       features: [
-        "Up to 5 Custom Pages",
+        "Up to 3 Custom Pages",
         "Premium Responsive Design",
         "Advanced Contact Forms",
         "Full SEO Optimization",
         "Social Media Integration",
-        "Google Analytics Setup",
-        "Content Management System",
+        "Google Business Setup",
         "Blog Section",
-        "2 Weeks Delivery"
+        "5 Days Delivery"
       ],
-      addons: "Add-ons: Extra pages (R400 each), Custom animations (R800), Email marketing (R1,200)",
-      cta: "Most Popular"
+      addons: "Add-ons: Extra pages (R500 each), 2 Poster designs (R400), Business Cards (R150)",
+      cta: "Get More Client"
     },
     {
       icon: ShoppingCart,
@@ -57,15 +55,14 @@ const NewServices = () => {
         "Shopping Cart & Checkout",
         "Payment Gateway Integration",
         "Product Management System",
-        "Order Tracking System",
         "Customer Accounts",
         "Inventory Management",
         "Email Notifications",
         "Mobile Responsive",
-        "3 Weeks Delivery"
+        "1 Weeks Delivery"
       ],
       addons: "Add-ons: Advanced shipping (R1,500), Multi-currency (R1,000), Product reviews (R800)",
-      cta: "Start Selling"
+      cta: "This Way"
     }
   ];
 
@@ -105,7 +102,7 @@ const NewServices = () => {
               <img src="/lovable-uploads/Our Menu (3).pdf.png" alt="Menu Design Service" className="w-full h-full object-cover" />
             </div>
             <div className="aspect-[3/4] rounded-lg overflow-hidden elegant-shadow hover:elegant-glow smooth-transition">
-              <img src="/lovable-uploads/Genesis & Her Nails (2).png" alt="Beauty Salon Design" className="w-full h-full object-cover" />
+              <img src="/lovable-uploads/1.jpg" alt="1.jpg" className="w-full h-full object-cover" />
             </div>
             <div className="aspect-[3/4] rounded-lg overflow-hidden elegant-shadow hover:elegant-glow smooth-transition">
               <img src="/lovable-uploads/Breakfast Hamper BW.png" alt="Food Service Design" className="w-full h-full object-cover" />
