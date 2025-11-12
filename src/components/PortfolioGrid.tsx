@@ -119,7 +119,7 @@ const PortfolioGrid = () => {
       image: "/lovable-uploads/Breakfast Hamper BW.png",
       url: "#",
       description: "Food service promotional poster with appetizing design and clear pricing."
-    }
+    },
     {
       id: 14,
       title: "TT Resellers Logo",
@@ -127,7 +127,7 @@ const PortfolioGrid = () => {
       image: "/Lovable-uploads/5.jpg",
       url: "#",
       description: "A Logo capturing the essence of the Owner"
-    }
+    },
   {
       id: 15,
       title: "TT Resellers Poster",
@@ -135,7 +135,7 @@ const PortfolioGrid = () => {
       image: "/Lovable-uploads/1.jpg",
       url: "#",
       description: "Thinking of everlasting fragrance"
-    }
+    },
   {
       id: 16,
       title: "TT Resellers Poster",
