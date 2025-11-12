@@ -120,6 +120,30 @@ const PortfolioGrid = () => {
       url: "#",
       description: "Food service promotional poster with appetizing design and clear pricing."
     }
+    {
+      id: 14,
+      title: "TT Resellers Logo",
+      category: "Logo",
+      image: "/Lovable-uploads/5.jpg",
+      url: "#",
+      description: "A Logo capturing the essence of the Owner"
+    }
+  {
+      id: 15,
+      title: "TT Resellers Poster",
+      category: "Posters",
+      image: "/Lovable-uploads/1.jpg",
+      url: "#",
+      description: "Thinking of everlasting fragrance"
+    }
+  {
+      id: 16,
+      title: "TT Resellers Poster",
+      category: "Posters",
+      image: "/Lovable-uploads/3.jpg",
+      url: "#",
+      description: "Check Out the Catolugue for Everlasting Fragance"
+    }
   ];
 
   const filteredItems = activeFilter === 'All' 
