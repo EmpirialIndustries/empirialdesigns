@@ -51,7 +51,6 @@ const NewServices = () => {
       popular: false,
       description: "Full-featured online store with payment processing. Start selling online today.",
       features: [
-        "Unlimited Products",
         "Shopping Cart & Checkout",
         "Payment Gateway Integration",
         "Product Management System",
