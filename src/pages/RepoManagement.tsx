@@ -6,10 +6,11 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { supabase } from '../integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Trash2, ExternalLink, LogOut, FolderGit2, Sparkles } from 'lucide-react';
-import type { User } from '@supabase/supabase-js';
+import { auth, db } from '@/lib/firebase';
+import { onAuthStateChanged, signOut, User } from 'firebase/auth';
+import { collection, query, where, getDocs, doc, setDoc, deleteDoc, orderBy } from 'firebase/firestore';
 
 interface Repo {
   id: string;
@@ -31,45 +32,54 @@ const RepoManagement = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        setUser(session.user);
-        loadRepos(session.user.id);
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+        loadRepos(currentUser.uid);
       } else {
         navigate('/auth');
       }
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session?.user) {
-        setUser(session.user);
-        loadRepos(session.user.id);
-      } else {
-        navigate('/auth');
-      }
-    });
-
-    return () => subscription.unsubscribe();
+    return () => unsubscribe();
   }, [navigate]);
 
   const loadRepos = async (userId: string) => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('user_repos')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false });
+    try {
+      const q = query(
+        collection(db, 'user_repos'),
+        where('user_id', '==', userId),
+        orderBy('created_at', 'desc')
+      );
 
-    if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to load repositories",
-        variant: "destructive",
+      const querySnapshot = await getDocs(q);
+      const loadedRepos: Repo[] = [];
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        loadedRepos.push({
+          id: doc.id,
+          repo_owner: data.repo_owner,
+          repo_name: data.repo_name,
+          repo_url: data.repo_url,
+          created_at: data.created_at,
+        });
       });
-    } else {
-      setRepos(data || []);
+
+      setRepos(loadedRepos);
+    } catch (error: any) {
+      console.error('Error loading repos:', error);
+      // Firestore index might be needed for compound queries
+      if (error.code === 'failed-precondition') {
+        toast({
+          title: "Setup Required",
+          description: "Firestore index creation required. Check console.",
+          variant: "destructive",
+        });
+      }
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleAddRepo = async () => {
@@ -85,17 +95,17 @@ const RepoManagement = () => {
 
       const [, owner, name] = match;
       const cleanName = name.replace(/\.git$/, '');
+      const repoId = `${user.uid}_${cleanName}`;
 
-      const { data, error } = await supabase.functions.invoke('manage-repo', {
-        body: {
-          action: 'add',
-          repoUrl: `https://github.com/${owner}/${cleanName}`,
-          repoOwner: owner,
-          repoName: cleanName,
-        }
+      // Direct Firestore Write (replacing manage-repo Edge Function for now)
+      await setDoc(doc(db, 'user_repos', repoId), {
+        user_id: user.uid,
+        repo_url: `https://github.com/${owner}/${cleanName}`,
+        repo_owner: owner,
+        repo_name: cleanName,
+        created_at: new Date().toISOString(),
+        template_type: 'custom' // Defaulting for manually added
       });
-
-      if (error) throw error;
 
       toast({
         title: "Success",
@@ -104,7 +114,7 @@ const RepoManagement = () => {
 
       setDialogOpen(false);
       setRepoUrl('');
-      loadRepos(user.id);
+      loadRepos(user.uid);
     } catch (error: any) {
       toast({
         title: "Error",
@@ -126,18 +136,15 @@ const RepoManagement = () => {
 
     setLoading(true);
     try {
-      const { error } = await supabase.functions.invoke('manage-repo', {
-        body: { action: 'delete', repoId: repoToDelete }
-      });
-
-      if (error) throw error;
+      // Direct Firestore Delete
+      await deleteDoc(doc(db, 'user_repos', repoToDelete));
 
       toast({
         title: "Success",
         description: "Repository removed successfully",
       });
 
-      if (user) await loadRepos(user.id);
+      if (user) await loadRepos(user.uid);
     } catch (error: any) {
       console.error('Failed to delete repo:', error);
       toast({
@@ -153,13 +160,13 @@ const RepoManagement = () => {
   };
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
+    await signOut(auth);
     navigate('/');
   };
 
   if (!user) {
     return null;
-  } // <-- This is where the 'if' block closes.
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -195,7 +202,7 @@ const RepoManagement = () => {
           <div className="flex gap-3">
             <Button
               variant="default"
-              onClick={() => navigate('/generate')} // Note: You'll need to create this page/route
+              onClick={() => navigate('/generate')}
               className="rounded-full"
             >
               <Sparkles className="h-4 w-4 mr-2" />
@@ -268,7 +275,7 @@ const RepoManagement = () => {
                         className="flex-1 rounded-full"
                         onClick={() => navigate(`/preview/${repo.id}`)}
                       >
-                        Open Editor
+                        Edit
                       </Button>
                       <Button
                         variant="outline"
@@ -316,5 +323,3 @@ const RepoManagement = () => {
 };
 
 export default RepoManagement;
-
-

@@ -5,13 +5,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Sparkles, Loader2, CheckCircle2, ArrowLeft } from 'lucide-react';
-import type { User } from '@supabase/supabase-js';
+import { auth } from '@/lib/firebase';
+import { onAuthStateChanged, User } from 'firebase/auth';
 
-const SUPABASE_URL = "https://vfysnkkzesbovtnmoccb.supabase.co";
+const FIREBASE_FUNCTION_URL = "https://us-central1-empirialdesigns.cloudfunctions.net/createWebsite";
 
 interface GenerationStep {
   id: number;
@@ -43,59 +42,60 @@ const GenerateWebsite = () => {
   const [generatedRepo, setGeneratedRepo] = useState<any>(null);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        setUser(session.user);
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
       } else {
         navigate('/auth');
       }
     });
+    return () => unsubscribe();
   }, [navigate]);
 
   const websiteTypes = [
-    { 
-      value: 'landing', 
-      label: 'Landing Page', 
+    {
+      value: 'landing',
+      label: 'Landing Page',
       description: 'Modern landing page with hero, features, and CTA',
       preview: '🎯',
       features: ['Hero Section', 'Features', 'Testimonials', 'Call-to-Action', 'Responsive Design'],
       color: 'bg-blue-500'
     },
-    { 
-      value: 'ecommerce', 
-      label: 'E-commerce Store', 
+    {
+      value: 'ecommerce',
+      label: 'E-commerce Store',
       description: 'Online store with products, cart, and checkout',
       preview: '🛒',
       features: ['Product Catalog', 'Shopping Cart', 'Checkout', 'Product Details', 'Payment Ready'],
       color: 'bg-green-500'
     },
-    { 
-      value: 'blog', 
-      label: 'Blog', 
+    {
+      value: 'blog',
+      label: 'Blog',
       description: 'Content blog with posts, categories, and archives',
       preview: '✍️',
       features: ['Post Listing', 'Categories', 'Search', 'Archive', 'Reading Experience'],
       color: 'bg-purple-500'
     },
-    { 
-      value: 'portfolio', 
-      label: 'Portfolio', 
+    {
+      value: 'portfolio',
+      label: 'Portfolio',
       description: 'Showcase your work and projects',
       preview: '🎨',
       features: ['Project Showcase', 'Gallery', 'About Section', 'Contact Form', 'Modern Design'],
       color: 'bg-pink-500'
     },
-    { 
-      value: 'saas', 
-      label: 'SaaS Landing', 
+    {
+      value: 'saas',
+      label: 'SaaS Landing',
       description: 'Software product landing with pricing and features',
       preview: '💼',
       features: ['Pricing Tiers', 'Feature Showcase', 'Integrations', 'Testimonials', 'Sign-up CTA'],
       color: 'bg-indigo-500'
     },
-    { 
-      value: 'restaurant', 
-      label: 'Restaurant', 
+    {
+      value: 'restaurant',
+      label: 'Restaurant',
       description: 'Menu, reservations, and location info',
       preview: '🍽️',
       features: ['Menu Display', 'Reservations', 'Location Map', 'Gallery', 'Contact Info'],
@@ -133,7 +133,6 @@ const GenerateWebsite = () => {
       return;
     }
 
-    // Validation
     if (!formData.prompt.trim()) {
       toast({
         title: "Missing Information",
@@ -153,7 +152,6 @@ const GenerateWebsite = () => {
       return;
     }
 
-    // Validate repo name format
     const repoNameRegex = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/i;
     if (!repoNameRegex.test(formData.repoName)) {
       toast({
@@ -166,24 +164,18 @@ const GenerateWebsite = () => {
 
     setLoading(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const accessToken = session?.access_token;
+      const token = await user.getIdToken();
 
-      if (!accessToken) {
-        throw new Error('Not authenticated. Please sign in again.');
-      }
-
-      // Show progress toast
       const progressToast = toast({
         title: "Generating Website",
         description: "Creating repository and generating files...",
       });
 
-      const response = await fetch(`${SUPABASE_URL}/functions/v1/create-website`, {
+      const response = await fetch(FIREBASE_FUNCTION_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
           prompt: formData.prompt,
@@ -201,7 +193,6 @@ const GenerateWebsite = () => {
       }
 
       if (!response.ok) {
-        // Handle specific error types
         if (response.status === 401) {
           throw new Error('Authentication failed. Please sign in again.');
         } else if (response.status === 429) {
@@ -212,15 +203,9 @@ const GenerateWebsite = () => {
           throw new Error(errorData.error || 'Server error. Please try again later.');
         } else if (errorData.error?.includes('already exists')) {
           throw new Error(`Repository "${formData.repoName}" already exists. Please choose a different name.`);
-        } else if (errorData.error?.includes('token')) {
-          throw new Error('GitHub token error. Please check your configuration.');
         } else {
           throw new Error(errorData.error || `Failed to generate website (${response.status})`);
         }
-      }
-
-      if (!errorData.repo) {
-        throw new Error('Invalid response from server');
       }
 
       const data = errorData;
@@ -231,15 +216,13 @@ const GenerateWebsite = () => {
         description: `Website generated with ${data.repo.files_created || 'multiple'} files`,
       });
 
-      // Auto-advance after a moment
       setTimeout(() => {
         setCurrentStep(3);
       }, 500);
 
     } catch (error: any) {
       console.error('Generation error:', error);
-      
-      // Network errors
+
       if (error.name === 'TypeError' && error.message.includes('fetch')) {
         toast({
           title: "Network Error",
@@ -265,8 +248,10 @@ const GenerateWebsite = () => {
   };
 
   const handleGoToPreview = () => {
-    if (generatedRepo?.id) {
-      navigate(`/preview/${generatedRepo.id}`);
+    if (generatedRepo?.repo_name) {
+      // Assuming repo name is enough, or we need ID if we store it
+      // For now, if RepoManagement uses Firestore ID, we might need to query it or just route to repos
+      navigate('/repos');
     } else {
       navigate('/repos');
     }
@@ -299,13 +284,12 @@ const GenerateWebsite = () => {
               <div key={step.id} className="flex items-center flex-1">
                 <div className="flex flex-col items-center">
                   <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${
-                      currentStep > step.id
+                    className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${currentStep > step.id
                         ? 'bg-primary text-primary-foreground'
                         : currentStep === step.id
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-muted text-muted-foreground'
-                    }`}
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted text-muted-foreground'
+                      }`}
                   >
                     {currentStep > step.id ? (
                       <CheckCircle2 className="h-5 w-5" />
@@ -320,9 +304,8 @@ const GenerateWebsite = () => {
                 </div>
                 {index < steps.length - 1 && (
                   <div
-                    className={`flex-1 h-1 mx-4 ${
-                      currentStep > step.id ? 'bg-primary' : 'bg-muted'
-                    }`}
+                    className={`flex-1 h-1 mx-4 ${currentStep > step.id ? 'bg-primary' : 'bg-muted'
+                      }`}
                   />
                 )}
               </div>
@@ -361,11 +344,10 @@ const GenerateWebsite = () => {
                     {websiteTypes.map((type) => (
                       <Card
                         key={type.value}
-                        className={`cursor-pointer transition-all hover:shadow-lg ${
-                          formData.websiteType === type.value
+                        className={`cursor-pointer transition-all hover:shadow-lg ${formData.websiteType === type.value
                             ? 'ring-2 ring-primary border-primary'
                             : ''
-                        }`}
+                          }`}
                         onClick={() => {
                           setFormData({ ...formData, websiteType: type.value });
                           if (!formData.prompt) {
@@ -411,9 +393,6 @@ const GenerateWebsite = () => {
                       </Card>
                     ))}
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    Click on a template to select it and auto-fill the prompt
-                  </p>
                 </div>
               </>
             )}
@@ -498,7 +477,7 @@ const GenerateWebsite = () => {
                     <div>
                       <h3 className="text-2xl font-semibold mb-2">Website Generated! 🎉</h3>
                       <p className="text-muted-foreground mb-4">
-                        Your website has been created with {generatedRepo.files_created} files
+                        Your website has been created.
                       </p>
                       <div className="flex flex-col sm:flex-row gap-4 justify-center">
                         <Button
@@ -512,21 +491,9 @@ const GenerateWebsite = () => {
                           onClick={handleGoToPreview}
                           size="lg"
                         >
-                          Edit & Preview
+                          View Repositories
                         </Button>
                       </div>
-                      {generatedRepo.commit_url && (
-                        <p className="text-sm text-muted-foreground mt-4">
-                          <a
-                            href={generatedRepo.commit_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="underline hover:text-primary"
-                          >
-                            View initial commit
-                          </a>
-                        </p>
-                      )}
                     </div>
                   </>
                 )}
@@ -559,7 +526,7 @@ const GenerateWebsite = () => {
                 </Button>
               ) : (
                 <Button onClick={handleGoToPreview}>
-                  Continue to Preview
+                  Continue
                 </Button>
               )}
             </div>
@@ -571,4 +538,3 @@ const GenerateWebsite = () => {
 };
 
 export default GenerateWebsite;
-

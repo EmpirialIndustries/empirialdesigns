@@ -4,28 +4,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
+import { auth, db } from '@/lib/firebase';
 import { ArrowLeft } from 'lucide-react';
-import { getAccessToken } from '@/utils/debug-token';
 
 const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [siteName, setSiteName] = useState('');
-  
-  // DEBUG: Function to show access token
-  const showToken = async () => {
-    const token = await getAccessToken();
-    if (token) {
-      console.log('Access Token:', token);
-      // Also show in toast for easy copying
-      toast({
-        title: "Access Token Retrieved",
-        description: "Check your browser console (F12) to copy the token",
-      });
-    }
-  };
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -36,53 +24,50 @@ const Auth = () => {
 
     try {
       if (isSignUp) {
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/repos`
-          }
-        });
-        
-        if (error) throw error;
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
 
         // Create initial repo entry with deploy URL if site name provided
-        if (data.user && siteName.trim()) {
+        if (user && siteName.trim()) {
           const cleanName = siteName.trim().replace(/[^a-z0-9-]/gi, '');
           const deployUrl = `https://${cleanName}.netlify.app`;
-          
-          await supabase.from('user_repos').insert({
-            user_id: data.user.id,
+
+          await setDoc(doc(db, 'user_repos', `${user.uid}_${cleanName}`), {
+            user_id: user.uid,
             repo_name: cleanName,
             repo_owner: email.split('@')[0],
             repo_url: deployUrl,
-            deploy_url: deployUrl
+            deploy_url: deployUrl,
+            created_at: new Date().toISOString()
           });
         }
-        
+
         toast({
           title: "Success!",
-          description: "Check your email to confirm your account.",
+          description: "Account created successfully.",
         });
+        navigate('/repos');
       } else {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        
-        if (error) throw error;
-        
+        await signInWithEmailAndPassword(auth, email, password);
+
         toast({
           title: "Welcome back!",
           description: "You've successfully signed in.",
         });
-        
+
         navigate('/repos');
       }
     } catch (error: any) {
+      console.error('Auth error:', error);
+      let message = error.message;
+      if (error.code === 'auth/email-already-in-use') message = 'Email already in use';
+      if (error.code === 'auth/invalid-email') message = 'Invalid email address';
+      if (error.code === 'auth/weak-password') message = 'Password should be at least 6 characters';
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') message = 'Invalid email or password';
+
       toast({
         title: "Error",
-        description: error.message,
+        description: message,
         variant: "destructive",
       });
     } finally {
@@ -104,17 +89,17 @@ const Auth = () => {
 
         <div className="bg-background/80 backdrop-blur-xl border border-border rounded-2xl p-8 elegant-shadow">
           <div className="text-center mb-8">
-            <img 
-              src="/lovable-uploads/94f51cc3-f695-4449-8dc0-01c2e5cced2f.png" 
-              alt="Empirial Designs Logo" 
+            <img
+              src="/lovable-uploads/94f51cc3-f695-4449-8dc0-01c2e5cced2f.png"
+              alt="Empirial Designs Logo"
               className="h-12 w-auto mx-auto mb-4"
             />
             <h1 className="text-3xl font-bold text-gradient mb-2">
               {isSignUp ? 'Create Account' : 'Welcome Back'}
             </h1>
             <p className="text-muted-foreground">
-              {isSignUp 
-                ? 'Sign up to access your AI assistant' 
+              {isSignUp
+                ? 'Sign up to access your AI assistant'
                 : 'Sign in to continue to your AI assistant'
               }
             </p>
@@ -179,23 +164,11 @@ const Auth = () => {
               onClick={() => setIsSignUp(!isSignUp)}
               className="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
-              {isSignUp 
-                ? 'Already have an account? Sign in' 
+              {isSignUp
+                ? 'Already have an account? Sign in'
                 : "Don't have an account? Sign up"
               }
             </button>
-
-            {/* Debug button to show access token */}
-            <div>
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={showToken}
-                className="text-xs text-muted-foreground"
-              >
-                Show Access Token
-              </Button>
-            </div>
           </div>
         </div>
       </div>
