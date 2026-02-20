@@ -7,7 +7,8 @@ import { useToast } from '@/hooks/use-toast';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, LucideIcon } from 'lucide-react';
+const IconArrowLeft = ArrowLeft as any;
 
 const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -83,7 +84,7 @@ const Auth = () => {
           className="mb-6 text-foreground/70 hover:text-foreground"
           onClick={() => navigate('/')}
         >
-          <ArrowLeft className="mr-2 h-4 w-4" />
+          <IconArrowLeft className="mr-2 h-4 w-4" />
           Back to Home
         </Button>
 

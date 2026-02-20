@@ -4,7 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AiChatWidget } from "@/components/AiChatWidget";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/index";
+import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import EmpirialIPhones from "./pages/EmpirialIPhones";
 import EliteSneakers from "./pages/EliteSneakers";
@@ -25,15 +25,16 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
       <BrowserRouter>
+        <Toaster />
+        <Sonner />
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/chat" element={<ChatInterface />} />
           <Route path="/repos" element={<RepoManagement />} />
           <Route path="/generate" element={<GenerateWebsite />} />
+          <Route path="/templates" element={<GenerateWebsite />} />
           <Route path="/preview/:repoId" element={<Preview />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/seo-audit" element={<SEOAudit />} />
@@ -44,8 +45,8 @@ const App = () => (
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
+        <AiChatWidget />
       </BrowserRouter>
-      <AiChatWidget />
     </TooltipProvider>
   </QueryClientProvider>
 );

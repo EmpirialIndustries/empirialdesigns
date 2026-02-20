@@ -1,45 +1,83 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Sparkles, Loader2, CheckCircle2, ArrowLeft } from 'lucide-react';
-import { auth } from '@/lib/firebase';
+import { Sparkles, Loader2, CheckCircle2, ArrowLeft, LayoutTemplate, Search } from 'lucide-react';
+import { auth, db } from '@/lib/firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
 
-const FIREBASE_FUNCTION_URL = "https://us-central1-empirialdesigns.cloudfunctions.net/createWebsite";
+// Import Template Images
+import BakeryImg from '@/assets/Bakery.webp';
+import CoffeeImg from '@/assets/Coffee.webp';
+import FoodImg from '@/assets/Food.webp';
+import DBAImg from '@/assets/DBA.webp';
 
-interface GenerationStep {
-  id: number;
-  title: string;
+const IconSparkles = Sparkles as any;
+const IconLoader2 = Loader2 as any;
+const IconCheckCircle2 = CheckCircle2 as any;
+const IconArrowLeft = ArrowLeft as any;
+const IconLayoutTemplate = LayoutTemplate as any;
+const IconSearch = Search as any;
+
+interface Template {
+  id: string;
+  name: string;
   description: string;
+  image: string;
+  category: string;
+  features: string[];
 }
 
-const steps: GenerationStep[] = [
-  { id: 1, title: 'Describe Your Website', description: 'Tell us what kind of website you want' },
-  { id: 2, title: 'Configure Details', description: 'Set name and basic information' },
-  { id: 3, title: 'Generate', description: 'AI creates your website' },
+const templates: Template[] = [
+  {
+    id: 'template_bakery',
+    name: 'Artisan Bakery',
+    description: 'A warm and inviting website for bakeries and cafes.',
+    image: BakeryImg,
+    category: 'Food & Beverage',
+    features: ['Menu Gallery', 'Online Ordering', 'About Us', 'Contact Form']
+  },
+  {
+    id: 'template_coffee',
+    name: 'Coffee Shop / Barista',
+    description: 'Modern aesthetic for coffee shops and roasteries.',
+    image: CoffeeImg,
+    category: 'Food & Beverage',
+    features: ['Drink Menu', 'Location Finder', 'Events', 'Blog']
+  },
+  {
+    id: 'template_food',
+    name: 'Gourmet Restaurant',
+    description: 'Elegant design for high-end dining experiences.',
+    image: FoodImg,
+    category: 'Food & Beverage',
+    features: ['Reservation System', 'Chef Profiles', 'Gallery', 'Reviews']
+  },
+  {
+    id: 'template_dba',
+    name: 'Logistics & Delivery',
+    description: 'Professional layout for logistics and delivery services.',
+    image: DBAImg,
+    category: 'Business',
+    features: ['Service Tracking', 'Quote Request', 'Fleet Showcase', 'Partners']
+  }
 ];
 
 const GenerateWebsite = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [currentStep, setCurrentStep] = useState(1);
-  const [loading, setLoading] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
+  const [repoName, setRepoName] = useState('');
+  const [step, setStep] = useState<'gallery' | 'details' | 'creating'>('gallery');
 
-  const [formData, setFormData] = useState({
-    prompt: '',
-    websiteType: 'landing',
-    repoName: '',
-    companyName: '',
-    description: '',
-  });
-
-  const [generatedRepo, setGeneratedRepo] = useState<any>(null);
+  const location = useLocation();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -52,486 +90,221 @@ const GenerateWebsite = () => {
     return () => unsubscribe();
   }, [navigate]);
 
-  const websiteTypes = [
-    {
-      value: 'landing',
-      label: 'Landing Page',
-      description: 'Modern landing page with hero, features, and CTA',
-      preview: '🎯',
-      features: ['Hero Section', 'Features', 'Testimonials', 'Call-to-Action', 'Responsive Design'],
-      color: 'bg-blue-500'
-    },
-    {
-      value: 'ecommerce',
-      label: 'E-commerce Store',
-      description: 'Online store with products, cart, and checkout',
-      preview: '🛒',
-      features: ['Product Catalog', 'Shopping Cart', 'Checkout', 'Product Details', 'Payment Ready'],
-      color: 'bg-green-500'
-    },
-    {
-      value: 'blog',
-      label: 'Blog',
-      description: 'Content blog with posts, categories, and archives',
-      preview: '✍️',
-      features: ['Post Listing', 'Categories', 'Search', 'Archive', 'Reading Experience'],
-      color: 'bg-purple-500'
-    },
-    {
-      value: 'portfolio',
-      label: 'Portfolio',
-      description: 'Showcase your work and projects',
-      preview: '🎨',
-      features: ['Project Showcase', 'Gallery', 'About Section', 'Contact Form', 'Modern Design'],
-      color: 'bg-pink-500'
-    },
-    {
-      value: 'saas',
-      label: 'SaaS Landing',
-      description: 'Software product landing with pricing and features',
-      preview: '💼',
-      features: ['Pricing Tiers', 'Feature Showcase', 'Integrations', 'Testimonials', 'Sign-up CTA'],
-      color: 'bg-indigo-500'
-    },
-    {
-      value: 'restaurant',
-      label: 'Restaurant',
-      description: 'Menu, reservations, and location info',
-      preview: '🍽️',
-      features: ['Menu Display', 'Reservations', 'Location Map', 'Gallery', 'Contact Info'],
-      color: 'bg-orange-500'
-    },
-  ];
+  const filteredTemplates = templates.filter(t =>
+    t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    t.category.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
-  const handleNext = () => {
-    if (currentStep === 1 && !formData.prompt.trim()) {
-      toast({
-        title: "Required",
-        description: "Please describe the website you want to create",
-        variant: "destructive",
-      });
-      return;
-    }
-    if (currentStep === 2 && !formData.repoName.trim()) {
-      toast({
-        title: "Required",
-        description: "Please enter a repository name",
-        variant: "destructive",
-      });
-      return;
-    }
-    setCurrentStep(prev => Math.min(prev + 1, 3));
+  const handleSelectTemplate = (template: Template) => {
+    setSelectedTemplate(template);
+    setRepoName(template.name.toLowerCase().replace(/\s+/g, '-') + '-' + Math.floor(Math.random() * 1000));
+    setStep('details');
   };
 
-  const handleBack = () => {
-    setCurrentStep(prev => Math.max(prev - 1, 1));
-  };
-
-  const handleGenerate = async () => {
-    if (!user) {
-      navigate('/auth');
-      return;
-    }
-
-    if (!formData.prompt.trim()) {
+  const handleCreateProject = async () => {
+    if (!user || !selectedTemplate) return;
+    if (!repoName.trim()) {
       toast({
-        title: "Missing Information",
-        description: "Please describe the website you want to create",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!formData.repoName.trim()) {
-      toast({
-        title: "Missing Information",
-        description: "Please enter a repository name",
-        variant: "destructive",
-      });
-      setCurrentStep(2);
-      return;
-    }
-
-    const repoNameRegex = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/i;
-    if (!repoNameRegex.test(formData.repoName)) {
-      toast({
-        title: "Invalid Repository Name",
-        description: "Repository name can only contain letters, numbers, and hyphens",
-        variant: "destructive",
+        title: "Required",
+        description: "Please enter a project name",
+        variant: "destructive"
       });
       return;
     }
 
     setLoading(true);
+    setStep('creating');
+
     try {
-      const token = await user.getIdToken();
+      // Simulate "AI Generation" / Database Pull
+      // In a real scenario, this would trigger a cloud function to clone the template
 
-      const progressToast = toast({
-        title: "Generating Website",
-        description: "Creating repository and generating files...",
+      await new Promise(resolve => setTimeout(resolve, 2000)); // Fake delay
+
+      const repoId = `${user.uid}_${repoName}`;
+
+      // Create Firestore Entry
+      await setDoc(doc(db, 'user_repos', repoId), {
+        user_id: user.uid,
+        repo_url: `https://github.com/empirial-templates/${selectedTemplate.id}`, // Mock URL
+        repo_owner: 'empirial-templates',
+        repo_name: repoName,
+        created_at: new Date().toISOString(),
+        template_id: selectedTemplate.id,
+        status: 'ready'
       });
-
-      const response = await fetch(FIREBASE_FUNCTION_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          prompt: formData.prompt,
-          repoName: formData.repoName || undefined,
-          websiteType: formData.websiteType,
-          companyName: formData.companyName || undefined,
-        }),
-      });
-
-      let errorData;
-      try {
-        errorData = await response.json();
-      } catch {
-        errorData = { error: `HTTP ${response.status}: ${response.statusText}` };
-      }
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          throw new Error('Authentication failed. Please sign in again.');
-        } else if (response.status === 429) {
-          throw new Error('Too many requests. Please wait a moment and try again.');
-        } else if (response.status === 400) {
-          throw new Error(errorData.error || 'Invalid request. Please check your input.');
-        } else if (response.status === 500) {
-          throw new Error(errorData.error || 'Server error. Please try again later.');
-        } else if (errorData.error?.includes('already exists')) {
-          throw new Error(`Repository "${formData.repoName}" already exists. Please choose a different name.`);
-        } else {
-          throw new Error(errorData.error || `Failed to generate website (${response.status})`);
-        }
-      }
-
-      const data = errorData;
-      setGeneratedRepo(data.repo);
 
       toast({
-        title: "Success! 🎉",
-        description: `Website generated with ${data.repo.files_created || 'multiple'} files`,
+        title: "Project Created! 🎉",
+        description: `Your project based on ${selectedTemplate.name} is ready.`,
       });
 
-      setTimeout(() => {
-        setCurrentStep(3);
-      }, 500);
+      navigate(`/preview/${repoId}`);
 
     } catch (error: any) {
-      console.error('Generation error:', error);
-
-      if (error.name === 'TypeError' && error.message.includes('fetch')) {
-        toast({
-          title: "Network Error",
-          description: "Could not connect to server. Please check your internet connection.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Error",
-          description: error.message || "Failed to generate website. Please try again.",
-          variant: "destructive",
-        });
-      }
+      console.error("Creation error:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create project. Please try again.",
+        variant: "destructive"
+      });
+      setStep('details');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleViewRepo = () => {
-    if (generatedRepo?.url) {
-      window.open(generatedRepo.url, '_blank');
-    }
-  };
-
-  const handleGoToPreview = () => {
-    if (generatedRepo?.repo_name) {
-      // Assuming repo name is enough, or we need ID if we store it
-      // For now, if RepoManagement uses Firestore ID, we might need to query it or just route to repos
-      navigate('/repos');
-    } else {
-      navigate('/repos');
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-[#020617] text-white p-6 font-sans">
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/repos')}
-            className="mb-4"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Repositories
-          </Button>
-          <h1 className="text-4xl font-bold mb-2">AI Website Generator</h1>
-          <p className="text-muted-foreground">
-            Create a complete website in seconds with AI
-          </p>
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => step === 'gallery' ? navigate('/repos') : setStep('gallery')}
+              className="rounded-full hover:bg-white/10 text-white"
+            >
+              <IconArrowLeft className="h-5 w-5" />
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">
+                {step === 'gallery' ? 'Template Gallery' : 'Configure Project'}
+              </h1>
+              <p className="text-white/40">
+                {step === 'gallery' ? 'Choose a starting point for your new website' : `Setting up: ${selectedTemplate?.name}`}
+              </p>
+            </div>
+          </div>
+
+          {step === 'gallery' && (
+            <div className="relative w-64 hidden md:block">
+              <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30" />
+              <Input
+                placeholder="Search templates..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="bg-white/5 border-white/10 pl-9 text-white placeholder:text-white/30 rounded-full focus-visible:ring-indigo-500"
+              />
+            </div>
+          )}
         </div>
 
-        {/* Progress Steps */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            {steps.map((step, index) => (
-              <div key={step.id} className="flex items-center flex-1">
-                <div className="flex flex-col items-center">
-                  <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${currentStep > step.id
-                        ? 'bg-primary text-primary-foreground'
-                        : currentStep === step.id
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-muted text-muted-foreground'
-                      }`}
-                  >
-                    {currentStep > step.id ? (
-                      <CheckCircle2 className="h-5 w-5" />
-                    ) : (
-                      step.id
-                    )}
+        {/* Gallery View */}
+        {step === 'gallery' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-fade-in">
+            {filteredTemplates.map((template) => (
+              <Card
+                key={template.id}
+                className="group bg-[#1e293b]/50 border-white/10 hover:border-indigo-500/50 transition-all duration-300 overflow-hidden cursor-pointer hover:shadow-2xl hover:shadow-indigo-500/10"
+                onClick={() => handleSelectTemplate(template)}
+              >
+                <div className="relative aspect-[3/4] overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-transparent to-transparent opacity-60 z-10" />
+                  <img
+                    src={template.image}
+                    alt={template.name}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute bottom-4 left-4 z-20">
+                    <span className="px-2 py-1 rounded-md bg-white/10 backdrop-blur-md text-xs font-medium text-white/90 mb-2 inline-block border border-white/10">
+                      {template.category}
+                    </span>
                   </div>
-                  <div className="mt-2 text-center">
-                    <p className="text-sm font-medium">{step.title}</p>
-                    <p className="text-xs text-muted-foreground">{step.description}</p>
+                  <div className="absolute inset-0 bg-indigo-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 flex items-center justify-center backdrop-blur-[2px]">
+                    <Button className="rounded-full bg-white text-indigo-950 hover:bg-white/90 font-semibold shadow-xl transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">
+                      Use Template
+                    </Button>
                   </div>
                 </div>
-                {index < steps.length - 1 && (
-                  <div
-                    className={`flex-1 h-1 mx-4 ${currentStep > step.id ? 'bg-primary' : 'bg-muted'
-                      }`}
-                  />
-                )}
-              </div>
+                <CardHeader className="p-4">
+                  <CardTitle className="text-white text-lg">{template.name}</CardTitle>
+                  <CardDescription className="text-white/50 line-clamp-2">{template.description}</CardDescription>
+                </CardHeader>
+              </Card>
             ))}
           </div>
-        </div>
+        )}
 
-        {/* Step Content */}
-        <Card>
-          <CardHeader>
-            <CardTitle>{steps[currentStep - 1].title}</CardTitle>
-            <CardDescription>{steps[currentStep - 1].description}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Step 1: Describe Website */}
-            {currentStep === 1 && (
-              <>
+        {/* Configuration Step */}
+        {step === 'details' && selectedTemplate && (
+          <div className="max-w-2xl mx-auto animate-fade-in">
+            <Card className="bg-[#1e293b] border-white/10 text-white overflow-hidden">
+              <div className="aspect-video w-full overflow-hidden relative">
+                <img src={selectedTemplate.image} alt={selectedTemplate.name} className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#1e293b] to-transparent" />
+                <div className="absolute bottom-6 left-6">
+                  <h2 className="text-2xl font-bold">{selectedTemplate.name}</h2>
+                  <p className="text-white/60">{selectedTemplate.category}</p>
+                </div>
+              </div>
+              <CardContent className="space-y-6 pt-6">
                 <div className="space-y-2">
-                  <Label htmlFor="prompt">What kind of website do you want?</Label>
-                  <Textarea
-                    id="prompt"
-                    placeholder="e.g., Create a modern landing page for my SaaS startup with a pricing section and contact form"
-                    value={formData.prompt}
-                    onChange={(e) => setFormData({ ...formData, prompt: e.target.value })}
-                    rows={6}
-                    className="resize-none"
+                  <Label htmlFor="repoName" className="text-white/80">Project Name</Label>
+                  <Input
+                    id="repoName"
+                    value={repoName}
+                    onChange={(e) => setRepoName(e.target.value)}
+                    placeholder="e.g., My Awesome Site"
+                    className="bg-black/20 border-white/10 text-white focus-visible:ring-indigo-500"
                   />
-                  <p className="text-sm text-muted-foreground">
-                    Be specific about features, style, and purpose for best results
-                  </p>
+                  <p className="text-xs text-white/40">This will be used as your repository name.</p>
                 </div>
 
-                <div className="space-y-4">
-                  <Label>Or choose a template to get started:</Label>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {websiteTypes.map((type) => (
-                      <Card
-                        key={type.value}
-                        className={`cursor-pointer transition-all hover:shadow-lg ${formData.websiteType === type.value
-                            ? 'ring-2 ring-primary border-primary'
-                            : ''
-                          }`}
-                        onClick={() => {
-                          setFormData({ ...formData, websiteType: type.value });
-                          if (!formData.prompt) {
-                            setFormData(prev => ({
-                              ...prev,
-                              websiteType: type.value,
-                              prompt: `Create a ${type.label.toLowerCase()} website${type.value === 'landing' ? ' with hero section, features, testimonials, and call-to-action' : type.value === 'ecommerce' ? ' with product catalog, shopping cart, and checkout functionality' : type.value === 'blog' ? ' with post listing, categories, and search functionality' : type.value === 'portfolio' ? ' to showcase my work and projects' : type.value === 'saas' ? ' with pricing tiers, feature showcase, and sign-up CTA' : ' with menu, reservations, and location info'}`
-                            }));
-                          }
-                        }}
-                      >
-                        <CardHeader className="pb-3">
-                          <div className="flex items-center gap-3">
-                            <div className={`w-12 h-12 rounded-lg ${type.color} flex items-center justify-center text-2xl`}>
-                              {type.preview}
-                            </div>
-                            <div className="flex-1">
-                              <CardTitle className="text-lg">{type.label}</CardTitle>
-                              <CardDescription className="text-xs mt-1">
-                                {type.description}
-                              </CardDescription>
-                            </div>
-                          </div>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="space-y-2">
-                            <p className="text-xs font-medium text-muted-foreground">Includes:</p>
-                            <ul className="text-xs space-y-1">
-                              {type.features.slice(0, 3).map((feature, idx) => (
-                                <li key={idx} className="flex items-center gap-2">
-                                  <CheckCircle2 className="h-3 w-3 text-primary" />
-                                  {feature}
-                                </li>
-                              ))}
-                              {type.features.length > 3 && (
-                                <li className="text-muted-foreground">
-                                  +{type.features.length - 3} more features
-                                </li>
-                              )}
-                            </ul>
-                          </div>
-                        </CardContent>
-                      </Card>
+                <div className="space-y-3">
+                  <h3 className="text-sm font-medium text-white/80">Included Features</h3>
+                  <div className="grid grid-cols-2 gap-2">
+                    {selectedTemplate.features.map((feature, idx) => (
+                      <div key={idx} className="flex items-center gap-2 text-sm text-white/60">
+                        <IconCheckCircle2 className="h-4 w-4 text-emerald-500" />
+                        {feature}
+                      </div>
                     ))}
                   </div>
                 </div>
-              </>
-            )}
-
-            {/* Step 2: Configure Details */}
-            {currentStep === 2 && (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="repoName">Repository Name *</Label>
-                  <Input
-                    id="repoName"
-                    placeholder="my-awesome-website"
-                    value={formData.repoName}
-                    onChange={(e) => setFormData({ ...formData, repoName: e.target.value })}
-                  />
-                  <p className="text-sm text-muted-foreground">
-                    This will be your GitHub repository name
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="companyName">Company/Project Name (optional)</Label>
-                  <Input
-                    id="companyName"
-                    placeholder="My Awesome Company"
-                    value={formData.companyName}
-                    onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="description">Description (optional)</Label>
-                  <Textarea
-                    id="description"
-                    placeholder="Brief description of your website"
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    rows={3}
-                  />
-                </div>
-              </>
-            )}
-
-            {/* Step 3: Generate */}
-            {currentStep === 3 && (
-              <div className="text-center space-y-6 py-8">
-                {!generatedRepo ? (
-                  <>
-                    <div className="flex justify-center">
-                      <Sparkles className="h-16 w-16 text-primary animate-pulse" />
-                    </div>
-                    <div>
-                      <h3 className="text-2xl font-semibold mb-2">Ready to Generate!</h3>
-                      <p className="text-muted-foreground mb-6">
-                        Click the button below to create your website
-                      </p>
-                      <Button
-                        onClick={handleGenerate}
-                        disabled={loading}
-                        size="lg"
-                        className="min-w-[200px]"
-                      >
-                        {loading ? (
-                          <>
-                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                            Generating...
-                          </>
-                        ) : (
-                          <>
-                            <Sparkles className="h-4 w-4 mr-2" />
-                            Generate Website
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="flex justify-center">
-                      <CheckCircle2 className="h-16 w-16 text-green-500" />
-                    </div>
-                    <div>
-                      <h3 className="text-2xl font-semibold mb-2">Website Generated! 🎉</h3>
-                      <p className="text-muted-foreground mb-4">
-                        Your website has been created.
-                      </p>
-                      <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <Button
-                          onClick={handleViewRepo}
-                          variant="outline"
-                          size="lg"
-                        >
-                          View on GitHub
-                        </Button>
-                        <Button
-                          onClick={handleGoToPreview}
-                          size="lg"
-                        >
-                          View Repositories
-                        </Button>
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
-
-            {/* Navigation Buttons */}
-            <div className="flex justify-between pt-4">
-              <Button
-                variant="outline"
-                onClick={handleBack}
-                disabled={currentStep === 1 || loading}
-              >
-                Back
-              </Button>
-              {currentStep < 3 ? (
-                <Button onClick={handleNext}>
-                  Next
+              </CardContent>
+              <CardFooter className="flex justify-between border-t border-white/5 pt-6">
+                <Button
+                  variant="ghost"
+                  onClick={() => setStep('gallery')}
+                  className="text-white/60 hover:text-white hover:bg-white/5"
+                >
+                  Back
                 </Button>
-              ) : !generatedRepo ? (
-                <Button onClick={handleGenerate} disabled={loading}>
+                <Button
+                  onClick={handleCreateProject}
+                  disabled={loading || !repoName.trim()}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white min-w-[140px]"
+                >
                   {loading ? (
                     <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Generating...
+                      <IconLoader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Creating...
                     </>
                   ) : (
-                    'Generate Website'
+                    <>
+                      <IconSparkles className="h-4 w-4 mr-2" />
+                      Create Project
+                    </>
                   )}
                 </Button>
-              ) : (
-                <Button onClick={handleGoToPreview}>
-                  Continue
-                </Button>
-              )}
+              </CardFooter>
+            </Card>
+          </div>
+        )}
+
+        {/* Loading / Creating State Overlay */}
+        {step === 'creating' && (
+          <div className="fixed inset-0 bg-[#020617]/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center">
+            <div className="relative">
+              <div className="absolute -inset-4 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full blur-xl opacity-50 animate-pulse"></div>
+              <IconSparkles className="h-16 w-16 text-white relative z-10 animate-spin-slow" />
             </div>
-          </CardContent>
-        </Card>
+            <h2 className="text-2xl font-bold text-white mt-8 mb-2">Setting up your {selectedTemplate?.name}</h2>
+            <p className="text-white/50">Cloning template structures and initializing database...</p>
+          </div>
+        )}
       </div>
     </div>
   );
