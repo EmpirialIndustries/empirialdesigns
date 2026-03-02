@@ -121,7 +121,7 @@ const ChatInterface = () => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
         setUser(session.user);
-        
+
         // Fetch user's repository
         const { data: repoData, error } = await supabase
           .from('user_repos')
@@ -130,7 +130,7 @@ const ChatInterface = () => {
           .order('created_at', { ascending: false })
           .limit(1)
           .maybeSingle();
-        
+
         if (!error && repoData) {
           setRepo(repoData);
           fetchRepoFiles(repoData);
@@ -184,34 +184,34 @@ const ChatInterface = () => {
     const classes = Array.from(element.classList);
     const id = element.id || undefined;
     const text = element.textContent?.slice(0, 50) || undefined;
-    
+
     let component = element.getAttribute('data-component');
     if (!component) {
-      const componentClasses = classes.find(c => 
-        c.includes('Hero') || c.includes('Navigation') || c.includes('Footer') || 
+      const componentClasses = classes.find(c =>
+        c.includes('Hero') || c.includes('Navigation') || c.includes('Footer') ||
         c.includes('Sidebar') || c.includes('Contact') || c.includes('About') ||
         c.includes('Services') || c.includes('Portfolio') || c.includes('Testimonials') ||
         c.includes('Pricing') || c.includes('FAQ') || c.includes('Blog') || c.includes('CTA')
       );
       component = componentClasses;
     }
-    
+
     return { tag, classes, id, text, component };
   }, []);
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
     if (!inspectorActive) return;
-    
+
     const elements = document.elementsFromPoint(e.clientX, e.clientY);
-    const targetElement = elements.find(el => 
-      !el.closest('.visual-inspector-overlay') && 
+    const targetElement = elements.find(el =>
+      !el.closest('.visual-inspector-overlay') &&
       !el.closest('.visual-inspector-controls')
     ) as HTMLElement;
-    
+
     if (!targetElement || targetElement === hoveredElement) return;
-    
+
     setHoveredElement(targetElement);
-    
+
     const rect = targetElement.getBoundingClientRect();
     setHighlightStyle({
       position: 'fixed',
@@ -226,22 +226,22 @@ const ChatInterface = () => {
 
   const handleInspectorClick = useCallback((e: MouseEvent) => {
     if (!inspectorActive || !hoveredElement) return;
-    
+
     e.preventDefault();
     e.stopPropagation();
-    
+
     const elementInfo = getElementInfo(hoveredElement);
     let description = '';
-    
+
     if (elementInfo.component) {
       description = elementInfo.component;
     } else if (elementInfo.id) {
       description = `#${elementInfo.id}`;
     } else if (elementInfo.classes.length > 0) {
-      const meaningfulClasses = elementInfo.classes.filter(c => 
-        !c.startsWith('text-') && 
-        !c.startsWith('bg-') && 
-        !c.startsWith('p-') && 
+      const meaningfulClasses = elementInfo.classes.filter(c =>
+        !c.startsWith('text-') &&
+        !c.startsWith('bg-') &&
+        !c.startsWith('p-') &&
         !c.startsWith('m-') &&
         !c.startsWith('w-') &&
         !c.startsWith('h-') &&
@@ -252,11 +252,11 @@ const ChatInterface = () => {
     } else {
       description = `${elementInfo.tag} element`;
     }
-    
+
     if (elementInfo.text) {
       description += ` ("${elementInfo.text}")`;
     }
-    
+
     setSelectedComponent(description);
     setInspectorActive(false);
     toast({
@@ -273,7 +273,7 @@ const ChatInterface = () => {
 
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('click', handleInspectorClick, true);
-    
+
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('click', handleInspectorClick, true);
@@ -294,14 +294,14 @@ const ChatInterface = () => {
     // Build context message if files or component are selected
     let contextMessage = input;
     const contextParts: string[] = [];
-    
+
     if (selectedFiles.length > 0) {
       contextParts.push(`Files to edit: ${selectedFiles.join(', ')}`);
     }
     if (selectedComponent) {
       contextParts.push(`Component/Section to edit: ${selectedComponent}`);
     }
-    
+
     if (contextParts.length > 0) {
       contextMessage = `Context: ${contextParts.join(' | ')}\n\nRequest: ${input}`;
     }
@@ -323,6 +323,43 @@ const ChatInterface = () => {
     await saveMessage(userMessage);
 
     try {
+      // Handle mock/trial requests
+      if (input.toLowerCase().includes('mock') || input.toLowerCase().includes('trial')) {
+        const assistantId = (Date.now() + 1).toString();
+
+        const initialMessage: Message = {
+          id: assistantId,
+          role: 'assistant',
+          content: 'Initializing generation pipeline...',
+          timestamp: new Date(),
+          toolCalls: [],
+        };
+
+        setMessages((prev) => [...prev, initialMessage]);
+
+        // Step 1: Deepseek
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        setMessages((prev) => prev.map(m => m.id === assistantId ? { ...m, content: '🧠 **DeepSeek Coder V2** is generating the raw HTML/React structural blocks...' } : m));
+
+        // Step 2: GPT-4o
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        setMessages((prev) => prev.map(m => m.id === assistantId ? { ...m, content: '🧠 **DeepSeek Coder V2** is generating the raw HTML/React structural blocks...\n\n🏎️ **GPT-4o** is now refining the UI, aligning layouts, and standardizing components...' } : m));
+
+        // Step 3: Claude
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        const finalContent = '🧠 **DeepSeek Coder V2** is generating the raw HTML/React structural blocks...\n\n🏎️ **GPT-4o** is now refining the UI, aligning layouts, and standardizing components...\n\n🎨 **Claude 3.5 Sonnet** added marketing copy and polished the final visual presentation!\n\n*(Multi-model generation complete)*';
+
+        setMessages((prev) => prev.map(m => m.id === assistantId ? { ...m, content: finalContent } : m));
+
+        await saveMessage({
+          role: 'assistant',
+          content: finalContent,
+        });
+
+        setLoading(false);
+        return;
+      }
+
       const CHAT_URL = `https://vfysnkkzesbovtnmoccb.supabase.co/functions/v1/ai-chat`;
       const { data: { session } } = await supabase.auth.getSession();
       const accessToken = session?.access_token;
@@ -376,7 +413,7 @@ const ChatInterface = () => {
       while (!streamDone) {
         const { done, value } = await reader.read();
         if (done) break;
-        
+
         textBuffer += decoder.decode(value, { stream: true });
 
         let newlineIndex: number;
@@ -396,7 +433,7 @@ const ChatInterface = () => {
 
           try {
             const parsed = JSON.parse(jsonStr);
-            
+
             // Handle tool calls
             if (parsed.type === 'tool_call') {
               const toolCall: ToolCall = {
@@ -407,24 +444,24 @@ const ChatInterface = () => {
                 output: parsed.output,
               };
               toolCalls.push(toolCall);
-              setMessages(prev => prev.map(m => 
+              setMessages(prev => prev.map(m =>
                 m.id === assistantId ? { ...m, toolCalls: [...(m.toolCalls || []), toolCall] } : m
               ));
             }
-            
+
             // Handle commit URL
             if (parsed.type === 'commit') {
               commitUrl = parsed.url;
-              setMessages(prev => prev.map(m => 
+              setMessages(prev => prev.map(m =>
                 m.id === assistantId ? { ...m, commitUrl } : m
               ));
             }
-            
+
             // Handle regular content
             const content = parsed.choices?.[0]?.delta?.content;
             if (content) {
               assistantContent += content;
-              setMessages(prev => prev.map(m => 
+              setMessages(prev => prev.map(m =>
                 m.id === assistantId ? { ...m, content: assistantContent } : m
               ));
             }
@@ -472,18 +509,18 @@ const ChatInterface = () => {
       {/* Visual Inspector Overlay */}
       {inspectorActive && (
         <>
-          <div 
+          <div
             className="fixed inset-0 bg-primary/5 backdrop-blur-[1px] z-[9998]"
             style={{ pointerEvents: 'none' }}
           />
-          
+
           {hoveredElement && (
             <div
               style={highlightStyle}
               className="border-2 border-primary bg-primary/10 z-[9999] rounded"
             />
           )}
-          
+
           <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[10000] flex items-center gap-3 bg-background border-2 border-primary rounded-full px-6 py-3 shadow-2xl">
             <Eye className="h-5 w-5 text-primary animate-pulse" />
             <span className="text-sm font-medium">Click any element to select it</span>
@@ -504,7 +541,7 @@ const ChatInterface = () => {
         </>
       )}
 
-      <div className="min-h-screen flex w-full bg-background">
+      <div className="min-h-screen flex w-full bg-[#000000] text-white">
         <AppSidebar
           user={user}
           conversations={conversations}
@@ -516,15 +553,15 @@ const ChatInterface = () => {
         />
 
         {/* Main Chat Area */}
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex-1 flex flex-col min-w-0 bg-[#0A0A0A] border-l border-[#222]">
           {/* Header */}
-          <div className="h-16 border-b border-border flex items-center justify-between px-6 shrink-0">
+          <div className="h-16 border-b border-[#222] bg-[#111] flex items-center justify-between px-6 shrink-0">
             <div className="flex items-center gap-3">
-              <SidebarTrigger />
+              <SidebarTrigger className="text-white/70 hover:text-white" />
               <div>
-                <h1 className="text-xl font-bold text-gradient">Empirial AI Assistant</h1>
+                <h1 className="text-xl font-bold tracking-tight text-white/90">Aura AI Assistant</h1>
                 {repo && (
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-white/40">
                     Connected to: {repo.repo_owner}/{repo.repo_name}
                   </p>
                 )}
@@ -537,12 +574,12 @@ const ChatInterface = () => {
             <div className="max-w-3xl mx-auto space-y-6">
               {messages.length === 0 ? (
                 <div className="text-center py-12">
-                  <h2 className="text-2xl font-bold text-gradient mb-4">
-                    Welcome to Empirial AI
+                  <h2 className="text-2xl font-bold text-white/90 mb-4 tracking-tight">
+                    Welcome to Aura AI
                   </h2>
-                  <p className="text-muted-foreground">
-                    {repo 
-                      ? "I'm ready to help with your repository!" 
+                  <p className="text-white/40">
+                    {repo
+                      ? "I'm ready to help with your repository!"
                       : "Please connect a repository to get started."}
                   </p>
                 </div>
@@ -553,11 +590,10 @@ const ChatInterface = () => {
                     className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
                     <div
-                      className={`max-w-[80%] rounded-2xl px-6 py-4 ${
-                        message.role === 'user'
-                          ? 'bg-primary text-primary-foreground elegant-shadow'
-                          : 'bg-muted/50 border border-border'
-                      }`}
+                      className={`max-w-[80%] rounded-2xl px-6 py-4 ${message.role === 'user'
+                        ? 'bg-[#2A2A2A] text-white/90 shadow-sm border border-[#333]'
+                        : 'bg-[#111] border border-[#222] text-white/80'
+                        }`}
                     >
                       {message.role === 'user' ? (
                         <p className="text-sm whitespace-pre-wrap">{message.content}</p>
@@ -565,19 +601,19 @@ const ChatInterface = () => {
                         <div className="space-y-4">
                           {/* Tool calls */}
                           {message.toolCalls && message.toolCalls.length > 0 && (
-                            <div className="space-y-2 pb-4 border-b border-border/50">
+                            <div className="space-y-2 pb-4 border-b border-[#333]">
                               {message.toolCalls.map((tool) => (
-                                <div key={tool.id} className="flex items-center gap-2 text-xs text-muted-foreground">
-                                  {tool.status === 'running' && <Loader2 className="h-3 w-3 animate-spin" />}
-                                  {tool.status === 'complete' && <FileCode className="h-3 w-3 text-green-500" />}
-                                  {tool.status === 'error' && <FileCode className="h-3 w-3 text-destructive" />}
+                                <div key={tool.id} className="flex items-center gap-2 text-xs text-white/50">
+                                  {tool.status === 'running' && <Loader2 className="h-3 w-3 animate-spin text-white/40" />}
+                                  {tool.status === 'complete' && <FileCode className="h-3 w-3 text-white/60" />}
+                                  {tool.status === 'error' && <FileCode className="h-3 w-3 text-red-500" />}
                                   <span className="font-medium">{tool.name}</span>
                                   {tool.input && <span className="text-xs opacity-70">({JSON.stringify(tool.input).slice(0, 50)}...)</span>}
                                 </div>
                               ))}
                             </div>
                           )}
-                          
+
                           {/* Message content with markdown */}
                           <div className="prose prose-sm dark:prose-invert max-w-none">
                             <ReactMarkdown
@@ -608,7 +644,7 @@ const ChatInterface = () => {
                           {/* Commit link */}
                           {message.commitUrl && (
                             <div className="pt-4 border-t border-border/50">
-                              <a 
+                              <a
                                 href={message.commitUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
@@ -627,11 +663,11 @@ const ChatInterface = () => {
               )}
               {loading && (
                 <div className="flex justify-start">
-                  <div className="max-w-[80%] rounded-2xl px-6 py-4 bg-muted/50 border border-border">
+                  <div className="max-w-[80%] rounded-2xl px-6 py-4 bg-[#111] border border-[#222]">
                     <div className="flex gap-2">
-                      <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0ms' }} />
-                      <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '150ms' }} />
-                      <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '300ms' }} />
+                      <div className="w-2 h-2 rounded-full bg-white/40 animate-bounce" style={{ animationDelay: '0ms' }} />
+                      <div className="w-2 h-2 rounded-full bg-white/40 animate-bounce" style={{ animationDelay: '150ms' }} />
+                      <div className="w-2 h-2 rounded-full bg-white/40 animate-bounce" style={{ animationDelay: '300ms' }} />
                     </div>
                   </div>
                 </div>
@@ -641,34 +677,34 @@ const ChatInterface = () => {
           </ScrollArea>
 
           {/* Input Area */}
-          <div className="border-t border-border p-6 shrink-0">
+          <div className="border-t border-[#222] bg-[#0A0A0A] p-6 shrink-0">
             <div className="max-w-3xl mx-auto space-y-3">
               {/* Selected Context Display */}
               {(selectedFiles.length > 0 || selectedComponent) && (
                 <div className="flex flex-wrap gap-2">
                   {selectedFiles.map((file) => (
-                    <Badge key={file} variant="secondary" className="gap-1">
+                    <Badge key={file} variant="secondary" className="gap-1 bg-[#1A1A1A] text-white/70 border border-[#333]">
                       <File className="h-3 w-3" />
                       {file.split('/').pop()}
                       <X
-                        className="h-3 w-3 cursor-pointer hover:text-destructive"
+                        className="h-3 w-3 cursor-pointer hover:text-white"
                         onClick={() => setSelectedFiles(prev => prev.filter(f => f !== file))}
                       />
                     </Badge>
                   ))}
                   {selectedComponent && (
-                    <Badge variant="default" className="gap-1">
+                    <Badge variant="default" className="gap-1 bg-white text-black border-0">
                       <Target className="h-3 w-3" />
                       {selectedComponent}
                       <X
-                        className="h-3 w-3 cursor-pointer hover:text-destructive"
+                        className="h-3 w-3 cursor-pointer hover:text-black/70"
                         onClick={() => setSelectedComponent('')}
                       />
                     </Badge>
                   )}
                 </div>
               )}
-              
+
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
@@ -709,7 +745,7 @@ const ChatInterface = () => {
                             <DropdownMenuItem
                               key={file.path}
                               onClick={() => {
-                                setSelectedFiles(prev => 
+                                setSelectedFiles(prev =>
                                   prev.includes(file.path)
                                     ? prev.filter(f => f !== file.path)
                                     : [...prev, file.path]
@@ -797,19 +833,19 @@ const ChatInterface = () => {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder={
-                    selectedComponent 
-                      ? `Editing ${selectedComponent}...` 
-                      : selectedFiles.length > 0 
-                        ? `Editing ${selectedFiles.length} file(s)...` 
-                        : "Type your message..."
+                    selectedComponent
+                      ? `Editing ${selectedComponent}...`
+                      : selectedFiles.length > 0
+                        ? `Editing ${selectedFiles.length} file(s)...`
+                        : "Ask Aura AI..."
                   }
-                  className="flex-1 h-12 rounded-full"
+                  className="flex-1 h-12 rounded-xl bg-[#151515] border-[#2A2A2A] text-white placeholder:text-white/30 focus-visible:border-[#444] shadow-inner font-sans"
                   disabled={loading}
                 />
                 <Button
                   type="submit"
                   size="icon"
-                  className="h-12 w-12 rounded-full elegant-shadow shrink-0"
+                  className="h-12 w-12 rounded-xl bg-white text-black hover:bg-white/90 shrink-0 font-bold shadow-lg"
                   disabled={loading || !input.trim()}
                 >
                   <Send className="h-5 w-5" />

@@ -95,48 +95,34 @@ const GenerateWebsite = () => {
     t.category.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleSelectTemplate = (template: Template) => {
-    setSelectedTemplate(template);
-    setRepoName(template.name.toLowerCase().replace(/\s+/g, '-') + '-' + Math.floor(Math.random() * 1000));
-    setStep('details');
-  };
-
-  const handleCreateProject = async () => {
-    if (!user || !selectedTemplate) return;
-    if (!repoName.trim()) {
-      toast({
-        title: "Required",
-        description: "Please enter a project name",
-        variant: "destructive"
-      });
+  const handleFastCreate = async (template: Template) => {
+    if (!user) {
+      navigate('/auth');
       return;
     }
 
     setLoading(true);
     setStep('creating');
+    setSelectedTemplate(template);
 
     try {
-      // Simulate "AI Generation" / Database Pull
-      // In a real scenario, this would trigger a cloud function to clone the template
-
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Fake delay
-
-      const repoId = `${user.uid}_${repoName}`;
+      const generatedRepoName = template.name.toLowerCase().replace(/\s+/g, '-') + '-' + Math.floor(Math.random() * 1000);
+      const repoId = `${user.uid}_${generatedRepoName}`;
 
       // Create Firestore Entry
       await setDoc(doc(db, 'user_repos', repoId), {
         user_id: user.uid,
-        repo_url: `https://github.com/empirial-templates/${selectedTemplate.id}`, // Mock URL
+        repo_url: `https://github.com/empirial-templates/${template.id}`, // Mock URL
         repo_owner: 'empirial-templates',
-        repo_name: repoName,
+        repo_name: generatedRepoName,
         created_at: new Date().toISOString(),
-        template_id: selectedTemplate.id,
+        template_id: template.id,
         status: 'ready'
       });
 
       toast({
-        title: "Project Created! 🎉",
-        description: `Your project based on ${selectedTemplate.name} is ready.`,
+        title: "Builder ready",
+        description: `Opening customized environment for ${template.name}...`,
       });
 
       navigate(`/preview/${repoId}`);
@@ -145,85 +131,138 @@ const GenerateWebsite = () => {
       console.error("Creation error:", error);
       toast({
         title: "Error",
-        description: "Failed to create project. Please try again.",
+        description: "Failed to open project. Please try again.",
         variant: "destructive"
       });
-      setStep('details');
+      setStep('gallery');
     } finally {
       setLoading(false);
     }
   };
 
+  const handleCreateProject = async () => {
+    // Legacy support if needed
+  };
+
   return (
-    <div className="min-h-screen bg-[#020617] text-white p-6 font-sans">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => step === 'gallery' ? navigate('/repos') : setStep('gallery')}
-              className="rounded-full hover:bg-white/10 text-white"
-            >
-              <IconArrowLeft className="h-5 w-5" />
-            </Button>
-            <div>
-              <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">
-                {step === 'gallery' ? 'Template Gallery' : 'Configure Project'}
-              </h1>
-              <p className="text-white/40">
-                {step === 'gallery' ? 'Choose a starting point for your new website' : `Setting up: ${selectedTemplate?.name}`}
-              </p>
+    <div className="min-h-screen bg-[#000000] text-white font-sans font-inter flex flex-col items-center">
+      {/* Aura Build exactly matching Nav Header */}
+      <header className="h-16 border-b border-[#222] bg-[#000000] flex items-center justify-between px-6 w-full sticky top-0 z-50">
+        <div className="flex items-center gap-10">
+          {/* Logo */}
+          <div className="flex items-center cursor-pointer" onClick={() => navigate('/')}>
+            <div className="text-2xl font-bold tracking-tighter text-white/90">
+              A
             </div>
           </div>
 
-          {step === 'gallery' && (
-            <div className="relative w-64 hidden md:block">
-              <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30" />
-              <Input
-                placeholder="Search templates..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="bg-white/5 border-white/10 pl-9 text-white placeholder:text-white/30 rounded-full focus-visible:ring-indigo-500"
-              />
-            </div>
-          )}
+          {/* Main Nav - matching screenshot */}
+          <nav className="hidden md:flex items-center gap-6 text-[11px] font-bold tracking-wider text-white/50 uppercase">
+            <a href="#" className="hover:text-white transition-colors">Create</a>
+            <a href="#" className="text-white">Templates</a>
+            <a href="#" className="hover:text-white transition-colors">Components</a>
+            <a href="#" className="hover:text-white transition-colors">Assets</a>
+            <a href="#" className="hover:text-white transition-colors">Skills</a>
+            <a href="#" className="hover:text-white transition-colors">Learn</a>
+            <a href="#" className="hover:text-white transition-colors">Pricing</a>
+            <a href="#" className="hover:text-white transition-colors">Changelog</a>
+          </nav>
+        </div>
+
+        <div className="flex items-center gap-4">
+          {/* Theme toggler */}
+          <div className="flex items-center bg-[#111] rounded-full p-1 border border-[#222]">
+            <button className="h-6 w-7 flex items-center justify-center rounded-full text-white/50 hover:text-white text-[10px]">☀️</button>
+            <button className="h-6 w-7 flex items-center justify-center rounded-full bg-[#2A2A2A] text-white text-[10px] shadow-sm">💻</button>
+            <button className="h-6 w-7 flex items-center justify-center rounded-full text-white/50 hover:text-white text-[10px]">🌙</button>
+          </div>
+          {/* User Profile */}
+          <div className="h-8 w-8 rounded-full bg-[#5C7CFA] text-white flex items-center justify-center text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity">
+            {user?.email?.charAt(0).toUpperCase() || 'E'}
+          </div>
+        </div>
+      </header>
+
+      <div className="w-full max-w-[1200px] mx-auto p-6 md:p-10">
+        {/* Header Section for Gallery/Details */}
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-semibold text-white tracking-tight mb-2">
+              {step === 'gallery' ? 'Browse Templates' : 'Configure Project'}
+            </h1>
+            <p className="text-white/40 text-sm">
+              {step === 'gallery' ? 'Choose a starting point for your new website' : `Setting up: ${selectedTemplate?.name}`}
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {step === 'gallery' ? (
+              <div className="relative w-64 hidden md:block">
+                <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30" />
+                <Input
+                  placeholder="Search templates..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="bg-[#111] border-[#222] pl-9 text-sm text-white focus-visible:ring-1 focus-visible:ring-[#444] rounded-md h-10"
+                />
+              </div>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setStep('gallery')}
+                className="bg-[#111] border-[#222] text-white hover:bg-[#222]"
+              >
+                <IconArrowLeft className="h-4 w-4 mr-2" /> Back to templates
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Gallery View */}
         {step === 'gallery' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-fade-in">
-            {filteredTemplates.map((template) => (
-              <Card
-                key={template.id}
-                className="group bg-[#1e293b]/50 border-white/10 hover:border-indigo-500/50 transition-all duration-300 overflow-hidden cursor-pointer hover:shadow-2xl hover:shadow-indigo-500/10"
-                onClick={() => handleSelectTemplate(template)}
-              >
-                <div className="relative aspect-[3/4] overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-transparent to-transparent opacity-60 z-10" />
-                  <img
-                    src={template.image}
-                    alt={template.name}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                  <div className="absolute bottom-4 left-4 z-20">
-                    <span className="px-2 py-1 rounded-md bg-white/10 backdrop-blur-md text-xs font-medium text-white/90 mb-2 inline-block border border-white/10">
-                      {template.category}
-                    </span>
+          <div className="bg-[#111] border border-[#222] rounded-2xl p-6">
+            <div className="flex gap-2 mb-6 overflow-x-auto pb-2 no-scrollbar">
+              {['Web', 'Mobile', 'Animation', 'Login', 'Sidebar', 'Onboarding', 'Grid', 'Payment', '3D', 'Paid Templates'].map((tag) => (
+                <button
+                  key={tag}
+                  className={`whitespace-nowrap rounded-full border px-4 py-1.5 text-xs font-medium transition-colors ${tag === 'Web'
+                      ? 'bg-[#333] border-[#444] text-white'
+                      : tag === 'Paid Templates'
+                        ? 'bg-transparent border-indigo-500/50 text-indigo-400 hover:bg-indigo-500/10'
+                        : 'bg-transparent border-[#222] text-white/60 hover:text-white hover:border-[#444]'
+                    }`}
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-fade-in">
+              {filteredTemplates.map((template) => (
+                <Card
+                  key={template.id}
+                  className="group bg-[#0A0A0A] border-[#222] hover:border-[#444] transition-all duration-300 overflow-hidden cursor-pointer"
+                  onClick={() => handleFastCreate(template)}
+                >
+                  <div className="relative aspect-[4/3] overflow-hidden bg-[#151515] p-2">
+                    <img
+                      src={template.image}
+                      alt={template.name}
+                      className="w-full h-full object-cover rounded-md transition-transform duration-700 group-hover:scale-105 opacity-80 group-hover:opacity-100"
+                    />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 flex items-center justify-center backdrop-blur-[2px]">
+                      <Button className="rounded-full bg-white text-black hover:bg-white/90 font-medium shadow-xl transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">
+                        View Website
+                      </Button>
+                    </div>
                   </div>
-                  <div className="absolute inset-0 bg-indigo-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10 flex items-center justify-center backdrop-blur-[2px]">
-                    <Button className="rounded-full bg-white text-indigo-950 hover:bg-white/90 font-semibold shadow-xl transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">
-                      Use Template
-                    </Button>
-                  </div>
-                </div>
-                <CardHeader className="p-4">
-                  <CardTitle className="text-white text-lg">{template.name}</CardTitle>
-                  <CardDescription className="text-white/50 line-clamp-2">{template.description}</CardDescription>
-                </CardHeader>
-              </Card>
-            ))}
+                  <CardHeader className="p-4 bg-[#0A0A0A]">
+                    <CardTitle className="text-sm font-semibold text-white/90">{template.name}</CardTitle>
+                  </CardHeader>
+                </Card>
+              ))}
+            </div>
           </div>
         )}
 

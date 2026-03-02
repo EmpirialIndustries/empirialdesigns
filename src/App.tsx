@@ -17,10 +17,9 @@ import ChatInterface from "./pages/ChatInterface";
 import Preview from "./pages/Preview";
 import RepoManagement from "./pages/RepoManagement";
 import GenerateWebsite from "./pages/GenerateWebsite";
+import StaffDashboard from "./pages/StaffDashboard";
 
 const queryClient = new QueryClient();
-
-
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -36,6 +35,7 @@ const App = () => (
           <Route path="/generate" element={<GenerateWebsite />} />
           <Route path="/templates" element={<GenerateWebsite />} />
           <Route path="/preview/:repoId" element={<Preview />} />
+          <Route path="/staff" element={<StaffDashboard />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/seo-audit" element={<SEOAudit />} />
           <Route path="/textex" element={<TextEx />} />

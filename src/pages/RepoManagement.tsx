@@ -299,13 +299,10 @@ const RepoManagement = () => {
   }
 
   return (
-    <div className="flex min-h-screen bg-[#020617] text-white font-sans selection:bg-indigo-500/30">
+    <div className="flex min-h-screen bg-[#000000] text-white font-sans selection:bg-indigo-500/30">
       <DashboardSidebar userEmail={user.email} />
 
       <main className="flex-1 flex flex-col h-screen overflow-hidden relative">
-        {/* Decorative Gradients */}
-        <div className="absolute top-0 left-0 right-0 h-[500px] bg-gradient-to-b from-indigo-900/20 via-[#020617]/50 to-[#020617] pointer-events-none z-0" />
-
         <div className="flex-1 overflow-y-auto z-10 p-8">
           <div className="max-w-6xl mx-auto space-y-10">
 
@@ -317,8 +314,7 @@ const RepoManagement = () => {
                 </h1>
 
                 <div className="max-w-2xl mx-auto relative group">
-                  <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-2xl opacity-20 group-hover:opacity-40 blur transition duration-500" />
-                  <form onSubmit={handlePromptSubmit} className="relative flex items-center bg-[#0f172a] rounded-xl border border-white/10 shadow-2xl overflow-hidden focus-within:ring-1 focus-within:ring-indigo-500/50 transition-all">
+                  <form onSubmit={handlePromptSubmit} className="relative flex items-center bg-[#111] rounded-xl border border-[#333] shadow-2xl overflow-hidden focus-within:border-[#555] transition-all">
                     <Input
                       value={prompt}
                       onChange={(e) => setPrompt(e.target.value)}
@@ -426,7 +422,7 @@ const RepoManagement = () => {
                           {repos.map((repo) => (
                             <div
                               key={repo.id}
-                              className="group bg-[#1e293b]/50 border border-white/5 hover:border-white/10 rounded-xl p-5 hover:bg-[#1e293b] transition-all cursor-pointer relative overflow-hidden"
+                              className="group bg-[#111] border border-[#222] hover:border-[#444] rounded-xl p-5 hover:bg-[#151515] transition-all cursor-pointer relative overflow-hidden"
                               onClick={() => navigate(`/preview/${repo.id}`)}
                             >
                               <div className="relative z-10">
@@ -475,10 +471,10 @@ const RepoManagement = () => {
                       {templates.map((template) => (
                         <Card
                           key={template.id}
-                          className="group bg-[#1e293b]/40 border-white/5 hover:border-indigo-500/40 hover:bg-[#1e293b] transition-all duration-300 overflow-hidden cursor-pointer hover:shadow-2xl hover:shadow-indigo-500/5 ring-1 ring-white/5 flex flex-col"
+                          className="group bg-[#111] border-[#222] hover:border-[#444] hover:bg-[#151515] transition-all duration-300 overflow-hidden cursor-pointer flex flex-col"
                         >
                           <div className="relative aspect-[16/10] overflow-hidden">
-                            <div className="absolute inset-0 bg-gradient-to-t from-[#1e293b] via-transparent to-transparent opacity-60 z-10" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-[#000] via-transparent to-transparent opacity-60 z-10" />
                             <img
                               src={template.image}
                               alt={template.name}
@@ -531,13 +527,13 @@ const RepoManagement = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
                     {/* Left Column: Image */}
                     <div className="space-y-4">
-                      <div className="rounded-2xl overflow-hidden border border-white/10 bg-[#1e293b] shadow-2xl relative aspect-[4/5] md:aspect-square">
+                      <div className="rounded-2xl overflow-hidden border border-[#222] bg-[#111] shadow-2xl relative aspect-[4/5] md:aspect-square">
                         <img
                           src={viewingTemplate.image}
                           alt={viewingTemplate.name}
                           className="w-full h-full object-cover"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#1e293b] via-transparent to-transparent opacity-20" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#000] via-transparent to-transparent opacity-20" />
                       </div>
                     </div>
 
