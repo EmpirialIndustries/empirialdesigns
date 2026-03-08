@@ -19,7 +19,7 @@ interface ServiceCardProps {
 
 const ServiceCard = ({ service, onGetStarted }: ServiceCardProps) => {
   return (
-    <Card className={`relative shadow-lg transition-all duration-300 hover:shadow-xl w-full ${service.popular ? 'ring-2 ring-primary' : ''}`}>
+    <Card className={`relative shadow-lg transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 hover:border-primary/50 w-full ${service.popular ? 'ring-2 ring-primary hover:glow-lg' : ''}`}>
       {service.popular && (
         <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-primary text-black font-bold border-2 border-primary">
           Most Popular

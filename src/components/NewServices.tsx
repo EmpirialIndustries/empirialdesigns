@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 import { Globe, ShoppingCart, Layers } from 'lucide-react';
 import ServiceCard from './services/ServiceCard';
 
@@ -69,7 +70,7 @@ const NewServices = () => {
     <section id="services" className="py-20 bg-background relative overflow-hidden scroll-mt-nav">
       {/* Grid overlay */}
       <div className="absolute inset-0 bg-[linear-gradient(rgba(255,215,0,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,215,0,0.02)_1px,transparent_1px)] bg-[size:50px_50px]"></div>
-      
+
       <div className="container mx-auto px-4 relative z-10">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <h2 className="text-4xl md:text-5xl font-black mb-4">
@@ -80,16 +81,35 @@ const NewServices = () => {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto">
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          variants={{
+            hidden: { opacity: 0 },
+            visible: {
+              opacity: 1,
+              transition: { staggerChildren: 0.2 }
+            }
+          }}
+          className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto"
+        >
           {services.map((service, index) => (
-            <ServiceCard 
-              key={index} 
-              service={service} 
-              onGetStarted={openWhatsApp}
-            />
+            <motion.div
+              key={index}
+              variants={{
+                hidden: { opacity: 0, y: 50 },
+                visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
+              }}
+            >
+              <ServiceCard
+                service={service}
+                onGetStarted={openWhatsApp}
+              />
+            </motion.div>
           ))}
-        </div>
-        
+        </motion.div>
+
         {/* Service Examples */}
         <div className="mt-16 text-center">
           <h3 className="text-2xl font-bold mb-8">Recent Work Examples</h3>

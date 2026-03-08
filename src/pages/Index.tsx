@@ -1,4 +1,4 @@
-
+import { motion } from 'framer-motion';
 import Navigation from '@/components/Navigation';
 import Hero from '@/components/Hero';
 import TrustBar from '@/components/TrustBar';
@@ -17,7 +17,13 @@ import AdUnit from '@/components/AdUnit';
 
 const Index = () => {
   return (
-    <div className="min-h-screen">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.5 }}
+      className="min-h-screen"
+    >
       <a href="#main" className="skip-to-content">Skip to content</a>
       <Navigation />
       <main id="main">
@@ -36,7 +42,7 @@ const Index = () => {
         <ContactForm />
       </main>
       <Footer />
-    </div>
+    </motion.div>
   );
 };
 
