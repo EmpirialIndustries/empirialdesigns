@@ -41,7 +41,7 @@ const SEOAudit = () => {
   const { toast } = useToast();
 
   const openWhatsApp = () => {
-    window.open('https://wa.me/message/6ZHJUVYQDOH3O1', '_blank');
+    window.open('https://wa.me/27651859143', '_blank');
   };
 
   const handleAudit = async () => {
@@ -159,7 +159,7 @@ const SEOAudit = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
       <Navigation />
-      
+
       {/* Hero Section */}
       <section className="pt-32 pb-16 lg:pt-40 lg:pb-20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-5xl">
@@ -180,7 +180,7 @@ const SEOAudit = () => {
               <div className="h-px bg-black flex-1 max-w-32"></div>
             </div>
             <p className="text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed mb-8">
-              Get a comprehensive SEO audit of your website with professional insights. Identify critical issues, 
+              Get a comprehensive SEO audit of your website with professional insights. Identify critical issues,
               quick wins, and strategic opportunities to boost your search rankings and drive more organic traffic.
             </p>
           </div>
@@ -217,7 +217,7 @@ const SEOAudit = () => {
                       disabled={isAnalyzing}
                     />
                   </div>
-                  <Button 
+                  <Button
                     onClick={handleAudit}
                     disabled={isAnalyzing || !url}
                     className="bg-black text-white hover:bg-gray-800 px-6 md:px-8 h-12 md:h-14 text-base md:text-lg font-bold min-w-[120px] md:min-w-[140px]"
@@ -236,13 +236,13 @@ const SEOAudit = () => {
                     <div className="text-center">
                       <p className="text-sm text-gray-600 font-medium">
                         {progress < 15 ? 'Fetching website data...' :
-                         progress < 30 ? 'Analyzing technical SEO...' :
-                         progress < 45 ? 'Checking content optimization...' :
-                         progress < 60 ? 'Evaluating page performance...' :
-                         progress < 75 ? 'Analyzing competitor landscape...' :
-                         progress < 90 ? 'Generating recommendations...' :
-                         progress < 100 ? 'Finalizing audit results...' :
-                         'Complete! Preparing your report...'}
+                          progress < 30 ? 'Analyzing technical SEO...' :
+                            progress < 45 ? 'Checking content optimization...' :
+                              progress < 60 ? 'Evaluating page performance...' :
+                                progress < 75 ? 'Analyzing competitor landscape...' :
+                                  progress < 90 ? 'Generating recommendations...' :
+                                    progress < 100 ? 'Finalizing audit results...' :
+                                      'Complete! Preparing your report...'}
                       </p>
                     </div>
                   </div>
@@ -264,23 +264,23 @@ const SEOAudit = () => {
                             </div>
                           </div>
                           <div className="text-center">
-                            {auditResult.score >= 80 ? 
+                            {auditResult.score >= 80 ?
                               <CheckCircle className="w-16 h-16 text-green-600 mx-auto mb-2" /> :
                               auditResult.score >= 60 ?
-                              <AlertTriangle className="w-16 h-16 text-yellow-600 mx-auto mb-2" /> :
-                              <XCircle className="w-16 h-16 text-red-600 mx-auto mb-2" />
+                                <AlertTriangle className="w-16 h-16 text-yellow-600 mx-auto mb-2" /> :
+                                <XCircle className="w-16 h-16 text-red-600 mx-auto mb-2" />
                             }
                             <h3 className="text-xl font-bold mb-2">
                               {auditResult.score >= 80 ? 'Excellent Performance' :
-                               auditResult.score >= 60 ? 'Good Foundation' :
-                               'Needs Improvement'}
+                                auditResult.score >= 60 ? 'Good Foundation' :
+                                  'Needs Improvement'}
                             </h3>
                           </div>
                         </div>
                         <p className="text-gray-600 text-lg">
                           {auditResult.score >= 80 ? 'Your website is well optimized with minor areas for enhancement.' :
-                           auditResult.score >= 60 ? 'Solid foundation with several optimization opportunities identified.' :
-                           'Significant optimization potential - implementing our recommendations could dramatically improve your rankings.'}
+                            auditResult.score >= 60 ? 'Solid foundation with several optimization opportunities identified.' :
+                              'Significant optimization potential - implementing our recommendations could dramatically improve your rankings.'}
                         </p>
                       </CardContent>
                     </Card>
@@ -297,7 +297,7 @@ const SEOAudit = () => {
                       </Card>
                       <Card className="text-center">
                         <CardContent className="p-4">
-                          {auditResult.techAnalysis.mobileOptimized ? 
+                          {auditResult.techAnalysis.mobileOptimized ?
                             <CheckCircle className="w-8 h-8 text-green-600 mx-auto mb-1" /> :
                             <XCircle className="w-8 h-8 text-red-600 mx-auto mb-1" />
                           }
@@ -306,7 +306,7 @@ const SEOAudit = () => {
                       </Card>
                       <Card className="text-center">
                         <CardContent className="p-4">
-                          {auditResult.techAnalysis.sslCertificate ? 
+                          {auditResult.techAnalysis.sslCertificate ?
                             <CheckCircle className="w-8 h-8 text-green-600 mx-auto mb-1" /> :
                             <XCircle className="w-8 h-8 text-red-600 mx-auto mb-1" />
                           }
@@ -315,7 +315,7 @@ const SEOAudit = () => {
                       </Card>
                       <Card className="text-center">
                         <CardContent className="p-4">
-                          {auditResult.techAnalysis.xmlSitemap ? 
+                          {auditResult.techAnalysis.xmlSitemap ?
                             <CheckCircle className="w-8 h-8 text-green-600 mx-auto mb-1" /> :
                             <XCircle className="w-8 h-8 text-red-600 mx-auto mb-1" />
                           }
@@ -364,7 +364,7 @@ const SEOAudit = () => {
                         <TabsTrigger value="quick" className="text-sm">Quick Wins</TabsTrigger>
                         <TabsTrigger value="opportunities" className="text-sm">Growth Opportunities</TabsTrigger>
                       </TabsList>
-                      
+
                       <TabsContent value="critical" className="space-y-4">
                         <Card className="border-red-200">
                           <CardHeader>
@@ -389,7 +389,7 @@ const SEOAudit = () => {
                           </CardContent>
                         </Card>
                       </TabsContent>
-                      
+
                       <TabsContent value="quick" className="space-y-4">
                         <Card className="border-yellow-200">
                           <CardHeader>
@@ -414,7 +414,7 @@ const SEOAudit = () => {
                           </CardContent>
                         </Card>
                       </TabsContent>
-                      
+
                       <TabsContent value="opportunities" className="space-y-4">
                         <Card className="border-blue-200">
                           <CardHeader>
@@ -443,14 +443,14 @@ const SEOAudit = () => {
 
                     {/* Action Buttons */}
                     <div className="flex flex-col sm:flex-row gap-4 pt-6">
-                      <Button 
+                      <Button
                         onClick={downloadReport}
                         className="flex-1 bg-black text-white hover:bg-gray-800 h-12 text-base font-bold"
                       >
                         <Download className="w-5 h-5 mr-2" />
                         Get Detailed Report
                       </Button>
-                      <Button 
+                      <Button
                         onClick={openWhatsApp}
                         variant="outline"
                         className="flex-1 border-2 border-black text-black hover:bg-black hover:text-white h-12 text-base font-bold"
@@ -465,17 +465,17 @@ const SEOAudit = () => {
                       <CardContent className="p-8 text-center">
                         <h3 className="text-2xl font-bold mb-4">Want Professional SEO Implementation?</h3>
                         <p className="text-gray-300 mb-6 max-w-2xl mx-auto">
-                          Our SEO experts can implement all these recommendations for you. Get a custom quote 
+                          Our SEO experts can implement all these recommendations for you. Get a custom quote
                           for professional SEO services that deliver measurable results.
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                          <Button 
+                          <Button
                             onClick={openWhatsApp}
                             className="bg-white text-black hover:bg-gray-100 font-bold px-6 py-3"
                           >
                             Get SEO Quote
                           </Button>
-                          <Button 
+                          <Button
                             variant="outline"
                             className="border-white text-white hover:bg-white hover:text-black px-6 py-3"
                           >

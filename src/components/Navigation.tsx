@@ -34,7 +34,8 @@ const Navigation = () => {
   };
 
   const openWhatsApp = () => {
-    window.open('https://wa.me/message/6ZHJUVYQDOH3O1', '_blank');
+    window.open('https://wa.me/27651859143', '_blank');
+
   };
 
   const navItems = [
@@ -50,9 +51,9 @@ const Navigation = () => {
         <div className="flex justify-between items-center">
           {/* Logo */}
           <div className="flex items-center space-x-3">
-            <img 
-              src="/lovable-uploads/94f51cc3-f695-4449-8dc0-01c2e5cced2f.png" 
-              alt="Empirial Designs Logo" 
+            <img
+              src="/lovable-uploads/94f51cc3-f695-4449-8dc0-01c2e5cced2f.png"
+              alt="Empirial Designs Logo"
               className="h-8 sm:h-10 w-auto"
             />
           </div>
@@ -68,14 +69,14 @@ const Navigation = () => {
                 {item.name}
               </button>
             ))}
-            <Button 
+            <Button
               variant="outline"
               className="font-bold px-6 py-3 text-base xl:text-lg transition-all duration-300 rounded-full"
               onClick={() => navigate('/auth')}
             >
               Sign In
             </Button>
-            <Button 
+            <Button
               className="bg-primary text-primary-foreground font-bold px-6 py-3 text-base xl:text-lg hover:bg-primary/90 transition-all duration-300 rounded-full elegant-shadow"
               onClick={openWhatsApp}
             >
@@ -113,7 +114,7 @@ const Navigation = () => {
                 </button>
               ))}
               <div className="pt-4 space-y-3">
-                <Button 
+                <Button
                   variant="outline"
                   className="w-full font-bold text-lg py-3 rounded-full"
                   onClick={() => {
@@ -123,7 +124,7 @@ const Navigation = () => {
                 >
                   Sign In
                 </Button>
-                <Button 
+                <Button
                   className="w-full bg-primary text-primary-foreground font-bold text-lg py-3 rounded-full elegant-shadow"
                   onClick={openWhatsApp}
                 >

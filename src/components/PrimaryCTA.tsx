@@ -3,7 +3,8 @@ import { MessageCircle, Calendar } from 'lucide-react';
 
 const PrimaryCTA = () => {
   const openWhatsApp = () => {
-    window.open('https://wa.me/message/6ZHJUVYQDOH3O1', '_blank');
+    window.open('https://wa.me/27651859143', '_blank');
+
   };
 
   const scrollToContact = () => {
@@ -23,10 +24,10 @@ const PrimaryCTA = () => {
           <p className="text-lg md:text-xl text-white/90 mb-8 max-w-2xl mx-auto px-4">
             Join hundreds of South African businesses that have boosted their online presence with our designs.
           </p>
-          
+
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center px-4">
-            <Button 
-              size="lg" 
+            <Button
+              size="lg"
               variant="secondary"
               onClick={openWhatsApp}
               className="w-full sm:w-auto bg-white text-primary hover:bg-white/90 font-semibold min-w-[200px]"
@@ -34,9 +35,9 @@ const PrimaryCTA = () => {
               <MessageCircle className="w-5 h-5 mr-2" />
               Start WhatsApp Chat
             </Button>
-            
-            <Button 
-              size="lg" 
+
+            <Button
+              size="lg"
               variant="outline"
               onClick={scrollToContact}
               className="w-full sm:w-auto border-white text-white hover:bg-white hover:text-primary min-w-[200px]"
@@ -45,7 +46,7 @@ const PrimaryCTA = () => {
               Book Free Consultation
             </Button>
           </div>
-          
+
           <p className="text-white/70 text-sm mt-6 px-4">
             Free 15-minute consultation • No commitments • Quick response guaranteed
           </p>

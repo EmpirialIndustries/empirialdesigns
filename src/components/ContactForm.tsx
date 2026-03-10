@@ -23,7 +23,7 @@ const ContactForm = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Format message for WhatsApp
     const whatsappMessage = `*New Contact Form Submission*
 
@@ -38,7 +38,7 @@ const ContactForm = () => {
 *Message:*
 ${formData.message}`;
 
-    const whatsappUrl = `https://wa.me/27606691849?text=${encodeURIComponent(whatsappMessage)}`;
+    const whatsappUrl = `https://wa.me/27651859143?text=${encodeURIComponent(whatsappMessage)}`;
     window.open(whatsappUrl, '_blank');
   };
 
@@ -60,7 +60,7 @@ ${formData.message}`;
               className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
-          
+
           <div>
             <label htmlFor="from_email" className="block text-sm font-medium mb-2">
               Email Address *
@@ -91,7 +91,7 @@ ${formData.message}`;
               className="w-full px-3 py-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
-          
+
           <div>
             <label htmlFor="company" className="block text-sm font-medium mb-2">
               Company
@@ -128,7 +128,7 @@ ${formData.message}`;
               <option value="other">Other</option>
             </select>
           </div>
-          
+
           <div>
             <label htmlFor="budget" className="block text-sm font-medium mb-2">
               Budget Range
@@ -187,11 +187,10 @@ ${formData.message}`;
         <button
           type="submit"
           disabled={isSubmitting}
-          className={`w-full py-3 px-6 rounded-md font-medium transition-colors ${
-            isSubmitting
+          className={`w-full py-3 px-6 rounded-md font-medium transition-colors ${isSubmitting
               ? 'bg-gray-400 cursor-not-allowed'
               : 'bg-primary text-primary-foreground hover:bg-primary/90'
-          }`}
+            }`}
         >
           {isSubmitting ? 'Sending...' : 'Send Message'}
         </button>

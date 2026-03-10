@@ -38,7 +38,7 @@ const ProjectForm = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
+
     // Format WhatsApp message
     const whatsappMessage = `*New Project Inquiry - Empirial Designs*
 
@@ -60,15 +60,15 @@ ${formData.brief}
 
     // Encode message for URL
     const encodedMessage = encodeURIComponent(whatsappMessage);
-    
+
     // Open WhatsApp
-    window.open(`https://wa.me/27818885950?text=${encodedMessage}`, '_blank');
-    
+    window.open(`https://wa.me/27651859143?text=${encodedMessage}`, '_blank');
+
     toast({
       title: "Redirected to WhatsApp!",
       description: "Your message has been formatted and ready to send via WhatsApp.",
     });
-    
+
     setIsSubmitting(false);
     // Reset form
     setFormData({
@@ -95,23 +95,23 @@ ${formData.brief}
           <div className="grid md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="name">Name *</Label>
-              <Input 
-                id="name" 
-                placeholder="Your full name" 
+              <Input
+                id="name"
+                placeholder="Your full name"
                 value={formData.name}
                 onChange={(e) => handleInputChange('name', e.target.value)}
-                required 
+                required
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email *</Label>
-              <Input 
-                id="email" 
-                type="email" 
-                placeholder="your@email.com" 
+              <Input
+                id="email"
+                type="email"
+                placeholder="your@email.com"
                 value={formData.email}
                 onChange={(e) => handleInputChange('email', e.target.value)}
-                required 
+                required
               />
             </div>
           </div>
@@ -119,18 +119,18 @@ ${formData.brief}
           <div className="grid md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="phone">Phone/WhatsApp</Label>
-              <Input 
-                id="phone" 
-                placeholder="+27 XX XXX XXXX" 
+              <Input
+                id="phone"
+                placeholder="+27 XX XXX XXXX"
                 value={formData.phone}
                 onChange={(e) => handleInputChange('phone', e.target.value)}
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="service">Service Type *</Label>
-              <Select 
-                value={formData.service} 
-                onValueChange={(value) => handleInputChange('service', value)} 
+              <Select
+                value={formData.service}
+                onValueChange={(value) => handleInputChange('service', value)}
                 required
               >
                 <SelectTrigger>
@@ -149,8 +149,8 @@ ${formData.brief}
           <div className="grid md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="budget">Budget Range</Label>
-              <Select 
-                value={formData.budget} 
+              <Select
+                value={formData.budget}
                 onValueChange={(value) => handleInputChange('budget', value)}
               >
                 <SelectTrigger>
@@ -166,9 +166,9 @@ ${formData.brief}
             </div>
             <div className="space-y-2">
               <Label htmlFor="deadline">Preferred Deadline</Label>
-              <Input 
-                id="deadline" 
-                type="date" 
+              <Input
+                id="deadline"
+                type="date"
                 value={formData.deadline}
                 onChange={(e) => handleInputChange('deadline', e.target.value)}
               />
@@ -177,8 +177,8 @@ ${formData.brief}
 
           <div className="space-y-2">
             <Label htmlFor="brief">Project Brief *</Label>
-            <Textarea 
-              id="brief" 
+            <Textarea
+              id="brief"
               placeholder="Tell us about your project, goals, target audience, and any specific requirements..."
               className="min-h-[120px]"
               value={formData.brief}
@@ -187,9 +187,9 @@ ${formData.brief}
             />
           </div>
 
-          <Button 
-            type="submit" 
-            size="lg" 
+          <Button
+            type="submit"
+            size="lg"
             className="w-full"
             disabled={isSubmitting}
           >

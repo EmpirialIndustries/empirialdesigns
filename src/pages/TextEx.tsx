@@ -18,7 +18,7 @@ const TextEx = () => {
   const { toast } = useToast();
 
   const openWhatsApp = () => {
-    window.open('https://wa.me/message/6ZHJUVYQDOH3O1', '_blank');
+    window.open('https://wa.me/27651859143', '_blank');
   };
 
   const handleFileSelect = (selectedFile: File) => {
@@ -114,7 +114,7 @@ Contact us for the full implementation of this PDF text extraction service with 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
       <Navigation />
-      
+
       {/* Hero Section */}
       <section className="pt-32 pb-16 lg:pt-40 lg:pb-20">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-5xl">
@@ -135,7 +135,7 @@ Contact us for the full implementation of this PDF text extraction service with 
               <div className="h-px bg-black flex-1 max-w-32"></div>
             </div>
             <p className="text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed mb-8">
-              Extract text from PDF documents instantly with our advanced OCR technology. 
+              Extract text from PDF documents instantly with our advanced OCR technology.
               Perfect for digitizing documents, data entry, and content migration.
             </p>
           </div>
@@ -161,9 +161,8 @@ Contact us for the full implementation of this PDF text extraction service with 
             </CardHeader>
             <CardContent className="p-6 lg:p-8">
               <div
-                className={`border-2 border-dashed rounded-lg p-8 text-center transition-all duration-300 ${
-                  isDragOver ? 'border-primary bg-primary/5' : 'border-gray-300 hover:border-gray-400'
-                }`}
+                className={`border-2 border-dashed rounded-lg p-8 text-center transition-all duration-300 ${isDragOver ? 'border-primary bg-primary/5' : 'border-gray-300 hover:border-gray-400'
+                  }`}
                 onDrop={handleDrop}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
@@ -178,7 +177,7 @@ Contact us for the full implementation of this PDF text extraction service with 
                   onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
                   className="hidden"
                 />
-                <Button 
+                <Button
                   onClick={() => fileInputRef.current?.click()}
                   variant="outline"
                   className="mb-4"
@@ -198,7 +197,7 @@ Contact us for the full implementation of this PDF text extraction service with 
                         <p className="text-sm text-gray-600">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
                       </div>
                     </div>
-                    <Button 
+                    <Button
                       onClick={processFile}
                       disabled={isProcessing}
                       className="bg-black text-white hover:bg-gray-800"
@@ -219,11 +218,11 @@ Contact us for the full implementation of this PDF text extraction service with 
                   <div className="text-center">
                     <p className="text-sm text-gray-600 font-medium">
                       {progress < 20 ? 'Reading PDF structure...' :
-                       progress < 40 ? 'Analyzing document layout...' :
-                       progress < 60 ? 'Extracting text content...' :
-                       progress < 80 ? 'Processing formatting...' :
-                       progress < 100 ? 'Finalizing extraction...' :
-                       'Complete! Text ready for download.'}
+                        progress < 40 ? 'Analyzing document layout...' :
+                          progress < 60 ? 'Extracting text content...' :
+                            progress < 80 ? 'Processing formatting...' :
+                              progress < 100 ? 'Finalizing extraction...' :
+                                'Complete! Text ready for download.'}
                     </p>
                   </div>
                 </div>
@@ -233,7 +232,7 @@ Contact us for the full implementation of this PDF text extraction service with 
                 <div className="mt-6 space-y-4">
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-semibold">Extracted Text</h3>
-                    <Button 
+                    <Button
                       onClick={downloadText}
                       className="bg-green-600 hover:bg-green-700 text-white"
                     >
@@ -327,17 +326,17 @@ Contact us for the full implementation of this PDF text extraction service with 
             <CardContent className="p-8 text-center">
               <h3 className="text-2xl font-bold mb-4">Need Bulk Processing or API Integration?</h3>
               <p className="text-gray-300 mb-6 max-w-2xl mx-auto">
-                Our professional text extraction service can handle large volumes, multiple formats, 
+                Our professional text extraction service can handle large volumes, multiple formats,
                 and integrate directly with your existing workflows via API.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button 
+                <Button
                   onClick={openWhatsApp}
                   className="bg-white text-black hover:bg-gray-100 font-bold px-6 py-3"
                 >
                   Get Custom Quote
                 </Button>
-                <Button 
+                <Button
                   variant="outline"
                   className="border-white text-white hover:bg-white hover:text-black px-6 py-3"
                 >
