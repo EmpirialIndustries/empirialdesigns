@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 interface Conversation {
@@ -18,191 +17,72 @@ interface Message {
   commitUrl?: string;
 }
 
-export const useConversations = (userId: string | undefined, repoId: string | undefined) => {
+export const useConversations = (userId: string | undefined, _repoId: string | undefined) => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  // Load conversations
+  // Seed example conversations when user is available
   useEffect(() => {
     if (!userId) return;
-
-    const loadConversations = async () => {
-      const { data, error } = await supabase
-        .from('conversations')
-        .select('*')
-        .eq('user_id', userId)
-        .order('updated_at', { ascending: false });
-
-      if (error) {
-        console.error('Error loading conversations:', error);
-        return;
-      }
-
-      setConversations(data || []);
-    };
-
-    loadConversations();
-
-    // Subscribe to real-time updates
-    const channel = supabase
-      .channel('conversations-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'conversations',
-          filter: `user_id=eq.${userId}`,
-        },
-        () => {
-          loadConversations();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    const seed: Conversation[] = [
+      { id: 'conv-1', title: 'Example Portfolio Site', updated_at: new Date().toISOString() },
+      { id: 'conv-2', title: 'Bakery Redesign', updated_at: new Date(Date.now() - 86400000).toISOString() },
+    ];
+    setConversations(seed);
+    if (!currentConversationId) setCurrentConversationId('conv-1');
   }, [userId]);
 
-  // Load messages for current conversation
+  // Load messages when conversation changes
   useEffect(() => {
     if (!currentConversationId) return;
-
-    const loadMessages = async () => {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('chat_messages')
-        .select('*')
-        .eq('conversation_id', currentConversationId)
-        .order('created_at', { ascending: true });
-
-      if (error) {
-        console.error('Error loading messages:', error);
-        toast({
-          title: "Error loading messages",
-          description: error.message,
-          variant: "destructive",
-        });
-        setLoading(false);
-        return;
+    setLoading(true);
+    setTimeout(() => {
+      if (currentConversationId === 'conv-1') {
+        setMessages([
+          { id: 'msg-1', role: 'user', content: 'Create a modern portfolio website for me.', timestamp: new Date(Date.now() - 60000) },
+          { id: 'msg-2', role: 'assistant', content: 'I have successfully generated a responsive portfolio layout. What color scheme would you prefer?', timestamp: new Date(Date.now() - 30000) },
+        ]);
+      } else if (currentConversationId === 'conv-2') {
+        setMessages([
+          { id: 'msg-3', role: 'user', content: 'I need a bakery website with a menu.', timestamp: new Date(Date.now() - 86400000) },
+          { id: 'msg-4', role: 'assistant', content: 'Sure, here is the new artisan bakery layout.', timestamp: new Date(Date.now() - 86300000) },
+        ]);
+      } else {
+        setMessages([]);
       }
-
-      setMessages(
-        data.map((msg) => ({
-          id: msg.id,
-          role: msg.role as 'user' | 'assistant',
-          content: msg.content,
-          timestamp: new Date(msg.created_at),
-          toolCalls: msg.tool_calls ? (Array.isArray(msg.tool_calls) ? msg.tool_calls : []) : undefined,
-          commitUrl: msg.commit_url || undefined,
-        }))
-      );
       setLoading(false);
-    };
+    }, 300);
+  }, [currentConversationId]);
 
-    loadMessages();
-  }, [currentConversationId, toast]);
-
-  // Create new conversation
   const createConversation = async () => {
     if (!userId) return null;
-
-    const { data, error } = await supabase
-      .from('conversations')
-      .insert({
-        user_id: userId,
-        repo_id: repoId,
-        title: 'New Conversation',
-      })
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Error creating conversation:', error);
-      toast({
-        title: "Error creating conversation",
-        description: error.message,
-        variant: "destructive",
-      });
-      return null;
-    }
-
-    setCurrentConversationId(data.id);
+    const newId = `conv-${Date.now()}`;
+    setConversations(prev => [{ id: newId, title: 'New Conversation', updated_at: new Date().toISOString() }, ...prev]);
+    setCurrentConversationId(newId);
     setMessages([]);
-    toast({
-      title: "New conversation started",
-      description: "Start chatting to build your website!",
-    });
-    return data.id;
+    toast({ title: 'New conversation started', description: 'Start chatting to build your website!' });
+    return newId;
   };
 
-  // Save message
   const saveMessage = async (message: Omit<Message, 'id' | 'timestamp'>) => {
-    if (!userId || !currentConversationId) return;
-
-    const { error } = await supabase.from('chat_messages').insert({
-      user_id: userId,
-      repo_id: repoId,
-      conversation_id: currentConversationId,
-      role: message.role,
-      content: message.content,
-      tool_calls: message.toolCalls,
-      commit_url: message.commitUrl,
-    });
-
-    if (error) {
-      console.error('Error saving message:', error);
-      toast({
-        title: "Error saving message",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-
-    // Update conversation updated_at
-    await supabase
-      .from('conversations')
-      .update({ updated_at: new Date().toISOString() })
-      .eq('id', currentConversationId);
+    // Messages are managed in component state; nothing to persist
+    void message;
   };
 
-  // Delete conversation
   const deleteConversation = async (id: string) => {
-    const { error } = await supabase
-      .from('conversations')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
-      console.error('Error deleting conversation:', error);
-      toast({
-        title: "Error deleting conversation",
-        description: error.message,
-        variant: "destructive",
-      });
-      return;
-    }
-
+    setConversations(prev => prev.filter(c => c.id !== id));
     if (currentConversationId === id) {
       setCurrentConversationId(null);
       setMessages([]);
     }
+    toast({ title: 'Conversation deleted' });
   };
 
-  // Update conversation title
   const updateConversationTitle = async (id: string, title: string) => {
-    const { error } = await supabase
-      .from('conversations')
-      .update({ title })
-      .eq('id', id);
-
-    if (error) {
-      console.error('Error updating conversation title:', error);
-    }
+    setConversations(prev => prev.map(c => c.id === id ? { ...c, title } : c));
   };
 
   return {

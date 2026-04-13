@@ -3,10 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { supabase } from '@/integrations/supabase/client';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
+import type { User } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
-import { Send, FileCode, GitCommit, Loader2, File, X, Menu, Target, Crosshair, Eye } from 'lucide-react';
-import type { User } from '@supabase/supabase-js';
+import {
+  Send, FileCode, GitCommit, Loader2, File, X, Target, Crosshair,
+  Eye, Monitor, Smartphone, Code2, Play, Download, ExternalLink,
+} from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
@@ -15,11 +19,11 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/AppSidebar";
-import { useConversations } from "@/hooks/useConversations";
+} from '@/components/ui/dropdown-menu';
+import { Badge } from '@/components/ui/badge';
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { AppSidebar } from '@/components/AppSidebar';
+import { useConversations } from '@/hooks/useConversations';
 
 interface ToolCall {
   id: string;
@@ -64,6 +68,8 @@ const ChatInterface = () => {
   const [inspectorActive, setInspectorActive] = useState(false);
   const [hoveredElement, setHoveredElement] = useState<HTMLElement | null>(null);
   const [highlightStyle, setHighlightStyle] = useState<React.CSSProperties>({});
+  const [previewMode, setPreviewMode] = useState<'preview' | 'code'>('preview');
+  const [deviceMode, setDeviceMode] = useState<'desktop' | 'mobile'>('desktop');
   const navigate = useNavigate();
   const { toast } = useToast();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -77,88 +83,37 @@ const ChatInterface = () => {
     createConversation,
     saveMessage,
     deleteConversation,
-  } = useConversations(user?.id, repo?.id);
-
-  // Fetch repository files
-  const fetchRepoFiles = async (repoData: Repo) => {
-    setLoadingFiles(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('github-repo-contents', {
-        body: {
-          owner: repoData.repo_owner,
-          repo: repoData.repo_name,
-          path: '',
-        },
-      });
-
-      if (error) throw error;
-
-      if (Array.isArray(data)) {
-        const files = data
-          .filter((item: any) => item.type === 'file' || item.type === 'dir')
-          .map((item: any) => ({
-            type: item.type,
-            path: item.path,
-            name: item.name,
-            size: item.size,
-          }));
-        setRepoFiles(files);
-      }
-    } catch (error: any) {
-      console.error('Failed to fetch files:', error);
-      toast({
-        title: "Failed to load files",
-        description: error.message || "An error occurred",
-        variant: "destructive",
-      });
-    } finally {
-      setLoadingFiles(false);
-    }
-  };
+  } = useConversations((user as any)?.uid ?? (user as any)?.id, repo?.id);
 
   useEffect(() => {
-    // Check authentication and load repo
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (session?.user) {
-        setUser(session.user);
+    const isMock = localStorage.getItem('empirial_mock_login') === 'true';
+    if (isMock) {
+      setUser({ uid: 'mock-123', email: 'demo@empirial.com' } as unknown as User);
+      setRepo({ id: 'mock-repo', repo_owner: 'demo', repo_name: 'test-site', github_token: null });
+      setRepoFiles([
+        { type: 'file', path: 'index.html', name: 'index.html', size: 1024 },
+        { type: 'file', path: 'src/App.tsx', name: 'App.tsx', size: 2048 },
+        { type: 'file', path: 'src/styles/main.css', name: 'main.css', size: 512 },
+        { type: 'file', path: 'src/components/Hero.tsx', name: 'Hero.tsx', size: 1200 },
+        { type: 'dir', path: 'src/components', name: 'components' },
+      ]);
+      return;
+    }
 
-        // Fetch user's repository
-        const { data: repoData, error } = await supabase
-          .from('user_repos')
-          .select('*')
-          .eq('user_id', session.user.id)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
-
-        if (!error && repoData) {
-          setRepo(repoData);
-          fetchRepoFiles(repoData);
-        }
-      } else {
-        navigate('/auth');
-      }
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser) setUser(firebaseUser);
+      else navigate('/auth');
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session?.user) {
-        setUser(session.user);
-      } else {
-        navigate('/auth');
-      }
-    });
-
-    return () => subscription.unsubscribe();
+    return () => unsubscribe();
   }, [navigate]);
 
   useEffect(() => {
-    // Auto-scroll to bottom when new messages arrive
     if (scrollRef.current) {
       scrollRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages]);
 
-  // Auto-create first conversation if none exists
   useEffect(() => {
     if (user && conversations.length === 0 && !currentConversationId) {
       createConversation();
@@ -166,25 +121,22 @@ const ChatInterface = () => {
   }, [user, conversations, currentConversationId]);
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    toast({
-      title: "Signed out",
-      description: "You've been successfully signed out.",
-    });
-    navigate('/');
+    localStorage.removeItem('empirial_mock_login');
+    try { await signOut(auth); } catch (_) {}
+    toast({ title: 'Signed out', description: "You've been successfully signed out." });
+    navigate('/auth');
   };
 
   const handleNewConversation = async () => {
     await createConversation();
   };
 
-  // Visual Inspector Logic
+  // Visual Inspector
   const getElementInfo = useCallback((element: HTMLElement) => {
     const tag = element.tagName.toLowerCase();
     const classes = Array.from(element.classList);
     const id = element.id || undefined;
     const text = element.textContent?.slice(0, 50) || undefined;
-
     let component = element.getAttribute('data-component');
     if (!component) {
       const componentClasses = classes.find(c =>
@@ -195,23 +147,17 @@ const ChatInterface = () => {
       );
       component = componentClasses;
     }
-
     return { tag, classes, id, text, component };
   }, []);
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
     if (!inspectorActive) return;
-
     const elements = document.elementsFromPoint(e.clientX, e.clientY);
     const targetElement = elements.find(el =>
-      !el.closest('.visual-inspector-overlay') &&
-      !el.closest('.visual-inspector-controls')
+      !el.closest('.visual-inspector-overlay') && !el.closest('.visual-inspector-controls')
     ) as HTMLElement;
-
     if (!targetElement || targetElement === hoveredElement) return;
-
     setHoveredElement(targetElement);
-
     const rect = targetElement.getBoundingClientRect();
     setHighlightStyle({
       position: 'fixed',
@@ -226,54 +172,34 @@ const ChatInterface = () => {
 
   const handleInspectorClick = useCallback((e: MouseEvent) => {
     if (!inspectorActive || !hoveredElement) return;
-
     e.preventDefault();
     e.stopPropagation();
-
     const elementInfo = getElementInfo(hoveredElement);
     let description = '';
-
     if (elementInfo.component) {
       description = elementInfo.component;
     } else if (elementInfo.id) {
       description = `#${elementInfo.id}`;
     } else if (elementInfo.classes.length > 0) {
       const meaningfulClasses = elementInfo.classes.filter(c =>
-        !c.startsWith('text-') &&
-        !c.startsWith('bg-') &&
-        !c.startsWith('p-') &&
-        !c.startsWith('m-') &&
-        !c.startsWith('w-') &&
-        !c.startsWith('h-') &&
-        !c.startsWith('flex') &&
-        !c.startsWith('grid')
+        !c.startsWith('text-') && !c.startsWith('bg-') && !c.startsWith('p-') &&
+        !c.startsWith('m-') && !c.startsWith('w-') && !c.startsWith('h-') &&
+        !c.startsWith('flex') && !c.startsWith('grid')
       );
       description = meaningfulClasses.join(' ') || elementInfo.tag;
     } else {
       description = `${elementInfo.tag} element`;
     }
-
-    if (elementInfo.text) {
-      description += ` ("${elementInfo.text}")`;
-    }
-
+    if (elementInfo.text) description += ` ("${elementInfo.text}")`;
     setSelectedComponent(description);
     setInspectorActive(false);
-    toast({
-      title: "Element selected",
-      description: `Selected: ${description}`,
-    });
+    toast({ title: 'Element selected', description: `Selected: ${description}` });
   }, [inspectorActive, hoveredElement, getElementInfo, toast]);
 
   useEffect(() => {
-    if (!inspectorActive) {
-      setHoveredElement(null);
-      return;
-    }
-
+    if (!inspectorActive) { setHoveredElement(null); return; }
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('click', handleInspectorClick, true);
-
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('click', handleInspectorClick, true);
@@ -283,28 +209,15 @@ const ChatInterface = () => {
   const handleSend = async () => {
     if (!input.trim()) return;
     if (!currentConversationId) {
-      toast({
-        title: "No conversation",
-        description: "Please start a new conversation first.",
-        variant: "destructive",
-      });
+      toast({ title: 'No conversation', description: 'Please start a new conversation first.', variant: 'destructive' });
       return;
     }
 
-    // Build context message if files or component are selected
     let contextMessage = input;
     const contextParts: string[] = [];
-
-    if (selectedFiles.length > 0) {
-      contextParts.push(`Files to edit: ${selectedFiles.join(', ')}`);
-    }
-    if (selectedComponent) {
-      contextParts.push(`Component/Section to edit: ${selectedComponent}`);
-    }
-
-    if (contextParts.length > 0) {
-      contextMessage = `Context: ${contextParts.join(' | ')}\n\nRequest: ${input}`;
-    }
+    if (selectedFiles.length > 0) contextParts.push(`Files to edit: ${selectedFiles.join(', ')}`);
+    if (selectedComponent) contextParts.push(`Component/Section to edit: ${selectedComponent}`);
+    if (contextParts.length > 0) contextMessage = `Context: ${contextParts.join(' | ')}\n\nRequest: ${input}`;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -318,61 +231,32 @@ const ChatInterface = () => {
     setSelectedFiles([]);
     setSelectedComponent('');
     setLoading(true);
-
-    // Save user message
     await saveMessage(userMessage);
 
     try {
-      // Handle mock/trial requests
+      // Mock/trial mode
       if (input.toLowerCase().includes('mock') || input.toLowerCase().includes('trial')) {
         const assistantId = (Date.now() + 1).toString();
-
-        const initialMessage: Message = {
-          id: assistantId,
-          role: 'assistant',
-          content: 'Initializing generation pipeline...',
-          timestamp: new Date(),
-          toolCalls: [],
-        };
-
-        setMessages((prev) => [...prev, initialMessage]);
-
-        // Step 1: Deepseek
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        setMessages((prev) => prev.map(m => m.id === assistantId ? { ...m, content: '🧠 **DeepSeek Coder V2** is generating the raw HTML/React structural blocks...' } : m));
-
-        // Step 2: GPT-4o
-        await new Promise(resolve => setTimeout(resolve, 3000));
-        setMessages((prev) => prev.map(m => m.id === assistantId ? { ...m, content: '🧠 **DeepSeek Coder V2** is generating the raw HTML/React structural blocks...\n\n🏎️ **GPT-4o** is now refining the UI, aligning layouts, and standardizing components...' } : m));
-
-        // Step 3: Claude
-        await new Promise(resolve => setTimeout(resolve, 3000));
+        setMessages(prev => [...prev, { id: assistantId, role: 'assistant', content: 'Initializing generation pipeline...', timestamp: new Date(), toolCalls: [] }]);
+        await new Promise(r => setTimeout(r, 1000));
+        setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: '🧠 **DeepSeek Coder V2** is generating the raw HTML/React structural blocks...' } : m));
+        await new Promise(r => setTimeout(r, 3000));
+        setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: '🧠 **DeepSeek Coder V2** is generating the raw HTML/React structural blocks...\n\n🏎️ **GPT-4o** is now refining the UI, aligning layouts, and standardizing components...' } : m));
+        await new Promise(r => setTimeout(r, 3000));
         const finalContent = '🧠 **DeepSeek Coder V2** is generating the raw HTML/React structural blocks...\n\n🏎️ **GPT-4o** is now refining the UI, aligning layouts, and standardizing components...\n\n🎨 **Claude 3.5 Sonnet** added marketing copy and polished the final visual presentation!\n\n*(Multi-model generation complete)*';
-
-        setMessages((prev) => prev.map(m => m.id === assistantId ? { ...m, content: finalContent } : m));
-
-        await saveMessage({
-          role: 'assistant',
-          content: finalContent,
-        });
-
+        setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: finalContent } : m));
+        await saveMessage({ role: 'assistant', content: finalContent });
         setLoading(false);
         return;
       }
 
-      const CHAT_URL = `https://vfysnkkzesbovtnmoccb.supabase.co/functions/v1/ai-chat`;
-      const { data: { session } } = await supabase.auth.getSession();
-      const accessToken = session?.access_token;
-      if (!accessToken) {
-        throw new Error('Not authenticated');
-      }
+      const CHAT_URL = `/api/ai-chat`;
+      const accessToken = await auth.currentUser?.getIdToken();
+      if (!accessToken) throw new Error('Not authenticated');
 
       const response = await fetch(CHAT_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
-        },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${accessToken}` },
         body: JSON.stringify({
           messages: [...messages.map(m => ({ role: m.role, content: m.content })).filter(m => m.role !== 'assistant' || m.content), { role: 'user', content: contextMessage }],
           repoOwner: repo?.repo_owner,
@@ -386,10 +270,7 @@ const ChatInterface = () => {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to get AI response');
       }
-
-      if (!response.body) {
-        throw new Error('No response body');
-      }
+      if (!response.body) throw new Error('No response body');
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
@@ -399,42 +280,27 @@ const ChatInterface = () => {
       const toolCalls: ToolCall[] = [];
       let commitUrl = '';
 
-      // Create initial assistant message
       const assistantId = (Date.now() + 1).toString();
-      const assistantMessage: Message = {
-        id: assistantId,
-        role: 'assistant',
-        content: '',
-        timestamp: new Date(),
-        toolCalls: [],
-      };
-      setMessages(prev => [...prev, assistantMessage]);
+      setMessages(prev => [...prev, { id: assistantId, role: 'assistant', content: '', timestamp: new Date(), toolCalls: [] }]);
 
       while (!streamDone) {
         const { done, value } = await reader.read();
         if (done) break;
-
         textBuffer += decoder.decode(value, { stream: true });
 
         let newlineIndex: number;
         while ((newlineIndex = textBuffer.indexOf('\n')) !== -1) {
           let line = textBuffer.slice(0, newlineIndex);
           textBuffer = textBuffer.slice(newlineIndex + 1);
-
           if (line.endsWith('\r')) line = line.slice(0, -1);
           if (line.startsWith(':') || line.trim() === '') continue;
           if (!line.startsWith('data: ')) continue;
 
           const jsonStr = line.slice(6).trim();
-          if (jsonStr === '[DONE]') {
-            streamDone = true;
-            break;
-          }
+          if (jsonStr === '[DONE]') { streamDone = true; break; }
 
           try {
             const parsed = JSON.parse(jsonStr);
-
-            // Handle tool calls
             if (parsed.type === 'tool_call') {
               const toolCall: ToolCall = {
                 id: parsed.id || `tool_${Date.now()}`,
@@ -444,84 +310,46 @@ const ChatInterface = () => {
                 output: parsed.output,
               };
               toolCalls.push(toolCall);
-              setMessages(prev => prev.map(m =>
-                m.id === assistantId ? { ...m, toolCalls: [...(m.toolCalls || []), toolCall] } : m
-              ));
+              setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, toolCalls: [...(m.toolCalls || []), toolCall] } : m));
             }
-
-            // Handle commit URL
             if (parsed.type === 'commit') {
               commitUrl = parsed.url;
-              setMessages(prev => prev.map(m =>
-                m.id === assistantId ? { ...m, commitUrl } : m
-              ));
+              setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, commitUrl } : m));
             }
-
-            // Handle regular content
             const content = parsed.choices?.[0]?.delta?.content;
             if (content) {
               assistantContent += content;
-              setMessages(prev => prev.map(m =>
-                m.id === assistantId ? { ...m, content: assistantContent } : m
-              ));
+              setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: assistantContent } : m));
             }
-          } catch (e) {
-            // Incomplete JSON, put it back
+          } catch (_) {
             textBuffer = line + '\n' + textBuffer;
             break;
           }
         }
       }
 
-      // Save complete assistant message
-      await saveMessage({
-        role: 'assistant',
-        content: assistantContent,
-        toolCalls,
-        commitUrl: commitUrl || undefined,
-      });
-
+      await saveMessage({ role: 'assistant', content: assistantContent, toolCalls, commitUrl: commitUrl || undefined });
       setLoading(false);
-
-      if (commitUrl) {
-        toast({
-          title: "Code committed!",
-          description: "Your changes have been pushed to GitHub",
-        });
-      }
+      if (commitUrl) toast({ title: 'Code committed!', description: 'Your changes have been pushed to GitHub' });
     } catch (error: any) {
       console.error('Chat error:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to get AI response",
-        variant: "destructive",
-      });
+      toast({ title: 'Error', description: error.message || 'Failed to get AI response', variant: 'destructive' });
       setLoading(false);
     }
   };
 
-  if (!user) {
-    return null;
-  }
+  if (!user) return null;
 
   return (
     <SidebarProvider>
       {/* Visual Inspector Overlay */}
       {inspectorActive && (
         <>
-          <div
-            className="fixed inset-0 bg-primary/5 backdrop-blur-[1px] z-[9998]"
-            style={{ pointerEvents: 'none' }}
-          />
-
+          <div className="fixed inset-0 bg-primary/5 backdrop-blur-[1px] z-[9998]" style={{ pointerEvents: 'none' }} />
           {hoveredElement && (
-            <div
-              style={highlightStyle}
-              className="border-2 border-primary bg-primary/10 z-[9999] rounded"
-            />
+            <div style={highlightStyle} className="border-2 border-primary bg-primary/10 z-[9999] rounded" />
           )}
-
-          <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[10000] flex items-center gap-3 bg-background border-2 border-primary rounded-full px-6 py-3 shadow-2xl">
+          <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[10000] flex items-center gap-3 bg-background border-2 border-primary rounded-full px-6 py-3 shadow-2xl visual-inspector-controls">
             <Eye className="h-5 w-5 text-primary animate-pulse" />
             <span className="text-sm font-medium">Click any element to select it</span>
             {hoveredElement && (
@@ -529,19 +357,18 @@ const ChatInterface = () => {
                 {getElementInfo(hoveredElement).component || getElementInfo(hoveredElement).tag}
               </Badge>
             )}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setInspectorActive(false)}
-              className="h-8 w-8 rounded-full ml-2"
-            >
+            <Button variant="ghost" size="icon" onClick={() => setInspectorActive(false)} className="h-8 w-8 rounded-full ml-2">
               <X className="h-4 w-4" />
             </Button>
           </div>
         </>
       )}
 
-      <div className="min-h-screen flex w-full bg-[#000000] text-white">
+      <div className="min-h-screen flex w-full bg-[#030303] text-white overflow-hidden relative selection:bg-indigo-500/30">
+        {/* Ambient backgrounds */}
+        <div className="absolute top-[10%] left-[20%] w-[40%] h-[40%] bg-indigo-500/15 rounded-full blur-[150px] pointer-events-none animate-pulse-slow" />
+        <div className="absolute bottom-[20%] right-[-10%] w-[50%] h-[50%] bg-purple-500/15 rounded-full blur-[150px] pointer-events-none animate-pulse-slow" style={{ animationDelay: '2s' }} />
+
         <AppSidebar
           user={user}
           conversations={conversations}
@@ -552,307 +379,270 @@ const ChatInterface = () => {
           onSignOut={handleSignOut}
         />
 
-        {/* Main Chat Area */}
-        <div className="flex-1 flex flex-col min-w-0 bg-[#0A0A0A] border-l border-[#222]">
-          {/* Header */}
-          <div className="h-16 border-b border-[#222] bg-[#111] flex items-center justify-between px-6 shrink-0">
-            <div className="flex items-center gap-3">
-              <SidebarTrigger className="text-white/70 hover:text-white" />
-              <div>
-                <h1 className="text-xl font-bold tracking-tight text-white/90">Aura AI Assistant</h1>
-                {repo && (
-                  <p className="text-xs text-white/40">
-                    Connected to: {repo.repo_owner}/{repo.repo_name}
-                  </p>
+        <div className="flex-1 flex min-w-0 relative z-10">
+
+          {/* LEFT PANE — Chat (400px) */}
+          <div className="w-[400px] xl:w-[450px] flex flex-col bg-[#050505]/60 backdrop-blur-3xl border-r border-white/10 shrink-0 shadow-[4px_0_24px_rgba(0,0,0,0.5)] z-20">
+
+            {/* Header */}
+            <div className="h-16 border-b border-white/5 bg-black/40 flex items-center justify-between px-6 shrink-0">
+              <div className="flex items-center gap-3">
+                <SidebarTrigger className="text-white/70 hover:text-white" />
+                <div>
+                  <h1 className="text-lg font-bold tracking-tight text-white/90">Aura AI</h1>
+                  {repo && (
+                    <p className="text-[10px] text-white/40 uppercase tracking-wider">
+                      {repo.repo_owner}/{repo.repo_name}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Messages */}
+            <ScrollArea className="flex-1 p-4">
+              <div className="space-y-4">
+                {messages.length === 0 ? (
+                  <div className="text-center py-12">
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center mx-auto mb-4 shadow-[0_0_30px_rgba(99,102,241,0.3)]">
+                      <Send className="h-5 w-5 text-white" />
+                    </div>
+                    <h2 className="text-base font-bold text-white/90 mb-1">Workspace Ready</h2>
+                    <p className="text-sm text-white/40 max-w-[200px] mx-auto">
+                      {repo ? 'Describe the change you want to make.' : 'Connect a repository to start building.'}
+                    </p>
+                  </div>
+                ) : (
+                  messages.map((message) => (
+                    <div key={message.id} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}>
+                      <div className={`max-w-[90%] rounded-2xl px-5 py-3 shadow-lg backdrop-blur-xl ${
+                        message.role === 'user'
+                          ? 'bg-gradient-to-br from-indigo-500/90 to-purple-600/90 text-white shadow-indigo-500/10 border border-white/10'
+                          : 'bg-white/5 border border-white/10 text-white/90 shadow-xl'
+                      }`}>
+                        {message.role === 'user' ? (
+                          <p className="text-[13px] whitespace-pre-wrap">{message.content}</p>
+                        ) : (
+                          <div className="space-y-3">
+                            {message.toolCalls && message.toolCalls.length > 0 && (
+                              <div className="space-y-1 pb-3 border-b border-white/10">
+                                {message.toolCalls.map((tool) => (
+                                  <div key={tool.id} className="flex items-center gap-2 text-[11px] text-white/50">
+                                    {tool.status === 'running' && <Loader2 className="h-3 w-3 animate-spin text-white/40" />}
+                                    {tool.status === 'complete' && <FileCode className="h-3 w-3 text-white/60" />}
+                                    {tool.status === 'error' && <FileCode className="h-3 w-3 text-red-500" />}
+                                    <span className="font-medium">{tool.name}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                            <div className="prose prose-sm dark:prose-invert max-w-none text-[13px] leading-relaxed">
+                              <ReactMarkdown
+                                components={{
+                                  code: ({ node, className, children, ...props }: any) => {
+                                    const match = /language-(\w+)/.exec(className || '');
+                                    return match ? (
+                                      <SyntaxHighlighter style={vscDarkPlus as any} language={match[1]} PreTag="div" customStyle={{ fontSize: '11px', borderRadius: '0.5rem' }}>
+                                        {String(children).replace(/\n$/, '')}
+                                      </SyntaxHighlighter>
+                                    ) : (
+                                      <code className={className} {...props}>{children}</code>
+                                    );
+                                  },
+                                }}
+                              >
+                                {message.content}
+                              </ReactMarkdown>
+                            </div>
+                            {message.commitUrl && (
+                              <div className="pt-3 border-t border-white/10">
+                                <a href={message.commitUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-[11px] text-indigo-400 hover:text-indigo-300">
+                                  <GitCommit className="h-3 w-3" />
+                                  View commit
+                                </a>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )}
+
+                {loading && (
+                  <div className="flex justify-start animate-fade-in">
+                    <div className="rounded-2xl px-5 py-3 bg-black/40 backdrop-blur-md border border-white/10 shadow-lg">
+                      <div className="flex gap-1.5 items-center h-3">
+                        <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" style={{ animationDelay: '0ms' }} />
+                        <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" style={{ animationDelay: '150ms' }} />
+                        <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" style={{ animationDelay: '300ms' }} />
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <div ref={scrollRef} />
+              </div>
+            </ScrollArea>
+
+            {/* Input Area */}
+            <div className="p-4 shrink-0 bg-gradient-to-t from-[#050505] via-[#050505]/95 to-transparent">
+              <div className="bg-white/[0.03] backdrop-blur-3xl border border-white/10 rounded-2xl p-3 shadow-2xl focus-within:bg-white/[0.05] transition-all duration-300">
+                {(selectedFiles.length > 0 || selectedComponent) && (
+                  <div className="flex flex-wrap gap-1.5 mb-2">
+                    {selectedFiles.map((file) => (
+                      <Badge key={file} variant="secondary" className="gap-1 bg-black/40 text-[10px] text-white/70 border border-white/10">
+                        <File className="h-2.5 w-2.5" />
+                        {file.split('/').pop()}
+                        <X className="h-2.5 w-2.5 cursor-pointer hover:text-white" onClick={() => setSelectedFiles(prev => prev.filter(f => f !== file))} />
+                      </Badge>
+                    ))}
+                    {selectedComponent && (
+                      <Badge variant="default" className="gap-1 bg-white text-black text-[10px] border-0">
+                        <Target className="h-2.5 w-2.5" />
+                        {selectedComponent}
+                        <X className="h-2.5 w-2.5 cursor-pointer hover:text-black/70" onClick={() => setSelectedComponent('')} />
+                      </Badge>
+                    )}
+                  </div>
+                )}
+
+                <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} className="flex gap-2">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl shrink-0 text-white/40 hover:text-white hover:bg-white/5" disabled={loading || loadingFiles} type="button">
+                        {loadingFiles ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileCode className="h-4 w-4" />}
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="w-72 max-h-80 overflow-y-auto bg-black/90 backdrop-blur-2xl border-white/10">
+                      <div className="px-2 py-1.5 text-[10px] uppercase tracking-wider text-muted-foreground">Files</div>
+                      {repoFiles.filter(f => f.type === 'file').map(f => (
+                        <DropdownMenuItem
+                          key={f.path}
+                          onClick={() => setSelectedFiles(p => p.includes(f.path) ? p.filter(x => x !== f.path) : [...p, f.path])}
+                          className="cursor-pointer text-xs"
+                        >
+                          <File className="h-3 w-3 mr-2 opacity-50" /> {f.path}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+
+                  <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl shrink-0 text-white/40 hover:text-white hover:bg-white/5" onClick={() => setInspectorActive(true)} title="Inspector" type="button">
+                    <Crosshair className="h-4 w-4" />
+                  </Button>
+
+                  <Input
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    placeholder="Message the Builder..."
+                    className="flex-1 h-10 border-0 bg-transparent text-sm text-white placeholder:text-white/30 focus-visible:ring-0 px-2"
+                    disabled={loading}
+                  />
+                  <Button type="submit" size="icon" className="h-10 w-10 rounded-xl bg-white text-black hover:bg-gray-200 shrink-0 font-bold shadow-lg transition-transform active:scale-95" disabled={loading || !input.trim()}>
+                    <Send className="h-4 w-4" />
+                  </Button>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          {/* RIGHT PANE — Stage (remaining space) */}
+          <div className="flex-1 flex flex-col min-w-0 bg-[#020202] relative z-10">
+
+            {/* Stage Header */}
+            <div className="h-16 border-b border-white/5 flex items-center justify-between px-6 shrink-0 bg-[#0A0A0A]/40 backdrop-blur-md">
+              <div className="flex bg-black/40 rounded-lg p-1 border border-white/5">
+                <button
+                  onClick={() => setPreviewMode('preview')}
+                  className={`flex items-center gap-1.5 px-4 py-1 rounded-md text-xs font-semibold transition-all ${previewMode === 'preview' ? 'bg-white/10 text-white shadow' : 'text-white/40 hover:text-white'}`}
+                >
+                  <Play className="w-3.5 h-3.5" /> Preview
+                </button>
+                <button
+                  onClick={() => setPreviewMode('code')}
+                  className={`flex items-center gap-1.5 px-4 py-1 rounded-md text-xs font-semibold transition-all ${previewMode === 'code' ? 'bg-white/10 text-white shadow' : 'text-white/40 hover:text-white'}`}
+                >
+                  <Code2 className="w-3.5 h-3.5" /> Code
+                </button>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="flex bg-black/40 rounded-lg p-1 border border-white/5">
+                  <button
+                    onClick={() => setDeviceMode('desktop')}
+                    className={`px-2.5 py-1 rounded-md transition-all ${deviceMode === 'desktop' ? 'bg-white/10 text-white shadow' : 'text-white/40 hover:text-white'}`}
+                    title="Desktop"
+                  >
+                    <Monitor className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => setDeviceMode('mobile')}
+                    className={`px-2.5 py-1 rounded-md transition-all ${deviceMode === 'mobile' ? 'bg-white/10 text-white shadow' : 'text-white/40 hover:text-white'}`}
+                    title="Mobile"
+                  >
+                    <Smartphone className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+                <div className="h-4 w-px bg-white/10 mx-1" />
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-white/40 hover:text-white hover:bg-white/5">
+                  <Download className="w-4 h-4" />
+                </Button>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-white/40 hover:text-white hover:bg-white/5">
+                  <ExternalLink className="w-4 h-4" />
+                </Button>
+                <Button className="h-8 bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-4 rounded-md ml-1 shadow-[0_0_15px_rgba(79,70,229,0.3)]">
+                  Deploy
+                </Button>
+              </div>
+            </div>
+
+            {/* Stage Content */}
+            <div className="flex-1 overflow-hidden p-4 md:p-8 flex flex-col items-center justify-center bg-[#050505]/40 relative">
+              <div className={`transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] ${deviceMode === 'desktop' ? 'w-full h-full' : 'w-[375px] h-full max-h-[812px]'} bg-[#111] rounded-2xl shadow-[0_0_100px_rgba(0,0,0,0.5)] overflow-hidden border border-white/10 flex flex-col`}>
+                {previewMode === 'preview' ? (
+                  <div className="w-full h-full flex flex-col bg-white relative">
+                    {/* Fake Browser Chrome */}
+                    <div className="w-full h-10 bg-[#f8f9fa] border-b border-[#e9ecef] flex items-center px-4 shrink-0 justify-between">
+                      <div className="flex gap-1.5 w-16">
+                        <div className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]" />
+                        <div className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]" />
+                        <div className="w-2.5 h-2.5 rounded-full bg-[#27c93f]" />
+                      </div>
+                      <div className="flex-1 max-w-sm bg-white border border-[#e9ecef] px-4 py-1 rounded-md text-[11px] text-gray-500 font-medium text-center shadow-sm truncate flex items-center justify-center gap-2">
+                        <Loader2 className="w-3 h-3 animate-spin text-gray-400" /> localhost:3000
+                      </div>
+                      <div className="w-16" />
+                    </div>
+                    {/* Preview Placeholder */}
+                    <div className="flex-1 w-full bg-white flex items-center justify-center flex-col gap-6 p-8 overflow-y-auto relative">
+                      <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:24px_24px]" />
+                      <Target className="w-12 h-12 text-indigo-500/20 animate-pulse relative z-10" />
+                      <div className="text-center space-y-1 relative z-10">
+                        <p className="text-sm font-semibold text-gray-700">Preview Engine Active</p>
+                        <p className="text-xs text-gray-400">Describe what you want to build on the left</p>
+                      </div>
+                      <div className="w-full max-w-md space-y-4 mt-6 relative z-10">
+                        <div className="h-40 bg-gray-100 rounded-xl animate-pulse w-full border border-gray-200" />
+                        <div className="flex gap-4">
+                          <div className="h-24 bg-gray-100 rounded-lg w-1/2 animate-pulse border border-gray-200" />
+                          <div className="h-24 bg-gray-100 rounded-lg w-1/2 animate-pulse border border-gray-200" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="w-full h-full bg-[#1e1e1e] relative">
+                    <ScrollArea className="h-full w-full">
+                      <SyntaxHighlighter style={vscDarkPlus as any} language="tsx" PreTag="div" customStyle={{ margin: 0, padding: '2rem', background: 'transparent', fontSize: '13px' }}>
+                        {`// Your generated code will appear here\nimport React from 'react';\n\nexport default function GeneratedApp() {\n  return (\n    <div className="min-h-screen bg-white">\n      {/* Chat with the AI on the left to build your site */}\n    </div>\n  );\n}`}
+                      </SyntaxHighlighter>
+                    </ScrollArea>
+                  </div>
                 )}
               </div>
             </div>
           </div>
 
-          {/* Messages */}
-          <ScrollArea className="flex-1 p-6">
-            <div className="max-w-3xl mx-auto space-y-6">
-              {messages.length === 0 ? (
-                <div className="text-center py-12">
-                  <h2 className="text-2xl font-bold text-white/90 mb-4 tracking-tight">
-                    Welcome to Aura AI
-                  </h2>
-                  <p className="text-white/40">
-                    {repo
-                      ? "I'm ready to help with your repository!"
-                      : "Please connect a repository to get started."}
-                  </p>
-                </div>
-              ) : (
-                messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                  >
-                    <div
-                      className={`max-w-[80%] rounded-2xl px-6 py-4 ${message.role === 'user'
-                        ? 'bg-[#2A2A2A] text-white/90 shadow-sm border border-[#333]'
-                        : 'bg-[#111] border border-[#222] text-white/80'
-                        }`}
-                    >
-                      {message.role === 'user' ? (
-                        <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                      ) : (
-                        <div className="space-y-4">
-                          {/* Tool calls */}
-                          {message.toolCalls && message.toolCalls.length > 0 && (
-                            <div className="space-y-2 pb-4 border-b border-[#333]">
-                              {message.toolCalls.map((tool) => (
-                                <div key={tool.id} className="flex items-center gap-2 text-xs text-white/50">
-                                  {tool.status === 'running' && <Loader2 className="h-3 w-3 animate-spin text-white/40" />}
-                                  {tool.status === 'complete' && <FileCode className="h-3 w-3 text-white/60" />}
-                                  {tool.status === 'error' && <FileCode className="h-3 w-3 text-red-500" />}
-                                  <span className="font-medium">{tool.name}</span>
-                                  {tool.input && <span className="text-xs opacity-70">({JSON.stringify(tool.input).slice(0, 50)}...)</span>}
-                                </div>
-                              ))}
-                            </div>
-                          )}
-
-                          {/* Message content with markdown */}
-                          <div className="prose prose-sm dark:prose-invert max-w-none">
-                            <ReactMarkdown
-                              components={{
-                                code: ({ node, className, children, ...props }: any) => {
-                                  const match = /language-(\w+)/.exec(className || '');
-                                  const inline = !match;
-                                  return !inline && match ? (
-                                    <SyntaxHighlighter
-                                      style={vscDarkPlus as any}
-                                      language={match[1]}
-                                      PreTag="div"
-                                    >
-                                      {String(children).replace(/\n$/, '')}
-                                    </SyntaxHighlighter>
-                                  ) : (
-                                    <code className={className} {...props}>
-                                      {children}
-                                    </code>
-                                  );
-                                },
-                              }}
-                            >
-                              {message.content}
-                            </ReactMarkdown>
-                          </div>
-
-                          {/* Commit link */}
-                          {message.commitUrl && (
-                            <div className="pt-4 border-t border-border/50">
-                              <a
-                                href={message.commitUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-2 text-xs text-primary hover:underline"
-                              >
-                                <GitCommit className="h-3 w-3" />
-                                View commit on GitHub
-                              </a>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))
-              )}
-              {loading && (
-                <div className="flex justify-start">
-                  <div className="max-w-[80%] rounded-2xl px-6 py-4 bg-[#111] border border-[#222]">
-                    <div className="flex gap-2">
-                      <div className="w-2 h-2 rounded-full bg-white/40 animate-bounce" style={{ animationDelay: '0ms' }} />
-                      <div className="w-2 h-2 rounded-full bg-white/40 animate-bounce" style={{ animationDelay: '150ms' }} />
-                      <div className="w-2 h-2 rounded-full bg-white/40 animate-bounce" style={{ animationDelay: '300ms' }} />
-                    </div>
-                  </div>
-                </div>
-              )}
-              <div ref={scrollRef} />
-            </div>
-          </ScrollArea>
-
-          {/* Input Area */}
-          <div className="border-t border-[#222] bg-[#0A0A0A] p-6 shrink-0">
-            <div className="max-w-3xl mx-auto space-y-3">
-              {/* Selected Context Display */}
-              {(selectedFiles.length > 0 || selectedComponent) && (
-                <div className="flex flex-wrap gap-2">
-                  {selectedFiles.map((file) => (
-                    <Badge key={file} variant="secondary" className="gap-1 bg-[#1A1A1A] text-white/70 border border-[#333]">
-                      <File className="h-3 w-3" />
-                      {file.split('/').pop()}
-                      <X
-                        className="h-3 w-3 cursor-pointer hover:text-white"
-                        onClick={() => setSelectedFiles(prev => prev.filter(f => f !== file))}
-                      />
-                    </Badge>
-                  ))}
-                  {selectedComponent && (
-                    <Badge variant="default" className="gap-1 bg-white text-black border-0">
-                      <Target className="h-3 w-3" />
-                      {selectedComponent}
-                      <X
-                        className="h-3 w-3 cursor-pointer hover:text-black/70"
-                        onClick={() => setSelectedComponent('')}
-                      />
-                    </Badge>
-                  )}
-                </div>
-              )}
-
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleSend();
-                }}
-                className="flex gap-3"
-              >
-                {/* File Selector Dropdown */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="h-12 w-12 rounded-full shrink-0"
-                      disabled={loading || loadingFiles}
-                      type="button"
-                    >
-                      {loadingFiles ? (
-                        <Loader2 className="h-5 w-5 animate-spin" />
-                      ) : (
-                        <FileCode className="h-5 w-5" />
-                      )}
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-80 max-h-96 overflow-y-auto">
-                    {repoFiles.length === 0 ? (
-                      <div className="p-4 text-sm text-muted-foreground text-center">
-                        No files found
-                      </div>
-                    ) : (
-                      <>
-                        <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
-                          Select files to edit
-                        </div>
-                        {repoFiles
-                          .filter(file => file.type === 'file')
-                          .map((file) => (
-                            <DropdownMenuItem
-                              key={file.path}
-                              onClick={() => {
-                                setSelectedFiles(prev =>
-                                  prev.includes(file.path)
-                                    ? prev.filter(f => f !== file.path)
-                                    : [...prev, file.path]
-                                );
-                              }}
-                              className="cursor-pointer"
-                            >
-                              <div className="flex items-center gap-2 w-full">
-                                <File className="h-4 w-4 shrink-0" />
-                                <span className="flex-1 truncate text-sm">{file.path}</span>
-                                {selectedFiles.includes(file.path) && (
-                                  <Badge variant="secondary" className="shrink-0">Selected</Badge>
-                                )}
-                              </div>
-                            </DropdownMenuItem>
-                          ))}
-                      </>
-                    )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
-                {/* Visual Inspector Toggle */}
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-12 w-12 rounded-full shrink-0"
-                  disabled={loading}
-                  type="button"
-                  onClick={() => setInspectorActive(true)}
-                  title="Visual Element Inspector"
-                >
-                  <Crosshair className="h-5 w-5" />
-                </Button>
-
-                {/* Component Selector Dropdown */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="h-12 w-12 rounded-full shrink-0"
-                      disabled={loading}
-                      type="button"
-                    >
-                      <Target className="h-5 w-5" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-64">
-                    <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
-                      Select component to edit
-                    </div>
-                    {[
-                      'Header/Navigation',
-                      'Hero Section',
-                      'Footer',
-                      'Sidebar',
-                      'Contact Form',
-                      'About Section',
-                      'Services Section',
-                      'Portfolio/Gallery',
-                      'Testimonials',
-                      'Pricing Section',
-                      'FAQ Section',
-                      'Blog Section',
-                      'CTA Buttons',
-                    ].map((component) => (
-                      <DropdownMenuItem
-                        key={component}
-                        onClick={() => setSelectedComponent(component)}
-                        className="cursor-pointer"
-                      >
-                        <div className="flex items-center gap-2 w-full">
-                          <Target className="h-4 w-4 shrink-0" />
-                          <span className="flex-1 text-sm">{component}</span>
-                          {selectedComponent === component && (
-                            <Badge variant="default" className="shrink-0">Selected</Badge>
-                          )}
-                        </div>
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
-                <Input
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  placeholder={
-                    selectedComponent
-                      ? `Editing ${selectedComponent}...`
-                      : selectedFiles.length > 0
-                        ? `Editing ${selectedFiles.length} file(s)...`
-                        : "Ask Aura AI..."
-                  }
-                  className="flex-1 h-12 rounded-xl bg-[#151515] border-[#2A2A2A] text-white placeholder:text-white/30 focus-visible:border-[#444] shadow-inner font-sans"
-                  disabled={loading}
-                />
-                <Button
-                  type="submit"
-                  size="icon"
-                  className="h-12 w-12 rounded-xl bg-white text-black hover:bg-white/90 shrink-0 font-bold shadow-lg"
-                  disabled={loading || !input.trim()}
-                >
-                  <Send className="h-5 w-5" />
-                </Button>
-              </form>
-            </div>
-          </div>
         </div>
       </div>
     </SidebarProvider>
