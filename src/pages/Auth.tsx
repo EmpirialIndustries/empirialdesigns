@@ -4,10 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInAnonymously } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
-import { ArrowLeft, Sparkles, User, Lock, Mail } from 'lucide-react';
+import { Sparkles, User, Lock, Mail } from 'lucide-react';
+
 const IconSparkles = Sparkles as any;
 const IconUser = User as any;
 const IconLock = Lock as any;
@@ -29,10 +30,7 @@ const Auth = () => {
     if (email === 'demo@empirial.com') {
       setTimeout(() => {
         localStorage.setItem('empirial_mock_login', 'true');
-        toast({
-          title: "Welcome back!",
-          description: "Mock credentials recognized. Using local session.",
-        });
+        toast({ title: "Welcome back!", description: "Mock credentials recognized. Using local session." });
         setLoading(false);
         navigate('/chat');
       }, 800);
@@ -43,49 +41,28 @@ const Auth = () => {
       if (isSignUp) {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
-
         if (user && siteName.trim()) {
           const cleanName = siteName.trim().replace(/[^a-z0-9-]/gi, '');
           const deployUrl = `https://${cleanName}.netlify.app`;
-
           await setDoc(doc(db, 'user_repos', `${user.uid}_${cleanName}`), {
-            user_id: user.uid,
-            repo_name: cleanName,
-            repo_owner: email.split('@')[0],
-            repo_url: deployUrl,
-            deploy_url: deployUrl,
-            created_at: new Date().toISOString()
+            user_id: user.uid, repo_name: cleanName, repo_owner: email.split('@')[0],
+            repo_url: deployUrl, deploy_url: deployUrl, created_at: new Date().toISOString()
           });
         }
-
-        toast({
-          title: "Success!",
-          description: "Account created successfully.",
-        });
+        toast({ title: "Success!", description: "Account created successfully." });
         navigate('/chat');
       } else {
         await signInWithEmailAndPassword(auth, email, password);
-
-        toast({
-          title: "Welcome back!",
-          description: "You've successfully signed in.",
-        });
-
+        toast({ title: "Welcome back!", description: "You've successfully signed in." });
         navigate('/chat');
       }
     } catch (error: any) {
-      console.error('Auth error:', error);
       let message = error.message;
       if (error.code === 'auth/email-already-in-use') message = 'Email already in use';
       if (error.code === 'auth/invalid-email') message = 'Invalid email address';
       if (error.code === 'auth/weak-password') message = 'Password should be at least 6 characters';
       if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') message = 'Invalid email or password';
-
-      toast({
-        title: "Error",
-        description: message,
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -95,10 +72,7 @@ const Auth = () => {
     setLoading(true);
     setTimeout(() => {
       localStorage.setItem('empirial_mock_login', 'true');
-      toast({
-        title: "Mock Login Successful",
-        description: "Welcome! You are using a temporary session to explore the platform.",
-      });
+      toast({ title: "Mock Login Successful", description: "Welcome! You are using a temporary session." });
       setLoading(false);
       navigate('/chat');
     }, 800);
@@ -107,150 +81,127 @@ const Auth = () => {
   const handleMockIdentify = () => {
     setEmail('demo@empirial.com');
     setPassword('demo1234');
-    toast({
-      title: "Mock Credentials Loaded",
-      description: "Ready to test login flow.",
-    });
+    toast({ title: "Mock Credentials Loaded", description: "Ready to test login flow." });
   };
 
   return (
     <div className="min-h-screen bg-[#030303] text-white font-sans flex flex-col relative overflow-hidden selection:bg-indigo-500/30">
-      {/* Premium Ambient Backgrounds */}
-      <div className="absolute top-[0%] left-[-20%] w-[70%] h-[70%] bg-indigo-500/15 rounded-full blur-[160px] pointer-events-none animate-pulse-slow" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-purple-500/15 rounded-full blur-[160px] pointer-events-none animate-pulse-slow" style={{ animationDelay: '2s' }} />
+      {/* Ambient glows matching ChatInterface */}
+      <div className="absolute top-[10%] left-[20%] w-[40%] h-[40%] bg-indigo-500/15 rounded-full blur-[160px] pointer-events-none" />
+      <div className="absolute bottom-[20%] right-[-10%] w-[50%] h-[50%] bg-purple-500/15 rounded-full blur-[160px] pointer-events-none" />
 
-      {/* Tiny top header matching Aura Build */}
-      <header className="h-16 flex items-center px-6 w-full relative z-10">
-        <div className="flex items-center cursor-pointer" onClick={() => navigate('/')}>
-          <div className="text-3xl font-bold tracking-tighter text-white/90">
-            A
+      {/* Minimal header */}
+      <header className="h-14 flex items-center px-5 w-full relative z-10">
+        <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
+          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-[0_0_20px_rgba(99,102,241,0.3)]">
+            <IconSparkles className="w-3.5 h-3.5 text-white" />
           </div>
+          <span className="text-sm font-semibold text-white/70">Aura Build</span>
         </div>
       </header>
 
       <div className="flex-1 flex justify-center items-center p-4 pb-20 relative z-10">
-        {/* Glow behind the card */}
-        <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-[32px] blur-2xl opacity-10" />
-        
-        <div className="w-full max-w-[420px] bg-white/[0.03] backdrop-blur-2xl border border-white/10 rounded-[28px] p-8 shadow-[0_8px_32px_0_rgba(0,0,0,0.36)] transition-all">
-          <div className="text-center mb-10">
-            <div className="text-4xl font-bold tracking-tighter text-white mb-6 mx-auto flex justify-center">
-              <div className="w-12 h-12 flex items-center justify-center bg-gradient-to-tr from-indigo-500 to-purple-500 rounded-xl shadow-lg shadow-indigo-500/20">
-                <IconSparkles className="w-6 h-6 text-white" />
-              </div>
-            </div>
-            <h1 className="text-3xl font-semibold text-white mb-2 tracking-tight">
+        <div className="w-full max-w-[400px] bg-[#050505]/60 backdrop-blur-3xl border border-white/10 rounded-2xl p-7 shadow-[0_8px_32px_rgba(0,0,0,0.5)]">
+          {/* Title */}
+          <div className="text-center mb-8">
+            <h1 className="text-2xl font-semibold text-white mb-1.5 tracking-tight">
               {isSignUp ? 'Create an account' : 'Welcome back'}
             </h1>
-            <p className="text-sm text-white/50">
-              {isSignUp
-                ? 'Sign up to access your workspace'
-                : 'Sign in to access your workspace'
-              }
+            <p className="text-xs text-white/40">
+              {isSignUp ? 'Sign up to access your workspace' : 'Sign in to access your workspace'}
             </p>
           </div>
 
-          <div className="flex bg-black/40 p-1.5 rounded-2xl mb-8 backdrop-blur-md">
+          {/* Tab Switcher */}
+          <div className="flex bg-black/40 p-1 rounded-lg mb-6 border border-white/5">
             <button
               onClick={() => setIsSignUp(false)}
-              className={`flex-1 text-sm font-semibold h-10 rounded-xl transition-all duration-300 ${!isSignUp ? 'bg-white/10 text-white shadow-md' : 'text-white/50 hover:text-white'}`}
+              className={`flex-1 text-xs font-medium h-8 rounded-md transition-all duration-200 ${!isSignUp ? 'bg-white/10 text-white shadow-sm' : 'text-white/40 hover:text-white/60'}`}
             >
               Sign In
             </button>
             <button
               onClick={() => setIsSignUp(true)}
-              className={`flex-1 text-sm font-semibold h-10 rounded-xl transition-all duration-300 ${isSignUp ? 'bg-white/10 text-white shadow-md' : 'text-white/50 hover:text-white'}`}
+              className={`flex-1 text-xs font-medium h-8 rounded-md transition-all duration-200 ${isSignUp ? 'bg-white/10 text-white shadow-sm' : 'text-white/40 hover:text-white/60'}`}
             >
               Sign Up
             </button>
           </div>
 
-          <form onSubmit={handleAuth} className="space-y-4 mb-6">
-            <div className="space-y-2 relative">
-              <Label htmlFor="email" className="text-white/70 text-xs uppercase tracking-wider font-semibold ml-1">Email</Label>
-              <div className="relative">
-                <IconMail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+          <form onSubmit={handleAuth} className="space-y-3 mb-5">
+            {/* Email */}
+            <div className="space-y-1.5">
+              <Label htmlFor="email" className="text-[10px] uppercase tracking-widest font-semibold text-white/30 ml-1">Email</Label>
+              <div className="bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-xl flex items-center px-3 gap-2 focus-within:border-white/20 transition-colors duration-200">
+                <IconMail className="w-3.5 h-3.5 text-white/30 shrink-0" />
                 <Input
-                  id="email"
-                  type="email"
-                  placeholder="name@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="h-12 pl-11 bg-black/20 border-white/10 text-white placeholder:text-white/20 focus-visible:ring-1 focus-visible:ring-indigo-500 rounded-xl transition-all"
+                  id="email" type="email" placeholder="name@example.com"
+                  value={email} onChange={(e) => setEmail(e.target.value)} required
+                  className="h-10 border-0 bg-transparent text-white text-sm placeholder:text-white/20 focus-visible:ring-0 focus-visible:ring-offset-0 px-0"
                 />
               </div>
             </div>
 
-            <div className="space-y-2 relative">
+            {/* Password */}
+            <div className="space-y-1.5">
               <div className="flex items-center justify-between ml-1">
-                <Label htmlFor="password" className="text-white/70 text-xs uppercase tracking-wider font-semibold">Password</Label>
-                {!isSignUp && <a href="#" className="text-[11px] font-medium text-indigo-400 hover:text-indigo-300 transition-colors">Forgot password?</a>}
+                <Label htmlFor="password" className="text-[10px] uppercase tracking-widest font-semibold text-white/30">Password</Label>
+                {!isSignUp && <a href="#" className="text-[10px] font-medium text-indigo-400/70 hover:text-indigo-300 transition-colors duration-200">Forgot?</a>}
               </div>
-              <div className="relative">
-                <IconLock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+              <div className="bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-xl flex items-center px-3 gap-2 focus-within:border-white/20 transition-colors duration-200">
+                <IconLock className="w-3.5 h-3.5 text-white/30 shrink-0" />
                 <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="h-12 pl-11 bg-black/20 border-white/10 text-white placeholder:text-white/20 focus-visible:ring-1 focus-visible:ring-indigo-500 rounded-xl transition-all"
+                  id="password" type="password" placeholder="••••••••"
+                  value={password} onChange={(e) => setPassword(e.target.value)} required
+                  className="h-10 border-0 bg-transparent text-white text-sm placeholder:text-white/20 focus-visible:ring-0 focus-visible:ring-offset-0 px-0"
                 />
               </div>
             </div>
 
+            {/* Workspace Name (sign up only) */}
             {isSignUp && (
-              <div className="space-y-2 relative">
-                <Label htmlFor="siteName" className="text-white/70 text-xs uppercase tracking-wider font-semibold ml-1">Workspace Name</Label>
-                <div className="relative">
-                  <IconUser className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+              <div className="space-y-1.5">
+                <Label htmlFor="siteName" className="text-[10px] uppercase tracking-widest font-semibold text-white/30 ml-1">Workspace Name</Label>
+                <div className="bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-xl flex items-center px-3 gap-2 focus-within:border-white/20 transition-colors duration-200">
+                  <IconUser className="w-3.5 h-3.5 text-white/30 shrink-0" />
                   <Input
-                    id="siteName"
-                    type="text"
-                    placeholder="my-cool-site (optional)"
-                    value={siteName}
-                    onChange={(e) => setSiteName(e.target.value)}
-                    className="h-12 pl-11 bg-black/20 border-white/10 text-white placeholder:text-white/20 focus-visible:ring-1 focus-visible:ring-indigo-500 rounded-xl transition-all"
+                    id="siteName" type="text" placeholder="my-cool-site (optional)"
+                    value={siteName} onChange={(e) => setSiteName(e.target.value)}
+                    className="h-10 border-0 bg-transparent text-white text-sm placeholder:text-white/20 focus-visible:ring-0 focus-visible:ring-offset-0 px-0"
                   />
                 </div>
               </div>
             )}
 
             <Button
-              type="submit"
-              className="w-full h-12 text-white font-semibold bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 border-0 rounded-xl mt-4 transition-all shadow-[0_0_20px_rgba(99,102,241,0.2)] hover:shadow-[0_0_30px_rgba(99,102,241,0.4)]"
-              disabled={loading}
+              type="submit" disabled={loading}
+              className="w-full h-10 text-sm font-semibold bg-white text-black hover:bg-gray-200 border-0 rounded-xl mt-3 transition-colors duration-200 shadow-[0_0_20px_rgba(255,255,255,0.1)]"
             >
               {loading ? 'Authenticating...' : isSignUp ? 'Create Account' : 'Sign In'}
             </Button>
           </form>
 
-          <div className="relative mb-6">
+          {/* Divider */}
+          <div className="relative mb-5">
             <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-white/10" />
+              <span className="w-full border-t border-white/5" />
             </div>
-            <div className="relative flex justify-center text-[10px] font-bold uppercase tracking-widest text-white/30">
-              <span className="bg-[#030303] px-4 rounded-full border border-white/10">Testing & Demo</span>
+            <div className="relative flex justify-center text-[9px] font-bold uppercase tracking-widest text-white/20">
+              <span className="bg-[#050505] px-3">or</span>
             </div>
           </div>
 
-          <div className="flex flex-col gap-3">
+          {/* Secondary actions */}
+          <div className="flex flex-col gap-2">
             <Button
-              onClick={handleGuestLogin}
-              disabled={loading}
-              variant="outline"
-              className="w-full h-11 bg-white/5 border-white/10 hover:bg-white/10 text-white font-medium rounded-xl transition-all"
+              onClick={handleGuestLogin} disabled={loading} variant="outline"
+              className="w-full h-9 bg-white/5 border-white/10 hover:bg-white/10 text-white text-xs font-medium rounded-xl transition-colors duration-200"
             >
-              🚀 Instant Mock Login (Guest)
+              🚀 Instant Mock Login
             </Button>
-
             <Button
-              onClick={handleMockIdentify}
-              variant="ghost"
-              className="w-full h-11 hover:bg-white/5 text-white/50 hover:text-white font-medium rounded-xl transition-all text-sm"
-              type="button"
+              onClick={handleMockIdentify} variant="ghost" type="button"
+              className="w-full h-9 hover:bg-white/5 text-white/30 hover:text-white/50 text-xs font-medium rounded-xl transition-colors duration-200"
             >
               Auto-fill Demo Credentials
             </Button>
