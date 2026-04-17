@@ -1,5 +1,5 @@
-import { Home, Search, BookOpen, LayoutGrid, Star, User, Gift, Zap, ChevronDown, Bell, Sidebar as SidebarIcon, MessageSquare, Plus, Trash2, LogOut } from "lucide-react";
-import { NavLink } from "react-router-dom";
+import { Home, Search, BookOpen, LayoutGrid, Star, User, Gift, Zap, ChevronDown, Bell, Sidebar as SidebarIcon, MessageSquare, Plus, Trash2, LogOut, Plug } from "lucide-react";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
@@ -46,6 +46,10 @@ export function AppSidebar({
   const { state, toggleSidebar } = useSidebar();
   const collapsed = state === "collapsed";
   const { toast } = useToast();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const isActive = (path: string) => location.pathname === path;
 
   const handleDelete = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
@@ -87,7 +91,13 @@ export function AppSidebar({
           <SidebarGroupContent>
             <SidebarMenu className="gap-1">
               <SidebarMenuItem>
-                <SidebarMenuButton className="text-gray-600 hover:bg-gray-100 hover:text-gray-900 rounded-lg text-sm px-3 h-9 transition-colors">
+                <SidebarMenuButton
+                  onClick={() => navigate('/dashboard')}
+                  isActive={isActive('/dashboard')}
+                  className={`hover:bg-gray-100 hover:text-gray-900 rounded-lg text-sm px-3 h-9 transition-colors ${
+                    isActive('/dashboard') ? 'bg-gray-100 text-gray-900 font-semibold' : 'text-gray-600'
+                  }`}
+                >
                   <Home className="h-4 w-4 mr-3 shrink-0" />
                   {!collapsed && <span className="font-medium text-[13px]">Home</span>}
                 </SidebarMenuButton>
@@ -107,6 +117,12 @@ export function AppSidebar({
                 <SidebarMenuButton className="text-gray-600 hover:bg-gray-100 hover:text-gray-900 rounded-lg text-sm px-3 h-9 transition-colors">
                   <BookOpen className="h-4 w-4 mr-3 shrink-0" />
                   {!collapsed && <span className="font-medium text-[13px]">Resources</span>}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton className="text-gray-600 hover:bg-gray-100 hover:text-gray-900 rounded-lg text-sm px-3 h-9 transition-colors">
+                  <Plug className="h-4 w-4 mr-3 shrink-0" />
+                  {!collapsed && <span className="font-medium text-[13px]">Connectors</span>}
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>

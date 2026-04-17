@@ -32,7 +32,7 @@ const Auth = () => {
         localStorage.setItem('empirial_mock_login', 'true');
         toast({ title: "Welcome back!", description: "Mock credentials recognized. Using local session." });
         setLoading(false);
-        navigate('/chat');
+        navigate('/dashboard');
       }, 800);
       return;
     }
@@ -50,11 +50,11 @@ const Auth = () => {
           });
         }
         toast({ title: "Success!", description: "Account created successfully." });
-        navigate('/chat');
+        navigate('/dashboard');
       } else {
         await signInWithEmailAndPassword(auth, email, password);
         toast({ title: "Welcome back!", description: "You've successfully signed in." });
-        navigate('/chat');
+        navigate('/dashboard');
       }
     } catch (error: any) {
       let message = error.message;
@@ -74,7 +74,7 @@ const Auth = () => {
       localStorage.setItem('empirial_mock_login', 'true');
       toast({ title: "Mock Login Successful", description: "Welcome! You are using a temporary session." });
       setLoading(false);
-      navigate('/chat');
+      navigate('/dashboard');
     }, 800);
   };
 

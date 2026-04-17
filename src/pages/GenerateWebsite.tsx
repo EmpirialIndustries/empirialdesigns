@@ -53,7 +53,7 @@ interface FileItem {
   size?: number;
 }
 
-const ChatInterface = () => {
+const GenerateWebsite = () => {
   const [user, setUser] = useState<User | null>(null);
   const [repo, setRepo] = useState<Repo | null>(null);
   const [input, setInput] = useState('');
@@ -806,4 +806,4 @@ const ChatInterface = () => {
   );
 };
 
-export default ChatInterface;
+export default GenerateWebsite;

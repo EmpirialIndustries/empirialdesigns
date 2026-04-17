@@ -6,7 +6,10 @@
       "Bash(\"./node_modules/.bin/tsc\" --noEmit)",
       "Bash(timeout 30 node node_modules/typescript/bin/tsc --noEmit)",
       "Bash(echo \"exit: $?\")",
-      "Bash(node node_modules/typescript/bin/tsc --noEmit)"
+      "Bash(node node_modules/typescript/bin/tsc --noEmit)",
+      "Bash(npm install:*)",
+      "Bash(npm run:*)",
+      "Bash(echo \"EXIT:$?\")"
     ]
   }
 }
