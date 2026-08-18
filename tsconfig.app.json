@@ -19,10 +19,23 @@
     "paths": {
       "@/*": [
         "./src/*"
+      ],
+      "@staff/*": [
+        "./src/staff/*"
       ]
     },
     "skipLibCheck": true,
     "strict": false,
+    // Required by @tanstack/react-router's generated route types (used
+    // under src/staff/**) — without it, createRouter()'s own type fails
+    // ("strictNullChecks must be enabled") and every route file's typed
+    // params/search/redirect APIs mistype. Doesn't affect npm run build
+    // (vite build type-checks nothing; esbuild only transpiles), only
+    // editor/tsc feedback. Left as the one strict-family flag turned on
+    // rather than full "strict": true, to avoid surfacing unrelated
+    // pre-existing looseness elsewhere in this file's "noImplicitAny:
+    // false" codebase.
+    "strictNullChecks": true,
     "target": "ES2020",
     "useDefineForClassFields": true
   },
