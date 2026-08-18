@@ -23,3 +23,12 @@ dist-ssr
 *.sln
 *.sw?
 .env
+.firebase
+
+*.tsbuildinfo
+vite.config.ts.timestamp-*
+.tanstack
+
+# Claude Code plugin/skill files (kept on disk, not tracked)
+.agents/skills/
+.claude/skills/
