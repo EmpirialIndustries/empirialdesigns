@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://empirialdesigns.netlify.app/sitemap.xml
+Sitemap: https://empirialdesigns.co.za/sitemap.xml
